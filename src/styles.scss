@@ -3,6 +3,9 @@
 @use "styles/mixins" as *;
 @use "styles/animations" as *;
 
+// Importation de PrimeNg Icons
+@import "primeicons/primeicons.css";
+
 /* Variables CSS personnalisées */
 :root {
   --primary-color: #{$primary-color};
