@@ -84,7 +84,7 @@ export class PromosService {
    * Crée un nouveau code promo (Admin)
    */
   createPromoCode(data: CreatePromoCodeRequest): Observable<any> {
-    return this.apiService.post(`${this.adminBaseUrl}/promo-codes`, data).pipe(
+    return this.apiService.post(`/admin/promo-codes`, data).pipe(
       tap(() => {
         this.clearCache();
         this.refreshPromos();
@@ -97,7 +97,7 @@ export class PromosService {
    * Liste tous les codes promo (Admin)
    */
   listPromoCodes(): Observable<PromoCode[]> {
-    return this.apiService.get<PromoCode[]>(`${this.adminBaseUrl}/promo-codes`).pipe(
+    return this.apiService.get<PromoCode[]>(`/admin/promo-codes`).pipe(
       catchError(this.handleError)
     );
   }
