@@ -81,10 +81,10 @@ interface PartyDisplay extends Party {
                 </ng-template>
                 <ng-template pTemplate="body" let-party>
                   <tr>
-                    <td>{{ party.player1_name || 'Joueur ' + party.player1_id.substring(0, 8) }}</td>
-                    <td>{{ party.player2_name || 'Joueur ' + party.player2_id.substring(0, 8) }}</td>
-                    <td>{{ party.game_name || 'Jeu ' + party.game_id.substring(0, 8) }}</td>
-                    <td>{{ party.machine_name || 'Borne ' + party.machine_id.substring(0, 8) }}</td>
+                    <td>{{ party.player1_name || ('Joueur ' + shortId(party.player1_id)) }}</td>
+                    <td>{{ party.player2_name || ('Joueur ' + shortId(party.player2_id)) }}</td>
+                    <td>{{ party.game_name || ('Jeu ' + shortId(party.game_id)) }}</td>
+                    <td>{{ party.machine_name || ('Borne ' + shortId(party.machine_id)) }}</td>
                     <td>
                       <p-tag [value]="party.password?.toString() || 'N/A'" severity="info"></p-tag>
                     </td>
@@ -142,17 +142,17 @@ interface PartyDisplay extends Party {
                 <ng-template pTemplate="body" let-party>
                   <tr>
                     <td>
-                      {{ party.player1_name || 'Joueur ' + party.player1_id.substring(0, 8) }}
+                      {{ party.player1_name || ('Joueur ' + shortId(party.player1_id)) }}
                       <i *ngIf="isWinner(party, 1)" class="pi pi-trophy text-yellow-500 ml-2"></i>
                     </td>
                     <td class="text-center font-bold">{{ party.p1_score || 0 }}</td>
                     <td>
-                      {{ party.player2_name || 'Joueur ' + party.player2_id.substring(0, 8) }}
+                      {{ party.player2_name || ('Joueur ' + shortId(party.player2_id)) }}
                       <i *ngIf="isWinner(party, 2)" class="pi pi-trophy text-yellow-500 ml-2"></i>
                     </td>
                     <td class="text-center font-bold">{{ party.p2_score || 0 }}</td>
-                    <td>{{ party.game_name || 'Jeu ' + party.game_id.substring(0, 8) }}</td>
-                    <td>{{ party.machine_name || 'Borne ' + party.machine_id.substring(0, 8) }}</td>
+                    <td>{{ party.game_name || ('Jeu ' + shortId(party.game_id)) }}</td>
+                    <td>{{ party.machine_name || ('Borne ' + shortId(party.machine_id)) }}</td>
                     <td class="text-center">
                       <p-tag [value]="(party.total_score || 0).toString()" severity="success"></p-tag>
                     </td>
@@ -298,6 +298,16 @@ export class PartiesListComponent implements OnInit {
         machine_name: machine?.nom || undefined
       };
     });
+  }
+
+  shortId(id: string | number | undefined | null): string {
+    if (id === null || id === undefined) return 'N/A';
+    try {
+      const s = id.toString();
+      return s.substring(0, 8);
+    } catch (e) {
+      return 'N/A';
+    }
   }
   
   /**
