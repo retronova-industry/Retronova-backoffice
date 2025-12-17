@@ -43,7 +43,7 @@
     </div>
     </div>
 
-    <!-- Cartes de statistiques -->
+    <!-- Cartes de statistiques
     @if (!loading()) {
     <div class="stats-section stagger-fade-in">
         @for (stat of promoStats(); track stat.title) {
@@ -56,7 +56,7 @@
         </app-stats-card>
         }
     </div>
-    }
+    } -->
     
     <div class="page-content">
     @if (loading()) {
@@ -464,6 +464,20 @@
         }
     }
     </div>
+    <!-- Cartes de statistiques -->
+    @if (!loading()) {
+    <div class="stats-section stagger-fade-in">
+        @for (stat of promoStats(); track stat.title) {
+        <app-stats-card 
+            [data]="stat"
+            [clickable]="true"
+            [animated]="true"
+            [gamingStyle]="true"
+            (cardClick)="handleStatClick($event)">
+        </app-stats-card>
+        }
+    </div>
+    }
 </div>
 
 <p-confirmDialog 
