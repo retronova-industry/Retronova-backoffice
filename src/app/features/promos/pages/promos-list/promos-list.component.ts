@@ -99,7 +99,7 @@ class PromoStatsCalculator {
       {
         title: 'Utilisations totales',
         value: totalUses,
-        icon: 'pi-users',
+        icon: 'pi-user',
         color: 'info',
         trend: { value: 15, direction: 'up', period: 'cette semaine' }
       },
@@ -398,11 +398,11 @@ export class PromosListComponent implements OnInit {
 
   protected getStatusIcon(status: PromoStatus): string {
     const icons = {
-      active: 'pi-check-circle',
-      limited: 'pi-exclamation-triangle',
-      exhausted: 'pi-times-circle',
-      single_use: 'pi-user',
-      inactive: 'pi-ban'
+      active: 'pi pi-check-circle',
+      limited: 'pi pi-exclamation-triangle',
+      exhausted: 'pi pi-times-circle',
+      single_use: 'pi pi-user',
+      inactive: 'pi pi-ban'
     };
     return icons[status];
   }

@@ -119,7 +119,7 @@
             [rows]="itemsPerPage()" 
             [paginator]="true" 
             [globalFilterFields]="globalFilterFields"
-            [tableStyle]="{'min-width': '75rem'}"
+            [tableStyle]="{'min-width': '62.3rem'}"
             [rowHover]="true" 
             dataKey="id"
             [showCurrentPageReport]="true" 
@@ -129,31 +129,31 @@
             
             <ng-template pTemplate="header">
                 <tr>
-                <th pSortableColumn="code" style="width: 20%">
+                <th pSortableColumn="code" style="width: 5%">
                     <div class="header-content">
                     <i class="pi pi-ticket"></i>
                     Code <p-sortIcon field="code"></p-sortIcon>
                     </div>
                 </th>
-                <th pSortableColumn="tickets_reward" style="width: 15%">
+                <th pSortableColumn="tickets_reward" style="width: 5%">
                     <div class="header-content">
                     <i class="pi pi-gift"></i>
                     Récompense <p-sortIcon field="tickets_reward"></p-sortIcon>
                     </div>
                 </th>
-                <th style="width: 20%">
+                <th style="width: 5%">
                     <div class="header-content">
                     <i class="pi pi-cog"></i>
                     Configuration
                     </div>
                 </th>
-                <th style="width: 20%">
+                <th style="width: 5%">
                     <div class="header-content">
                     <i class="pi pi-chart-bar"></i>
                     Utilisation
                     </div>
                 </th>
-                <th pSortableColumn="status" style="width: 15%">
+                <th pSortableColumn="status" style="width: 5%">
                     <div class="header-content">
                     <i class="pi pi-circle"></i>
                     Statut <p-sortIcon field="status"></p-sortIcon>
@@ -203,7 +203,7 @@
                 <td>
                     <div class="config-cell">
                     <div class="config-item">
-                        <i class="pi pi-users config-icon"></i>
+                        <i class="pi pi-user config-icon"></i>
                         <span class="config-label">
                         {{ promo.is_single_use_per_user ? 'Usage unique/utilisateur' : 'Usage multiple/utilisateur' }}
                         </span>

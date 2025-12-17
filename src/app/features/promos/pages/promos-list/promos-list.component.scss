@@ -116,6 +116,7 @@
       .search-icon {
         color: var(--neon-orange);
         z-index: 2;
+        margin-right: var(--space-2);
       }
       
       .search-input {
@@ -665,8 +666,8 @@
 }
 
 /* === STATUS TAGS === */
-.status-tag {
-  font-weight: 700;
+:host ::ng-deep .status-tag {
+  font-weight: 300;
   text-transform: uppercase;
   font-size: var(--text-xs);
   letter-spacing: 0.05em;
@@ -789,7 +790,7 @@
       color: white;
     }
   }
-  
+
   .gaming-input {
     &:focus {
       border-color: var(--neon-orange) !important;
