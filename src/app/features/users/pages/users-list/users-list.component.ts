@@ -188,162 +188,7 @@ import { LoaderComponent } from '../../../../shared/components/loader/loader.com
       [blockScroll]="true">
     </p-confirmDialog>
   `,
-  styles: [`
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--space-6);
-      
-      h1 {
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-        margin: 0;
-        font-size: var(--text-2xl);
-        font-weight: 700;
-        color: var(--text-color);
-        
-        i {
-          color: var(--primary-500);
-        }
-      }
-      
-      .page-actions {
-        display: flex;
-        gap: var(--space-3);
-      }
-    }
-    
-    .search-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--space-4);
-      
-      .p-input-icon-left {
-        flex: 1;
-        max-width: 400px;
-        
-        input {
-          width: 100%;
-          padding-left: var(--space-10);
-        }
-      }
-      
-      .search-stats {
-        color: var(--text-color-secondary);
-        font-size: var(--text-sm);
-        font-weight: 500;
-      }
-    }
-    
-    .user-cell {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      
-      .user-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: var(--radius-full);
-        background: var(--gradient-primary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 600;
-        font-size: var(--text-sm);
-        text-transform: uppercase;
-      }
-      
-      .user-name {
-        font-weight: 500;
-        color: var(--text-color);
-      }
-    }
-    
-    .user-pseudo {
-      font-family: var(--font-family-mono);
-      background: var(--surface-hover);
-      padding: var(--space-1) var(--space-2);
-      border-radius: var(--radius-sm);
-      font-size: var(--text-sm);
-    }
-    
-    .date-cell {
-      color: var(--text-color-secondary);
-      font-size: var(--text-sm);
-    }
-    
-    .action-buttons {
-      display: flex;
-      gap: var(--space-1);
-    }
-    
-    .empty-state {
-      text-align: center;
-      padding: var(--space-12) var(--space-4);
-      
-      .empty-icon {
-        font-size: 3rem;
-        color: var(--gray-400);
-        margin-bottom: var(--space-4);
-      }
-      
-      h3 {
-        margin: 0 0 var(--space-2) 0;
-        color: var(--text-color);
-      }
-      
-      p {
-        margin: 0;
-        color: var(--text-color-secondary);
-      }
-    }
-    
-    :host ::ng-deep {
-      .users-table {
-        .p-datatable-thead > tr > th {
-          background: var(--surface-ground);
-          border-bottom: 2px solid var(--surface-border);
-          font-weight: 600;
-          color: var(--text-color);
-        }
-        
-        .p-datatable-tbody > tr {
-          transition: all var(--transition-fast);
-          
-          &:hover {
-            background: var(--surface-hover);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-sm);
-          }
-        }
-        
-        .p-tag {
-          font-weight: 600;
-        }
-      }
-    }
-    
-    @media (max-width: 768px) {
-      .page-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: var(--space-4);
-      }
-      
-      .search-container {
-        flex-direction: column;
-        gap: var(--space-3);
-        
-        .p-input-icon-left {
-          max-width: none;
-        }
-      }
-    }
-  `]
+  styleUrls: ['./users-list.component.scss']
 })
 export class UsersListComponent implements OnInit {
   // Services injectés
@@ -353,34 +198,34 @@ export class UsersListComponent implements OnInit {
 
   // ViewChild pour la table
   readonly table = viewChild<Table>('dt');
-  
+
   // Signals pour l'état du composant
   readonly users = signal<User[]>([]);
   readonly filteredUsers = signal<User[]>([]);
   readonly loading = signal(true);
   readonly searchQuery = signal('');
   readonly itemsPerPage = signal(10);
-  
+
   // Configuration de la table
   readonly globalFilterFields = ['nom', 'prenom', 'pseudo', 'email'];
-  
+
   // Effect pour filtrer les utilisateurs quand la recherche change
   private readonly filterEffect = effect(() => {
     const query = this.searchQuery().toLowerCase();
     const allUsers = this.users();
-    
+
     if (!query) {
       this.filteredUsers.set(allUsers);
       return;
     }
-    
-    const filtered = allUsers.filter(user => 
+
+    const filtered = allUsers.filter(user =>
       user.nom?.toLowerCase().includes(query) ||
       user.prenom?.toLowerCase().includes(query) ||
       user.pseudo?.toLowerCase().includes(query) ||
       user.email?.toLowerCase().includes(query)
     );
-    
+
     this.filteredUsers.set(filtered);
   });
 
@@ -393,7 +238,7 @@ export class UsersListComponent implements OnInit {
    */
   private loadUsers(): void {
     this.loading.set(true);
-    
+
     this.usersService.getAllUsers().subscribe({
       next: (users) => {
         this.users.set(users);
@@ -416,6 +261,12 @@ export class UsersListComponent implements OnInit {
    * Actualise la liste des utilisateurs
    */
   refreshUsers(): void {
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Actualisation',
+      detail: 'Actualisation de la liste des utilisateurs…'
+    });
+
     this.usersService.clearCache();
     this.loadUsers();
   }
@@ -492,7 +343,7 @@ export class UsersListComponent implements OnInit {
    */
   formatDate(dateString: string): string {
     if (!dateString) return 'N/A';
-    
+
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('fr-FR', {
       day: '2-digit',
