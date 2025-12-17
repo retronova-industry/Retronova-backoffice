@@ -108,7 +108,6 @@ class PromoDetailsStatsCalculator {
     LoaderComponent,
     StatsCardComponent
   ],
-  providers: [MessageService],
   template: `
     <div class="page-container animate-fade-in">
       <div class="page-header">
@@ -555,19 +554,26 @@ export class PromosDetailsComponent implements OnInit {
     this.usageHistory.set(mockHistory);
     this.loading.set(false);
   }
-  
-  /**
-   * Copie le code promo
-   */
+
+    /**
+  * Copie le code promo dans le presse-papiers
+  */
   protected copyPromoCode(): void {
     const code = this.promo()?.code;
     if (!code) return;
-    
+
     navigator.clipboard.writeText(code).then(() => {
       this.messageService.add({
         severity: 'success',
-        summary: 'Copié !',
+        summary: 'Code copié',
         detail: `Le code "${code}" a été copié dans le presse-papiers`,
+        life: 3000
+      });
+    }).catch(() => {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erreur',
+        detail: 'Impossible de copier le code',
         life: 3000
       });
     });
