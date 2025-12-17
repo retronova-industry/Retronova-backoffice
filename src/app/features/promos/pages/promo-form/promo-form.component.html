@@ -1,1 +1,277 @@
-<p>promo-form works!</p>
+<div class="page-container animate-fade-in">
+    <div class="page-header">
+    <div class="page-title-section">
+        <button 
+        pButton 
+        pRipple 
+        icon="pi pi-arrow-left" 
+        class="p-button-text p-button-rounded back-button"
+        routerLink="/promos"
+        pTooltip="Retour à la liste">
+        </button>
+        <h1 class="page-title">
+        <i class="pi pi-ticket neon-glow"></i>
+        {{ pageTitle() }}
+        </h1>
+    </div>
+    </div>
+
+    <div class="form-wrapper">
+    @if (loading()) {
+        <app-loader size="large">
+        <div class="loading-content">
+            <i class="pi pi-spin pi-cog loading-icon"></i>
+            <span>{{ loadingMessage() }}</span>
+        </div>
+        </app-loader>
+    } @else {
+        <p-card styleClass="form-card gaming-card">
+        <ng-template pTemplate="header">
+            <div class="form-header">
+            <h2 class="form-title">
+                <i class="pi pi-info-circle"></i>
+                Informations du code promotionnel
+            </h2>
+            <p class="form-subtitle">
+                Configurez les paramètres du code promo pour contrôler sa distribution
+            </p>
+            </div>
+        </ng-template>
+
+        <form [formGroup]="promoForm" (ngSubmit)="onSubmit()" class="promo-form">
+            <!-- Code promo -->
+            <div class="form-section">
+            <div class="form-group">
+                <label for="code" class="form-label required">
+                <i class="pi pi-ticket"></i>
+                Code promotionnel
+                </label>
+                <div class="input-wrapper">
+                <input 
+                    pInputText 
+                    id="code" 
+                    formControlName="code" 
+                    placeholder="Ex: SUMMER2025"
+                    [class.ng-invalid]="isFieldInvalid('code')"
+                    class="gaming-input code-input"
+                    (input)="updateCodePreview()"
+                    [disabled]="mode() === 'edit'" />
+                
+                @if (codePreview()) {
+                    <div class="code-preview animate-fade-in">
+                    <span class="preview-label">Aperçu :</span>
+                    <p-tag 
+                        [value]="codePreview()" 
+                        severity="info"
+                        styleClass="code-tag">
+                    </p-tag>
+                    </div>
+                }
+                </div>
+                
+                @if (isFieldInvalid('code')) {
+                <small class="p-error animate-fade-in">
+                    @if (promoForm.get('code')?.errors?.['required']) {
+                    Le code est obligatoire
+                    }
+                    @if (promoForm.get('code')?.errors?.['minlength']) {
+                    Le code doit contenir au moins 3 caractères
+                    }
+                    @if (promoForm.get('code')?.errors?.['invalidFormat']) {
+                    Le code ne peut contenir que des lettres, chiffres, tirets et underscores
+                    }
+                </small>
+                }
+            </div>
+
+            <!-- Tickets reward -->
+            <div class="form-group">
+                <label for="tickets_reward" class="form-label required">
+                <i class="pi pi-gift"></i>
+                Nombre de tickets offerts
+                </label>
+                <div class="input-wrapper">
+                <p-inputNumber 
+                    id="tickets_reward" 
+                    formControlName="tickets_reward"
+                    [min]="1"
+                    [max]="1000"
+                    [showButtons]="true"
+                    buttonLayout="horizontal"
+                    [step]="5"
+                    decrementButtonClass="p-button-secondary"
+                    incrementButtonClass="p-button-secondary"
+                    [class.ng-invalid]="isFieldInvalid('tickets_reward')"
+                    class="tickets-input">
+                    <ng-template pTemplate="incrementbuttonicon">
+                    <span class="pi pi-plus"></span>
+                    </ng-template>
+                    <ng-template pTemplate="decrementbuttonicon">
+                    <span class="pi pi-minus"></span>
+                    </ng-template>
+                </p-inputNumber>
+                
+                <div class="tickets-preview">
+                    <i class="pi pi-ticket"></i>
+                    <span class="tickets-value">{{ ticketsValue() }}</span>
+                    <span class="tickets-label">tickets</span>
+                </div>
+                </div>
+                
+                @if (isFieldInvalid('tickets_reward')) {
+                <small class="p-error animate-fade-in">
+                    Le nombre de tickets doit être supérieur à 0
+                </small>
+                }
+            </div>
+            </div>
+
+            <p-divider styleClass="form-divider"></p-divider>
+
+            <!-- Configuration -->
+            <div class="form-section">
+            <h3 class="section-title">
+                <i class="pi pi-cog"></i>
+                Configuration d'utilisation
+            </h3>
+
+            <!-- Usage unique global -->
+            <div class="form-group config-group">
+                <div class="checkbox-wrapper">
+                <p-checkbox 
+                    id="is_single_use_global" 
+                    formControlName="is_single_use_global"
+                    [binary]="true"
+                    styleClass="gaming-checkbox">
+                </p-checkbox>
+                <label for="is_single_use_global" class="checkbox-label">
+                    Usage unique global
+                    <i 
+                    class="pi pi-question-circle help-icon" 
+                    pTooltip="Ce code ne pourra être utilisé qu'une seule fois au total"
+                    tooltipPosition="right">
+                    </i>
+                </label>
+                </div>
+                <p-message 
+                severity="warn" 
+                text="Une fois utilisé, ce code sera définitivement désactivé"
+                *ngIf="promoForm.get('is_single_use_global')?.value"
+                styleClass="config-message">
+                </p-message>
+            </div>
+
+            <!-- Usage unique par utilisateur -->
+            <div class="form-group config-group">
+                <div class="checkbox-wrapper">
+                <p-checkbox 
+                    id="is_single_use_per_user" 
+                    formControlName="is_single_use_per_user"
+                    [binary]="true"
+                    [disabled]="promoForm.get('is_single_use_global')?.value"
+                    styleClass="gaming-checkbox">
+                </p-checkbox>
+                <label for="is_single_use_per_user" class="checkbox-label">
+                    Usage unique par utilisateur
+                    <i 
+                    class="pi pi-question-circle help-icon" 
+                    pTooltip="Chaque utilisateur ne pourra utiliser ce code qu'une seule fois"
+                    tooltipPosition="right">
+                    </i>
+                </label>
+                </div>
+            </div>
+
+            <!-- Limite d'utilisation -->
+            <div class="form-group">
+                <label for="usage_limit" class="form-label">
+                <i class="pi pi-shield"></i>
+                Limite d'utilisation totale
+                <span class="optional-label">(optionnel)</span>
+                </label>
+                <div class="input-wrapper">
+                <p-inputNumber 
+                    id="usage_limit" 
+                    formControlName="usage_limit"
+                    [min]="1"
+                    [max]="10000"
+                    [showButtons]="true"
+                    [disabled]="promoForm.get('is_single_use_global')?.value"
+                    placeholder="Illimité"
+                    class="limit-input">
+                </p-inputNumber>
+                
+                @if (!promoForm.get('usage_limit')?.value && !promoForm.get('is_single_use_global')?.value) {
+                    <p-tag 
+                    value="Utilisation illimitée" 
+                    severity="success"
+                    icon="pi pi-infinity"
+                    styleClass="limit-tag">
+                    </p-tag>
+                }
+                </div>
+                <small class="field-help">
+                Laissez vide pour une utilisation illimitée
+                </small>
+            </div>
+            </div>
+
+            <!-- Résumé de configuration -->
+            @if (configSummary().length > 0) {
+            <div class="config-summary animate-fade-in">
+                <h4 class="summary-title">
+                <i class="pi pi-list"></i>
+                Résumé de la configuration
+                </h4>
+                <ul class="summary-list">
+                @for (item of configSummary(); track item) {
+                    <li class="summary-item">
+                    <i class="pi pi-check-circle"></i>
+                    {{ item }}
+                    </li>
+                }
+                </ul>
+            </div>
+            }
+
+            <!-- Messages d'erreur -->
+            @if (errorMessages().length > 0) {
+            <p-messages
+                [enableService]="false"
+                styleClass="form-messages">
+            </p-messages>
+            }
+        </form>
+
+        <ng-template pTemplate="footer">
+            <div class="form-actions">
+            <button 
+                pButton 
+                pRipple 
+                type="button" 
+                label="Annuler" 
+                icon="pi pi-times"
+                severity="secondary"
+                outlined
+                class="action-button"
+                routerLink="/promos">
+            </button>
+            
+            <button 
+                pButton 
+                pRipple 
+                type="submit" 
+                [label]="submitLabel()" 
+                [icon]="submitIcon()"
+                [loading]="submitting()"
+                [disabled]="!promoForm.valid || submitting()"
+                severity="success"
+                class="action-button gaming-button"
+                (click)="onSubmit()">
+            </button>
+            </div>
+        </ng-template>
+        </p-card>
+    }
+    </div>
+</div>
