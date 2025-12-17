@@ -1,1 +1,473 @@
-<p>promos-list works!</p>
+<div class="page-container animate-fade-in">
+    <div class="page-header">
+    <div class="page-title-section">
+        <h1 class="page-title">
+        <i class="pi pi-ticket neon-glow"></i> 
+        Codes Promotionnels
+        </h1>
+        <p class="page-subtitle">
+        Gestion des codes promos et distribution de tickets
+        </p>
+    </div>
+    <div class="page-actions">
+        <button 
+        pButton 
+        pRipple 
+        icon="pi pi-plus" 
+        label="Nouveau code" 
+        severity="success"
+        class="gaming-button"
+        routerLink="/promos/new">
+        </button>
+        
+        <button 
+        pButton 
+        pRipple 
+        icon="pi pi-download" 
+        label="Exporter" 
+        severity="info"
+        outlined
+        (click)="exportPromos()">
+        </button>
+        
+        <button 
+        pButton 
+        pRipple 
+        icon="pi pi-refresh" 
+        label="Actualiser" 
+        [loading]="loading()"
+        (click)="refreshPromos()"
+        severity="secondary"
+        outlined>
+        </button>
+    </div>
+    </div>
+
+    <!-- Cartes de statistiques -->
+    @if (!loading()) {
+    <div class="stats-section stagger-fade-in">
+        @for (stat of promoStats(); track stat.title) {
+        <app-stats-card 
+            [data]="stat"
+            [clickable]="true"
+            [animated]="true"
+            [gamingStyle]="true"
+            (cardClick)="handleStatClick($event)">
+        </app-stats-card>
+        }
+    </div>
+    }
+    
+    <div class="page-content">
+    @if (loading()) {
+        <app-loader size="large">
+        <div class="loading-content">
+            <i class="pi pi-spin pi-cog loading-icon"></i>
+            <span>Chargement des codes promotionnels...</span>
+        </div>
+        </app-loader>
+    } @else {
+        <div class="controls-bar">
+        <div class="search-container">
+            <span class="p-input-icon-left search-wrapper">
+            <i class="pi pi-search search-icon"></i>
+            <input 
+                pInputText 
+                type="text" 
+                placeholder="Rechercher un code promo..." 
+                (input)="handleGlobalFilter($event)"
+                class="search-input gaming-input" />
+            </span>
+            <div class="search-results">
+            <i class="pi pi-filter-fill"></i>
+            {{ filteredCount() }} code(s) trouvé(s)
+            </div>
+        </div>
+        
+        <div class="view-controls">
+            <div class="view-toggle">
+            <button 
+                pButton 
+                pRipple 
+                icon="pi pi-list" 
+                [severity]="viewMode() === 'table' ? 'primary' : 'secondary'"
+                [outlined]="viewMode() !== 'table'"
+                (click)="setViewMode('table')"
+                pTooltip="Vue tableau"
+                class="view-btn">
+            </button>
+            <button 
+                pButton 
+                pRipple 
+                icon="pi pi-th-large" 
+                [severity]="viewMode() === 'grid' ? 'primary' : 'secondary'"
+                [outlined]="viewMode() !== 'grid'"
+                (click)="setViewMode('grid')"
+                pTooltip="Vue grille"
+                class="view-btn">
+            </button>
+            </div>
+        </div>
+        </div>
+
+        @if (viewMode() === 'table') {
+        <!-- Vue tableau -->
+        <div class="table-container animate-scale-in">
+            <p-table 
+            #dt 
+            [value]="displayedPromos()" 
+            [rows]="itemsPerPage()" 
+            [paginator]="true" 
+            [globalFilterFields]="globalFilterFields"
+            [tableStyle]="{'min-width': '75rem'}"
+            [rowHover]="true" 
+            dataKey="id"
+            [showCurrentPageReport]="true" 
+            currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} codes"
+            [loading]="loading()"
+            styleClass="promos-table gaming-table">
+            
+            <ng-template pTemplate="header">
+                <tr>
+                <th pSortableColumn="code" style="width: 20%">
+                    <div class="header-content">
+                    <i class="pi pi-ticket"></i>
+                    Code <p-sortIcon field="code"></p-sortIcon>
+                    </div>
+                </th>
+                <th pSortableColumn="tickets_reward" style="width: 15%">
+                    <div class="header-content">
+                    <i class="pi pi-gift"></i>
+                    Récompense <p-sortIcon field="tickets_reward"></p-sortIcon>
+                    </div>
+                </th>
+                <th style="width: 20%">
+                    <div class="header-content">
+                    <i class="pi pi-cog"></i>
+                    Configuration
+                    </div>
+                </th>
+                <th style="width: 20%">
+                    <div class="header-content">
+                    <i class="pi pi-chart-bar"></i>
+                    Utilisation
+                    </div>
+                </th>
+                <th pSortableColumn="status" style="width: 15%">
+                    <div class="header-content">
+                    <i class="pi pi-circle"></i>
+                    Statut <p-sortIcon field="status"></p-sortIcon>
+                    </div>
+                </th>
+                <th style="width: 10%">
+                    <div class="header-content">
+                    <i class="pi pi-cog"></i>
+                    Actions
+                    </div>
+                </th>
+                </tr>
+            </ng-template>
+            
+            <ng-template pTemplate="body" let-promo let-rowIndex="rowIndex">
+                <tr class="promo-row animate-fade-in-left" 
+                    [style.animation-delay]="(rowIndex * 0.05) + 's'">
+                <td>
+                    <div class="promo-code-cell">
+                    <div class="code-display">
+                        <span class="promo-code">{{ promo.code }}</span>
+                        <button 
+                        pButton 
+                        pRipple 
+                        icon="pi pi-copy" 
+                        [rounded]="true"
+                        text
+                        size="small"
+                        severity="info"
+                        pTooltip="Copier le code"
+                        (click)="copyPromoCode(promo.code)"
+                        class="copy-btn">
+                        </button>
+                    </div>
+                    <small class="promo-id">ID: {{ promo.id }}</small>
+                    </div>
+                </td>
+                <td>
+                    <div class="reward-cell">
+                    <div class="reward-amount">
+                        <i class="pi pi-ticket reward-icon"></i>
+                        <span class="tickets-amount">{{ promo.tickets_reward }}</span>
+                        <span class="tickets-label">tickets</span>
+                    </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="config-cell">
+                    <div class="config-item">
+                        <i class="pi pi-users config-icon"></i>
+                        <span class="config-label">
+                        {{ promo.is_single_use_per_user ? 'Usage unique/utilisateur' : 'Usage multiple/utilisateur' }}
+                        </span>
+                    </div>
+                    @if (promo.is_single_use_global) {
+                        <div class="config-item">
+                        <i class="pi pi-ban config-icon"></i>
+                        <span class="config-label">Usage unique global</span>
+                        </div>
+                    }
+                    @if (promo.usage_limit) {
+                        <div class="config-item">
+                        <i class="pi pi-shield config-icon"></i>
+                        <span class="config-label">Limite: {{ promo.usage_limit }} utilisations</span>
+                        </div>
+                    }
+                    </div>
+                </td>
+                <td>
+                    <div class="usage-cell">
+                    <div class="usage-stats">
+                        <div class="usage-numbers">
+                        <span class="current-uses">{{ promo.current_uses }}</span>
+                        @if (promo.usage_limit) {
+                            <span class="usage-separator">/</span>
+                            <span class="max-uses">{{ promo.usage_limit }}</span>
+                        } @else {
+                            <span class="unlimited">∞</span>
+                        }
+                        </div>
+                        @if (promo.usage_limit) {
+                        <p-progressBar 
+                            [value]="promo.usage_percentage"
+                            [showValue]="false"
+                            styleClass="usage-progress">
+                        </p-progressBar>
+                        }
+                    </div>
+                    @if (promo.remaining_uses > 0 && promo.usage_limit) {
+                        <small class="remaining-uses">{{ promo.remaining_uses }} restantes</small>
+                    }
+                    </div>
+                </td>
+                <td>
+                    <div class="status-cell">
+                    <p-tag 
+                        [value]="getStatusLabel(promo.status)" 
+                        [severity]="getStatusSeverity(promo.status)"
+                        [icon]="getStatusIcon(promo.status)"
+                        styleClass="status-tag animate-pulse">
+                    </p-tag>
+                    </div>
+                </td>
+                <td>
+                    <div class="action-buttons">
+                    <button 
+                        pButton 
+                        pRipple 
+                        icon="pi pi-eye" 
+                        [rounded]="true"
+                        text
+                        severity="info"
+                        size="small"
+                        pTooltip="Voir les détails" 
+                        tooltipPosition="top"
+                        class="action-button hover-lift"
+                        [routerLink]="['/promos/detail', promo.id]">
+                    </button>
+                    
+                    <button 
+                        pButton 
+                        pRipple 
+                        icon="pi pi-pencil" 
+                        [rounded]="true"
+                        text
+                        severity="success"
+                        size="small"
+                        pTooltip="Éditer" 
+                        tooltipPosition="top"
+                        class="action-button hover-glow"
+                        [routerLink]="['/promos/edit', promo.id]">
+                    </button>
+                    
+                    <button 
+                        pButton 
+                        pRipple 
+                        icon="pi pi-trash" 
+                        [rounded]="true"
+                        text
+                        severity="danger"
+                        size="small"
+                        pTooltip="Supprimer" 
+                        tooltipPosition="top"
+                        class="action-button hover-scale"
+                        (click)="confirmDelete(promo)">
+                    </button>
+                    </div>
+                </td>
+                </tr>
+            </ng-template>
+            
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                <td colspan="6" class="empty-message">
+                    <div class="empty-state animate-floating">
+                    <i class="pi pi-ticket empty-icon neon-glow"></i>
+                    <h3>Aucun code promo trouvé</h3>
+                    <p>Aucun code promotionnel ne correspond à vos critères.</p>
+                    <button 
+                        pButton 
+                        pRipple 
+                        label="Créer un code" 
+                        icon="pi pi-plus"
+                        class="gaming-button"
+                        routerLink="/promos/new">
+                    </button>
+                    </div>
+                </td>
+                </tr>
+            </ng-template>
+            </p-table>
+        </div>
+        } @else {
+        <!-- Vue grille -->
+        <div class="promos-grid animate-scale-in">
+            @for (promo of displayedPromos(); track promo.id; let i = $index) {
+            <div class="promo-card-container stagger-fade-in" 
+                    [style.animation-delay]="(i * 0.1) + 's'">
+                <p-card styleClass="promo-card gaming-card hover-lift">
+                <ng-template pTemplate="header">
+                    <div class="promo-card-header" [class]="'status-' + promo.status">
+                    <div class="promo-card-icon">
+                        <i class="pi pi-ticket"></i>
+                        @if (promo.current_uses > 0) {
+                        <p-badge 
+                            [value]="promo.current_uses.toString()" 
+                            severity="info"
+                            styleClass="uses-badge">
+                        </p-badge>
+                        }
+                    </div>
+                    <div class="card-title-section">
+                        <h3 class="promo-card-title">{{ promo.code }}</h3>
+                        <p-tag 
+                        [value]="getStatusLabel(promo.status)" 
+                        [severity]="getStatusSeverity(promo.status)"
+                        [icon]="getStatusIcon(promo.status)"
+                        styleClass="status-tag-card">
+                        </p-tag>
+                    </div>
+                    </div>
+                </ng-template>
+                
+                <div class="promo-card-content">
+                    <div class="reward-section">
+                    <div class="reward-display">
+                        <i class="pi pi-gift reward-icon-large"></i>
+                        <span class="reward-amount-large">{{ promo.tickets_reward }}</span>
+                        <span class="reward-label">tickets offerts</span>
+                    </div>
+                    </div>
+                    
+                    <div class="usage-section">
+                    <h4 class="section-title">
+                        <i class="pi pi-chart-bar"></i>
+                        Utilisation
+                    </h4>
+                    <div class="usage-display">
+                        <div class="usage-stats-grid">
+                        <span class="usage-current">{{ promo.current_uses }}</span>
+                        @if (promo.usage_limit) {
+                            <span class="usage-max">/ {{ promo.usage_limit }}</span>
+                        } @else {
+                            <span class="usage-unlimited">/ ∞</span>
+                        }
+                        </div>
+                        @if (promo.usage_limit) {
+                        <p-progressBar 
+                            [value]="promo.usage_percentage"
+                            [showValue]="false"
+                            styleClass="card-usage-progress">
+                        </p-progressBar>
+                        }
+                    </div>
+                    </div>
+                    
+                    <div class="config-section">
+                    <h4 class="section-title">
+                        <i class="pi pi-cog"></i>
+                        Configuration
+                    </h4>
+                    <div class="config-tags">
+                        @if (promo.is_single_use_per_user) {
+                        <span class="config-tag user-limit">
+                            <i class="pi pi-user"></i>
+                            Usage unique/utilisateur
+                        </span>
+                        }
+                        @if (promo.is_single_use_global) {
+                        <span class="config-tag global-limit">
+                            <i class="pi pi-ban"></i>
+                            Usage unique global
+                        </span>
+                        }
+                        @if (promo.usage_limit) {
+                        <span class="config-tag usage-limit">
+                            <i class="pi pi-shield"></i>
+                            Limite: {{ promo.usage_limit }}
+                        </span>
+                        }
+                    </div>
+                    </div>
+                </div>
+                
+                <ng-template pTemplate="footer">
+                    <div class="promo-card-actions">
+                    <button 
+                        pButton 
+                        pRipple 
+                        label="Détails" 
+                        icon="pi pi-eye"
+                        severity="info"
+                        outlined
+                        size="small"
+                        class="card-action-btn"
+                        [routerLink]="['/promos/detail', promo.id]">
+                    </button>
+                    
+                    <button 
+                        pButton 
+                        pRipple 
+                        label="Copier" 
+                        icon="pi pi-copy"
+                        severity="secondary"
+                        outlined
+                        size="small"
+                        class="card-action-btn"
+                        (click)="copyPromoCode(promo.code)">
+                    </button>
+                    
+                    <button 
+                        pButton 
+                        pRipple 
+                        icon="pi pi-pencil"
+                        severity="success"
+                        outlined
+                        size="small"
+                        class="card-action-btn"
+                        pTooltip="Éditer"
+                        [routerLink]="['/promos/edit', promo.id]">
+                    </button>
+                    </div>
+                </ng-template>
+                </p-card>
+            </div>
+            }
+        </div>
+        }
+    }
+    </div>
+</div>
+
+<p-confirmDialog 
+    header="Confirmation de suppression"
+    icon="pi pi-exclamation-triangle"
+    styleClass="gaming-confirm-dialog">
+</p-confirmDialog>
