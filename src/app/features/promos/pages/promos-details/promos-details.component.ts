@@ -236,27 +236,37 @@ class PromoDetailsStatsCalculator {
                 </div>
                 <div class="config-content">
                   <h4>Usage par utilisateur</h4>
-                  <p>{{ promo()!.is_single_use_per_user ? 'Usage unique' : 'Usage multiple' }}</p>
-                  <small class="config-description">
-                    {{ promo()!.is_single_use_per_user 
-                      ? 'Chaque utilisateur ne peut utiliser ce code qu\'une seule fois'
-                      : 'Les utilisateurs peuvent utiliser ce code plusieurs fois' }}
-                  </small>
+                  @if (promo()!.is_single_use_per_user) {
+                    <p>Usage unique</p>
+                    <small class="config-description">
+                      Chaque utilisateur ne peut utiliser ce code qu'une seule fois
+                    </small>
+                  } @else {
+                    <p>Usage multiple</p>
+                    <small class="config-description">
+                      Les utilisateurs peuvent utiliser ce code plusieurs fois
+                    </small>
+                  }
                 </div>
               </div>
-              
+
               <div class="config-item">
                 <div class="config-icon-wrapper">
                   <i class="pi pi-globe config-icon"></i>
                 </div>
                 <div class="config-content">
                   <h4>Usage global</h4>
-                  <p>{{ promo()!.is_single_use_global ? 'Usage unique' : 'Usage multiple' }}</p>
-                  <small class="config-description">
-                    {{ promo()!.is_single_use_global 
-                      ? 'Ce code ne peut être utilisé qu\'une seule fois au total'
-                      : 'Ce code peut être utilisé plusieurs fois' }}
-                  </small>
+                  @if (promo()!.is_single_use_global) {
+                    <p>Usage unique</p>
+                    <small class="config-description">
+                      Ce code ne peut être utilisé qu'une seule fois au total
+                    </small>
+                  } @else {
+                    <p>Usage multiple</p>
+                    <small class="config-description">
+                      Ce code peut être utilisé plusieurs fois
+                    </small>
+                  }
                 </div>
               </div>
               
@@ -268,9 +278,7 @@ class PromoDetailsStatsCalculator {
                   <h4>Limite d'utilisation</h4>
                   <p>{{ promo()!.usage_limit || 'Illimitée' }}</p>
                   <small class="config-description">
-                    <small class="config-description">
-                      {{ usageLimitDescription() }}
-                    </small>
+                    {{ usageLimitDescription() }}
                   </small>
                 </div>
               </div>
