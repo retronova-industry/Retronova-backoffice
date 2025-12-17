@@ -115,6 +115,7 @@ export interface StatsData {
       box-shadow: var(--shadow-md);
       transition: all var(--transition-normal);
       min-height: 140px;
+      height: 100%;
       
       &:hover {
         transform: translateY(-4px) scale(1.02);
