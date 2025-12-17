@@ -157,7 +157,7 @@ import { LoaderComponent } from '../../../../shared/components/loader/loader.com
                   <th pSortableColumn="max_players" style="width: 12%">
                     Max <p-sortIcon field="max_players"></p-sortIcon>
                   </th>
-                  <!-- <th style="width: 11%">Actions</th> -->
+                  <th style="width: 11%">Actions</th>
                 </tr>
               </ng-template>
               
@@ -190,7 +190,7 @@ import { LoaderComponent } from '../../../../shared/components/loader/loader.com
                       icon="pi pi-users">
                     </p-tag>
                   </td>
-                  <!-- <td>
+                  <td>
                     <div class="action-buttons">
                       <p-button 
                         icon="pi pi-pencil" 
@@ -214,7 +214,7 @@ import { LoaderComponent } from '../../../../shared/components/loader/loader.com
                         (click)="confirmDelete(game)">
                       </p-button>
                     </div>
-                  </td> -->
+                  </td>
                 </tr>
               </ng-template>
               
