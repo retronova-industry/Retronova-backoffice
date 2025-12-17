@@ -1,6 +1,6 @@
 // src/app/features/promos/pages/promos-list/promos-list.component.ts
 
-import { Component, OnInit, inject, signal, computed, viewChild, effect } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, viewChild, effect, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Table, TableModule } from 'primeng/table';
@@ -135,7 +135,8 @@ class PromoStatsCalculator {
   ],
   providers: [ConfirmationService],
   templateUrl: './promos-list.component.html',
-  styleUrls: ['./promos-list.component.scss']
+  styleUrls: ['./promos-list.component.scss'],
+  encapsulation: ViewEncapsulation.None
 })
 export class PromosListComponent implements OnInit {
   // Services injectés
