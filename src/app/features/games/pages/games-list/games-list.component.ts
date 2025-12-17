@@ -131,7 +131,7 @@ import { LoaderComponent } from '../../../../shared/components/loader/loader.com
             <!-- Vue tableau -->
             <p-table 
               #dt 
-              [value]="games()" 
+              [value]="filteredGames()" 
               [rows]="10" 
               [paginator]="true" 
               [globalFilterFields]="['nom', 'description']"
@@ -238,7 +238,7 @@ import { LoaderComponent } from '../../../../shared/components/loader/loader.com
           } @else {
             <!-- Vue grille -->
             <div class="games-grid">
-              @for (game of games(); track game.id) {
+              @for (game of filteredGames(); track game.id) {
                 <p-card styleClass="game-card">
                   <ng-template pTemplate="header">
                     <div class="game-card-header">
@@ -618,6 +618,7 @@ export class GamesListComponent implements OnInit {
   readonly games = this.gamesService.games;
   readonly loading = signal(false);
   readonly viewMode = signal<'table' | 'grid'>('table');
+  readonly searchQuery = signal('');
   
   // Computed values pour les statistiques
   readonly totalGames = computed(() => this.games().length);
@@ -627,6 +628,15 @@ export class GamesListComponent implements OnInit {
   readonly multiplayerGames = computed(() => 
     this.games().filter(game => game.max_players > 1).length
   );
+  readonly filteredGames = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    if (!q) return this.games();
+    return this.games().filter(g => {
+      const name = g.nom?.toString()?.toLowerCase() ?? '';
+      const desc = g.description?.toString()?.toLowerCase() ?? '';
+      return name.includes(q) || desc.includes(q);
+    });
+  });
 
   ngOnInit(): void {
     this.loadGames();
@@ -674,7 +684,11 @@ export class GamesListComponent implements OnInit {
    */
   applyFilterGlobal(event: Event): void {
     const target = event.target as HTMLInputElement;
-    this.table()?.filterGlobal(target.value, 'contains');
+    const value = target.value ?? '';
+    // Keep the table's builtin filter for table view (so paginator + sort behave normally)
+    // and keep an independent search signal so grid view can rely on it as well.
+    this.searchQuery.set(value);
+    this.table()?.filterGlobal?.(value, 'contains');
   }
 
   /**
