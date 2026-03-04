@@ -20,6 +20,7 @@ import { LoaderComponent } from '../../../../shared/components/loader/loader.com
 import { forkJoin } from 'rxjs';
 import { DialogService } from 'primeng/dynamicdialog';
 import { DynamicDialogModule } from 'primeng/dynamicdialog';
+import { PartiesDetailsComponent } from '../parties-details/parties-details.component';
 
 
 interface PartyDisplay extends Party {
@@ -359,13 +360,12 @@ export class PartiesListComponent implements OnInit {
    * Affiche les détails d'une partie
    */
   viewPartyDetails(party: PartyDisplay): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Détails de la partie',
-      detail: `Partie ${(party.id as string).substring(0, 8)} - ${party.game_name || 'Jeu inconnu'}`
-
+    this.dialogService.open(PartiesDetailsComponent, {
+      header: `Détails de la partie ${this.shortId(party.id as unknown as string)}`,
+      width: '600px',
+      modal: true,
+      dismissableMask: true,
+      data: { party }
     });
-
-    // TODO: Ouvrir un dialog avec les détails complets
   }
 }
