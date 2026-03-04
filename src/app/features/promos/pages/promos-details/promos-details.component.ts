@@ -148,6 +148,8 @@ export class PromosDetailsComponent implements OnInit {
     const p = this.promo();
     if (!p) return '';
     
+    if (!p.is_active) return 'Inactif';
+    
     const status = PromoDetailsStatsCalculator.getPromoStatus(p);
     const labels: Record<string, string> = {
       active: 'Actif',
@@ -160,6 +162,8 @@ export class PromosDetailsComponent implements OnInit {
   protected readonly statusSeverity = computed((): 'success' | 'warning' | 'danger' => {
     const p = this.promo();
     if (!p) return 'danger';
+    
+    if (!p.is_active) return 'danger';
     
     const status = PromoDetailsStatsCalculator.getPromoStatus(p);
     const severities: Record<string, 'success' | 'warning' | 'danger'> = {
@@ -174,6 +178,8 @@ export class PromosDetailsComponent implements OnInit {
     const p = this.promo();
     if (!p) return 'pi-times-circle';
     
+    if (!p.is_active) return 'pi-ban';
+    
     const status = PromoDetailsStatsCalculator.getPromoStatus(p);
     const icons: Record<string, string> = {
       active: 'pi-check-circle',
@@ -185,7 +191,12 @@ export class PromosDetailsComponent implements OnInit {
   
   protected readonly canDeactivate = computed(() => {
     const p = this.promo();
-    return p && PromoDetailsStatsCalculator.getPromoStatus(p) !== 'exhausted';
+    return p && p.is_active && PromoDetailsStatsCalculator.getPromoStatus(p) !== 'exhausted';
+  });
+
+  protected readonly canActivate = computed(() => {
+    const p = this.promo();
+    return p && !p.is_active;
   });
   
   protected readonly usageEvents = computed((): PromoUsageEvent[] => {
@@ -323,15 +334,50 @@ export class PromosDetailsComponent implements OnInit {
   }
   
   /**
-   * Désactive le code promo
+   * Active ou désactive le code promo
+   */
+  protected togglePromoActive(): void {
+    const id = this.promoId();
+    const p = this.promo();
+    if (!id || !p) return;
+
+    const isCurrentlyActive = p.is_active;
+
+    this.promosService.togglePromoActive(id).subscribe({
+      next: () => {
+        // Recharger le promo depuis l'API pour avoir les données à jour
+        this.promosService.getPromoById(id).subscribe({
+          next: (fresh) => this.promo.set(fresh),
+          error: () => {
+            // En cas d'échec du rechargement, mettre à jour is_active manuellement
+            this.promo.set({ ...p, is_active: !isCurrentlyActive });
+          }
+        });
+        this.messageService.add({
+          severity: isCurrentlyActive ? 'warn' : 'success',
+          summary: isCurrentlyActive ? 'Code désactivé' : 'Code activé',
+          detail: isCurrentlyActive
+            ? `Le code "${p.code}" a été désactivé`
+            : `Le code "${p.code}" a été activé`,
+          life: 3000
+        });
+      },
+      error: (error) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur',
+          detail: error.message || 'Impossible de modifier le statut du code promo',
+          life: 5000
+        });
+      }
+    });
+  }
+
+  /**
+   * Désactive le code promo (kept for legacy calls)
    */
   protected deactivatePromoCode(): void {
-    // Implémenter la désactivation
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Fonctionnalité à venir',
-      detail: 'La désactivation sera disponible prochainement'
-    });
+    this.togglePromoActive();
   }
   
   /**

@@ -281,6 +281,19 @@
                 (click)="sharePromoCode()">
             </button>
             
+            @if (canActivate()) {
+                <button 
+                pButton 
+                pRipple 
+                icon="pi pi-check-circle" 
+                label="Activer" 
+                severity="success"
+                outlined
+                class="action-btn"
+                (click)="togglePromoActive()">
+                </button>
+            }
+            
             @if (canDeactivate()) {
                 <button 
                 pButton 
@@ -290,7 +303,7 @@
                 severity="danger"
                 outlined
                 class="action-btn"
-                (click)="deactivatePromoCode()">
+                (click)="togglePromoActive()">
                 </button>
             }
             </div>

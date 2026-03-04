@@ -6,6 +6,7 @@ export interface PromoCode {
   is_single_use_per_user: boolean;
   usage_limit?: number;
   current_uses: number;
+  is_active: boolean;
   totalUses?: number;
   usedCount?: number;
 }
