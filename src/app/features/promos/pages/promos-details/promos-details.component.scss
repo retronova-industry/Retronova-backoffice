@@ -33,6 +33,8 @@
 
   i {
     color: var(--primary-color);
+    font-size: var(--text-2xl);
+    line-height: 1;
   }
 }
 
@@ -62,8 +64,19 @@
 
 /* === PROMO HEADER === */
 .promo-header-card {
-  padding: var(--space-6);
   border-radius: var(--radius-xl);
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gaming-gradient-secondary);
+  }
 }
 
 .promo-header-content {
@@ -160,30 +173,89 @@
 /* === STATS SECTION === */
 .stats-section {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--space-5);
-  align-items: stretch;
-  margin-top: var(--space-8);
-  margin-bottom: var(--space-8);
-
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-6);
 }
 
-.stats-section app-stats-card {
-  height: 100%;
-  display: block;
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
+  
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-xl);
+  }
+  
+  &.primary .stat-icon-wrap { background: var(--primary-500, #3b82f6); }
+  &.success .stat-icon-wrap { background: #10b981; }
+  &.warning .stat-icon-wrap { background: var(--neon-orange, #f97316); }
+  &.info    .stat-icon-wrap { background: #06b6d4; }
+  &.danger  .stat-icon-wrap { background: #ef4444; }
+  
+  .stat-icon-wrap {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    i {
+      font-size: 1.4rem;
+      color: #fff;
+    }
+  }
+  
+  .stat-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  
+  .stat-label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-color-secondary);
+  }
+  
+  .stat-value {
+    font-size: var(--text-2xl);
+    font-weight: 800;
+    color: var(--text-color);
+    line-height: 1.1;
+  }
+  
+  .stat-sub {
+    font-size: var(--text-xs);
+    color: var(--text-color-muted);
+  }
 }
 
 
 /* === CARD STYLING === */
 .config-card {
-  margin-top: var(--space-8);
+  margin-top: var(--space-6);
 }
 
 .card-header {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: 0.75rem 1rem;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--surface-border);
 }
 
 .card-title {
