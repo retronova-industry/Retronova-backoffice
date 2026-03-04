@@ -12,7 +12,8 @@ import { ProgressBarModule } from 'primeng/progressbar';
 import { TimelineModule } from 'primeng/timeline';
 import { ChipModule } from 'primeng/chip';
 import { RippleModule } from 'primeng/ripple';
-import { MessageService } from 'primeng/api';
+import { MessageService, MenuItem } from 'primeng/api';
+import { MenuModule } from 'primeng/menu';
 import { PromosService } from '../../../../core/services/promos.service';
 import { PromoCode, PromoHistory } from '../../../../core/models/promo.model';
 import { LoaderComponent } from '../../../../shared/components/loader/loader.component';
@@ -106,7 +107,8 @@ class PromoDetailsStatsCalculator {
     ChipModule,
     RippleModule,
     LoaderComponent,
-    StatsCardComponent
+    StatsCardComponent,
+    MenuModule
   ],
   templateUrl: './promos-details.component.html',
   styleUrls: ['./promos-details.component.scss']
@@ -316,21 +318,53 @@ export class PromosDetailsComponent implements OnInit {
   }
   
   /**
-   * Partage le code promo
+   * Items du menu de partage
    */
-  protected sharePromoCode(): void {
+  protected readonly shareMenuItems: MenuItem[] = [
+    {
+      label: 'Partager via apps',
+      icon: 'pi pi-share-alt',
+      command: () => this.shareViaNative()
+    },
+    {
+      label: 'Envoyer par email',
+      icon: 'pi pi-envelope',
+      command: () => this.shareViaEmail()
+    }
+  ];
+
+  /**
+   * Partage natif (Web Share API) — WhatsApp, Teams, SMS...
+   */
+  protected shareViaNative(): void {
     const code = this.promo()?.code;
+    const tickets = this.promo()?.tickets_reward;
     if (!code) return;
-    
+
     if (navigator.share) {
       navigator.share({
         title: 'Code promo RetroNova',
-        text: `Utilisez le code ${code} pour obtenir ${this.promo()?.tickets_reward} tickets gratuits !`,
+        text: `Utilisez le code ${code} pour obtenir ${tickets} tickets gratuits sur RetroNova !`,
         url: window.location.href
-      });
+      }).catch(() => this.copyPromoCode());
     } else {
       this.copyPromoCode();
     }
+  }
+
+  /**
+   * Partage par email via mailto (corps maîtrisé)
+   */
+  protected shareViaEmail(): void {
+    const code = this.promo()?.code;
+    const tickets = this.promo()?.tickets_reward;
+    if (!code) return;
+
+    const subject = encodeURIComponent('Code promo RetroNova');
+    const body = encodeURIComponent(
+      `Utilisez le code ${code} pour obtenir ${tickets} tickets gratuits sur RetroNova !`
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
   }
   
   /**

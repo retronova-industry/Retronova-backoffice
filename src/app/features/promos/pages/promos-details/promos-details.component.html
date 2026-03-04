@@ -270,6 +270,7 @@
                 (click)="copyPromoCode()">
             </button>
             
+            <p-menu #shareMenu [model]="shareMenuItems" [popup]="true" appendTo="body"></p-menu>
             <button 
                 pButton 
                 pRipple 
@@ -278,7 +279,7 @@
                 severity="secondary"
                 outlined
                 class="action-btn"
-                (click)="sharePromoCode()">
+                (click)="shareMenu.toggle($event)">
             </button>
             
             @if (canActivate()) {
