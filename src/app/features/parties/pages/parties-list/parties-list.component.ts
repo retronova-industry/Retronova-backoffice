@@ -21,6 +21,7 @@ import { forkJoin } from 'rxjs';
 import { DialogService } from 'primeng/dynamicdialog';
 import { DynamicDialogModule } from 'primeng/dynamicdialog';
 
+
 interface PartyDisplay extends Party {
   player1_name?: string;
   player2_name?: string;
@@ -49,7 +50,7 @@ interface PartyDisplay extends Party {
       <div class="page-header">
         <h1>Parties</h1>
       </div>
-      
+
       <div class="page-content">
         <p-tabView>
           <!-- Parties en cours -->
@@ -58,11 +59,11 @@ interface PartyDisplay extends Party {
               <div class="search-container">
                 <span class="p-input-icon-left">
                   <i class="pi pi-search"></i>
-                  <input pInputText type="text" placeholder="Rechercher..." 
+                  <input pInputText type="text" placeholder="Rechercher..."
                         (input)="applyFilterGlobal($event, 'active')" />
                 </span>
               </div>
-              
+
               <p-table #dtActive [value]="activeParties" [loading]="loading"
                       [rows]="10" [paginator]="true" [rowHover]="true"
                       [tableStyle]="{'min-width': '70rem'}"
@@ -93,7 +94,7 @@ interface PartyDisplay extends Party {
                     </td>
                     <td>{{ formatDate(party.created_at) }}</td>
                     <td>
-                      <button pButton pRipple type="button" icon="pi pi-eye" 
+                      <button pButton pRipple type="button" icon="pi pi-eye"
                               class="p-button-rounded p-button-text p-button-info"
                               pTooltip="Détails" tooltipPosition="top"
                               (click)="viewPartyDetails(party)"></button>
@@ -111,18 +112,18 @@ interface PartyDisplay extends Party {
               </p-table>
             </ng-template>
           </p-tabPanel>
-          
+
           <!-- Parties terminées -->
           <p-tabPanel header="Terminées" leftIcon="pi pi-check-circle">
             <ng-template pTemplate="content">
               <div class="search-container">
                 <span class="p-input-icon-left">
                   <i class="pi pi-search"></i>
-                  <input pInputText type="text" placeholder="Rechercher..." 
+                  <input pInputText type="text" placeholder="Rechercher..."
                         (input)="applyFilterGlobal($event, 'completed')" />
                 </span>
               </div>
-              
+
               <p-table #dtCompleted [value]="completedParties" [loading]="loading"
                       [rows]="10" [paginator]="true" [rowHover]="true"
                       [tableStyle]="{'min-width': '80rem'}"
@@ -170,7 +171,7 @@ interface PartyDisplay extends Party {
               </p-table>
             </ng-template>
           </p-tabPanel>
-          
+
           <!-- Toutes les parties -->
           <p-tabPanel header="Toutes" leftIcon="pi pi-list">
             <ng-template pTemplate="content">
@@ -188,23 +189,27 @@ interface PartyDisplay extends Party {
     .search-container {
       margin-bottom: 1.5rem;
     }
-    
+
+    :host ::ng-deep .search-container .pi-search {
+      margin-right: 0.5rem;
+    }
+
     .text-green-500 { color: var(--green-500); }
     .text-red-500 { color: var(--red-500); }
     .text-yellow-500 { color: var(--yellow-500); }
-    
+
     .font-bold { font-weight: 600; }
     .text-center { text-align: center; }
-    .text-muted { 
+    .text-muted {
       color: var(--text-color-secondary);
       font-style: italic;
     }
-    
+
     :host ::ng-deep {
       .p-tabview-panels {
         padding-top: 1.5rem;
       }
-      
+
       .p-tag {
         font-weight: 600;
       }
@@ -214,17 +219,17 @@ interface PartyDisplay extends Party {
 export class PartiesListComponent implements OnInit {
   @ViewChild('dtActive') dtActive?: Table;
   @ViewChild('dtCompleted') dtCompleted?: Table;
-  
+
   loading = true;
   allParties: PartyDisplay[] = [];
   activeParties: PartyDisplay[] = [];
   completedParties: PartyDisplay[] = [];
-  
+
   // Cache pour les entités
   private users: User[] = [];
   private games: Game[] = [];
   private machines: Arcade[] = [];
-  
+
   constructor(
     private partiesService: PartiesService,
     private usersService: UsersService,
@@ -233,17 +238,17 @@ export class PartiesListComponent implements OnInit {
     private messageService: MessageService,
     private dialogService: DialogService
   ) {}
-  
+
   ngOnInit(): void {
     this.loadData();
   }
-  
+
   /**
    * Charge toutes les données nécessaires
    */
   private loadData(): void {
     this.loading = true;
-    
+
     forkJoin({
       parties: this.partiesService.getAllParties(),
       users: this.usersService.getAllUsers(),
@@ -254,12 +259,12 @@ export class PartiesListComponent implements OnInit {
         this.users = data.users;
         this.games = data.games;
         this.machines = data.machines;
-        
+
         // Enrichir les parties avec les noms
         this.allParties = this.enrichParties(data.parties);
         this.activeParties = this.allParties.filter(p => !p.done && !p.cancel);
         this.completedParties = this.allParties.filter(p => p.done);
-        
+
         this.loading = false;
       },
       error: (error) => {
@@ -273,7 +278,7 @@ export class PartiesListComponent implements OnInit {
       }
     });
   }
-  
+
   /**
    * Enrichit les parties avec les noms des entités liées
    */
@@ -283,13 +288,13 @@ export class PartiesListComponent implements OnInit {
       const player2 = this.users.find(u => u.id === party.player2_id);
       const game = this.games.find(g => g.id === party.game_id);
       const machine = this.machines.find(m => m.id === party.machine_id);
-      
+
       const getPlayerName = (player: User | undefined): string | undefined => {
         if (!player) return undefined;
         const fullName = `${player.nom || ''} ${player.prenom || ''}`.trim();
         return fullName || player.firebase_uid;
       };
-      
+
       return {
         ...party,
         player1_name: getPlayerName(player1),
@@ -309,20 +314,20 @@ export class PartiesListComponent implements OnInit {
       return 'N/A';
     }
   }
-  
+
   /**
    * Applique un filtre global sur la table
    */
   applyFilterGlobal(event: Event, tableType: 'active' | 'completed'): void {
     const value = (event.target as HTMLInputElement).value;
-    
+
     if (tableType === 'active' && this.dtActive) {
       this.dtActive.filterGlobal(value, 'contains');
     } else if (tableType === 'completed' && this.dtCompleted) {
       this.dtCompleted.filterGlobal(value, 'contains');
     }
   }
-  
+
   /**
    * Formate une date
    */
@@ -337,19 +342,19 @@ export class PartiesListComponent implements OnInit {
       minute: '2-digit'
     });
   }
-  
+
   /**
    * Détermine si un joueur est le gagnant
    */
   isWinner(party: Party, player: 1 | 2): boolean {
     const p1Score = party.p1_score || 0;
     const p2Score = party.p2_score || 0;
-    
+
     if (p1Score === p2Score) return false;
-    
+
     return player === 1 ? p1Score > p2Score : p2Score > p1Score;
   }
-  
+
   /**
    * Affiche les détails d'une partie
    */
@@ -360,7 +365,7 @@ export class PartiesListComponent implements OnInit {
       detail: `Partie ${(party.id as string).substring(0, 8)} - ${party.game_name || 'Jeu inconnu'}`
 
     });
-    
+
     // TODO: Ouvrir un dialog avec les détails complets
   }
 }
