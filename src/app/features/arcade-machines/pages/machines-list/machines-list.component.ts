@@ -93,7 +93,7 @@ class MachineStatsCalculator {
         trend: { value: 5, direction: 'up', period: 'ce mois' }
       },
       {
-        title: 'Bornes actives', 
+        title: 'Bornes actives',
         value: active,
         icon: 'pi-check-circle',
         color: 'success',
@@ -140,7 +140,7 @@ class MachineStatsCalculator {
       <div class="page-header">
         <div class="page-title-section">
           <h1 class="page-title">
-            <i class="pi pi-desktop neon-glow"></i> 
+            <i class="pi pi-desktop neon-glow"></i>
             Bornes d'Arcade
           </h1>
           <p class="page-subtitle">
@@ -148,21 +148,21 @@ class MachineStatsCalculator {
           </p>
         </div>
         <div class="page-actions">
-          <button 
-            pButton 
-            pRipple 
-            icon="pi pi-plus" 
-            label="Nouvelle borne" 
+          <button
+            pButton
+            pRipple
+            icon="pi pi-plus"
+            label="Nouvelle borne"
             severity="success"
             class="gaming-button"
             routerLink="/arcade-machines/new">
           </button>
-          
-          <button 
-            pButton 
-            pRipple 
-            icon="pi pi-refresh" 
-            label="Actualiser" 
+
+          <button
+            pButton
+            pRipple
+            icon="pi pi-refresh"
+            label="Actualiser"
             [loading]="loading()"
             (click)="refreshMachines()"
             severity="secondary"
@@ -175,7 +175,7 @@ class MachineStatsCalculator {
       <!-- @if (!loading()) {
         <div class="stats-section stagger-fade-in">
           @for (stat of machineStats(); track stat.title) {
-            <app-stats-card 
+            <app-stats-card
               [data]="stat"
               [clickable]="true"
               [animated]="true"
@@ -185,7 +185,7 @@ class MachineStatsCalculator {
           }
         </div>
       } -->
-      
+
       <div class="page-content">
         @if (loading()) {
           <app-loader size="large">
@@ -199,10 +199,10 @@ class MachineStatsCalculator {
             <div class="search-container">
               <span class="p-input-icon-left search-wrapper">
                 <i class="pi pi-search search-icon"></i>
-                <input 
-                  pInputText 
-                  type="text" 
-                  placeholder="Rechercher une borne..." 
+                <input
+                  pInputText
+                  type="text"
+                  placeholder="Rechercher une borne..."
                   (input)="handleGlobalFilter($event)"
                   class="search-input gaming-input" />
               </span>
@@ -211,23 +211,23 @@ class MachineStatsCalculator {
                 {{ filteredCount() }} machine(s) trouvée(s)
               </div>
             </div>
-            
+
             <div class="view-controls">
               <div class="view-toggle">
-                <button 
-                  pButton 
-                  pRipple 
-                  icon="pi pi-list" 
+                <button
+                  pButton
+                  pRipple
+                  icon="pi pi-list"
                   [severity]="viewMode() === 'table' ? 'primary' : 'secondary'"
                   [outlined]="viewMode() !== 'table'"
                   (click)="setViewMode('table')"
                   pTooltip="Vue tableau"
                   class="view-btn">
                 </button>
-                <button 
-                  pButton 
-                  pRipple 
-                  icon="pi pi-th-large" 
+                <button
+                  pButton
+                  pRipple
+                  icon="pi pi-th-large"
                   [severity]="viewMode() === 'grid' ? 'primary' : 'secondary'"
                   [outlined]="viewMode() !== 'grid'"
                   (click)="setViewMode('grid')"
@@ -241,20 +241,20 @@ class MachineStatsCalculator {
           @if (viewMode() === 'table') {
             <!-- Vue tableau améliorée -->
             <div class="table-container animate-scale-in">
-              <p-table 
-                #dt 
-                [value]="displayedMachines()" 
-                [rows]="itemsPerPage()" 
-                [paginator]="true" 
+              <p-table
+                #dt
+                [value]="displayedMachines()"
+                [rows]="itemsPerPage()"
+                [paginator]="true"
                 [globalFilterFields]="globalFilterFields"
                 [tableStyle]="{'min-width': '75rem'}"
-                [rowHover]="true" 
+                [rowHover]="true"
                 dataKey="id"
-                [showCurrentPageReport]="true" 
+                [showCurrentPageReport]="true"
                 currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} bornes"
                 [loading]="loading()"
                 styleClass="machines-table gaming-table">
-                
+
                 <ng-template pTemplate="header">
                   <tr>
                     <th pSortableColumn="nom" style="width: 25%">
@@ -289,9 +289,9 @@ class MachineStatsCalculator {
                     </th>
                   </tr>
                 </ng-template>
-                
+
                 <ng-template pTemplate="body" let-machine let-rowIndex="rowIndex">
-                  <tr class="machine-row animate-fade-in-left" 
+                  <tr class="machine-row animate-fade-in-left"
                       [style.animation-delay]="(rowIndex * 0.05) + 's'">
                     <td>
                       <div class="machine-name-cell">
@@ -359,10 +359,10 @@ class MachineStatsCalculator {
                           <div class="no-games-configured">
                             <i class="pi pi-exclamation-triangle"></i>
                             <span>Aucun jeu configuré</span>
-                            <button 
-                              pButton 
-                              pRipple 
-                              icon="pi pi-plus" 
+                            <button
+                              pButton
+                              pRipple
+                              icon="pi pi-plus"
                               label="Configurer"
                               size="small"
                               severity="info"
@@ -375,8 +375,8 @@ class MachineStatsCalculator {
                     </td>
                     <td>
                       <div class="status-cell">
-                        <p-tag 
-                          [value]="getStatusLabel(machine.status)" 
+                        <p-tag
+                          [value]="getStatusLabel(machine.status)"
                           [severity]="getStatusSeverity(machine.status)"
                           [icon]="getStatusIcon(machine.status)"
                           styleClass="status-tag animate-pulse">
@@ -390,57 +390,57 @@ class MachineStatsCalculator {
                     </td>
                     <td>
                       <div class="action-buttons">
-                        <!-- <button 
-                          pButton 
-                          pRipple 
-                          icon="pi pi-eye" 
+                        <!-- <button
+                          pButton
+                          pRipple
+                          icon="pi pi-eye"
                           [rounded]="true"
                           text
                           severity="info"
                           size="small"
-                          pTooltip="Voir les détails" 
+                          pTooltip="Voir les détails"
                           tooltipPosition="top"
                           class="action-button hover-lift"
                           [routerLink]="['/arcade-machines/detail', machine.id]">
                         </button> -->
-                        
-                        <!-- <button 
-                          pButton 
-                          pRipple 
-                          icon="pi pi-gamepad" 
+
+                        <!-- <button
+                          pButton
+                          pRipple
+                          icon="pi pi-gamepad"
                           [rounded]="true"
                           text
                           severity="danger"
                           size="small"
-                          pTooltip="Configurer les jeux" 
+                          pTooltip="Configurer les jeux"
                           tooltipPosition="top"
                           class="action-button hover-scale"
                           (click)="configureGames(machine)">
                         </button> -->
-                        
-                        <!-- <button 
-                          pButton 
-                          pRipple 
-                          icon="pi pi-pencil" 
+
+                        <!-- <button
+                          pButton
+                          pRipple
+                          icon="pi pi-pencil"
                           [rounded]="true"
                           text
                           severity="success"
                           size="small"
-                          pTooltip="Éditer" 
+                          pTooltip="Éditer"
                           tooltipPosition="top"
                           class="action-button hover-glow"
                           [routerLink]="['/arcade-machines/edit', machine.id]">
                         </button> -->
-                        
-                        <button 
-                          pButton 
-                          pRipple 
-                          icon="pi pi-trash" 
+
+                        <button
+                          pButton
+                          pRipple
+                          icon="pi pi-trash"
                           [rounded]="true"
                           text
                           severity="danger"
                           size="small"
-                          pTooltip="Supprimer" 
+                          pTooltip="Supprimer"
                           tooltipPosition="top"
                           class="action-button hover-scale"
                           (click)="confirmDelete(machine)">🗑️
@@ -449,7 +449,7 @@ class MachineStatsCalculator {
                     </td>
                   </tr>
                 </ng-template>
-                
+
                 <ng-template pTemplate="emptymessage">
                   <tr>
                     <td colspan="5" class="empty-message">
@@ -457,10 +457,10 @@ class MachineStatsCalculator {
                         <i class="pi pi-desktop empty-icon neon-glow"></i>
                         <h3>Aucune borne trouvée</h3>
                         <p>Aucune borne d'arcade ne correspond à vos critères.</p>
-                        <button 
-                          pButton 
-                          pRipple 
-                          label="Créer une borne" 
+                        <button
+                          pButton
+                          pRipple
+                          label="Créer une borne"
                           icon="pi pi-plus"
                           class="gaming-button"
                           routerLink="/arcade-machines/new">
@@ -475,7 +475,7 @@ class MachineStatsCalculator {
             <!-- Vue grille améliorée -->
             <div class="machines-grid animate-scale-in">
               @for (machine of displayedMachines(); track machine.id; let i = $index) {
-                <div class="machine-card-container stagger-fade-in" 
+                <div class="machine-card-container stagger-fade-in"
                      [style.animation-delay]="(i * 0.1) + 's'">
                   <p-card styleClass="machine-card gaming-card hover-lift">
                     <ng-template pTemplate="header">
@@ -483,8 +483,8 @@ class MachineStatsCalculator {
                         <div class="machine-card-icon" [class]="getMachineIconClass(machine.status)">
                           <i class="pi pi-desktop"></i>
                           @if (machine.games_count > 0) {
-                            <p-badge 
-                              [value]="machine.games_count.toString()" 
+                            <p-badge
+                              [value]="machine.games_count.toString()"
                               severity="info"
                               styleClass="games-badge">
                             </p-badge>
@@ -492,8 +492,8 @@ class MachineStatsCalculator {
                         </div>
                         <div class="card-title-section">
                           <h3 class="machine-card-title">{{ machine.nom }}</h3>
-                          <p-tag 
-                            [value]="getStatusLabel(machine.status)" 
+                          <p-tag
+                            [value]="getStatusLabel(machine.status)"
                             [severity]="getStatusSeverity(machine.status)"
                             [icon]="getStatusIcon(machine.status)"
                             styleClass="status-tag-card">
@@ -501,25 +501,25 @@ class MachineStatsCalculator {
                         </div>
                       </div>
                     </ng-template>
-                    
+
                     <div class="machine-card-content">
                       @if (machine.description) {
                         <p class="machine-card-description">{{ machine.description }}</p>
                       }
-                      
+
                       <div class="machine-card-info">
                         <div class="info-item">
                           <i class="pi pi-map-marker location-icon"></i>
                           <span>{{ machine.localisation || 'Non défini' }}</span>
                         </div>
-                        
+
                         @if (machine.latitude && machine.longitude) {
                           <div class="info-item coordinates">
                             <i class="pi pi-compass"></i>
                             <span>{{ machine.latitude | number:'1.2-2' }}, {{ machine.longitude | number:'1.2-2' }}</span>
                           </div>
                         }
-                        
+
                         <!-- Configuration des slots en mode carte -->
                         <div class="card-slots-section">
                           <h4 class="slots-title">
@@ -554,13 +554,13 @@ class MachineStatsCalculator {
                         </div>
                       </div>
                     </div>
-                    
+
                     <ng-template pTemplate="footer">
                       <div class="machine-card-actions">
-                        <button 
-                          pButton 
-                          pRipple 
-                          label="Détails" 
+                        <button
+                          pButton
+                          pRipple
+                          label="Détails"
                           icon="pi pi-eye"
                           severity="info"
                           outlined
@@ -568,11 +568,11 @@ class MachineStatsCalculator {
                           class="card-action-btn"
                           [routerLink]="['/arcade-machines', machine.id]">
                         </button>
-                        
-                        <button 
-                          pButton 
-                          pRipple 
-                          label="Jeux" 
+
+                        <button
+                          pButton
+                          pRipple
+                          label="Jeux"
                           icon="pi pi-gamepad"
                           severity="danger"
                           outlined
@@ -580,10 +580,10 @@ class MachineStatsCalculator {
                           class="card-action-btn"
                           (click)="configureGames(machine)">
                         </button>
-                        
-                        <button 
-                          pButton 
-                          pRipple 
+
+                        <button
+                          pButton
+                          pRipple
                           icon="pi pi-pencil"
                           severity="success"
                           outlined
@@ -602,8 +602,8 @@ class MachineStatsCalculator {
         }
       </div>
     </div>
-    
-    <p-confirmDialog 
+
+    <p-confirmDialog
       header="Confirmation de suppression"
       icon="pi pi-exclamation-triangle"
       styleClass="gaming-confirm-dialog">
@@ -620,7 +620,7 @@ export class MachinesListComponent implements OnInit {
 
   // ViewChild avec nouvelle API
   private readonly table = viewChild<Table>('dt');
-  
+
   // Signals pour l'état réactif
   protected readonly loading = signal(false);
   protected readonly machines = signal<Arcade[]>([]);
@@ -628,37 +628,37 @@ export class MachinesListComponent implements OnInit {
   protected readonly viewMode = signal<ViewMode>('table');
   protected readonly searchQuery = signal('');
   protected readonly itemsPerPage = signal(10);
-  
+
   // Computed values avec logique métier améliorée
   protected readonly enrichedMachines = computed(() => {
     return this.machines().map(machine => this.enrichMachine(machine));
   });
-  
+
   protected readonly displayedMachines = computed(() => {
     const strategy = ViewStrategyFactory.create(this.viewMode());
     return strategy.render(this.filteredMachines());
   });
-  
+
   protected readonly filteredMachines = computed(() => {
     const query = this.searchQuery().toLowerCase();
     const machines = this.enrichedMachines();
-    
+
     if (!query) return machines;
-    
-    return machines.filter(machine => 
+
+    return machines.filter(machine =>
       machine.nom.toLowerCase().includes(query) ||
       machine.description?.toLowerCase().includes(query) ||
       machine.localisation?.toLowerCase().includes(query) ||
       machine.games?.some(game => game.nom.toLowerCase().includes(query))
     );
   });
-  
+
   protected readonly filteredCount = computed(() => this.filteredMachines().length);
-  
-  protected readonly machineStats = computed(() => 
+
+  protected readonly machineStats = computed(() =>
     MachineStatsCalculator.calculateStats(this.enrichedMachines())
   );
-  
+
   // Configuration de la table
   protected readonly globalFilterFields = ['nom', 'description', 'localisation'];
 
@@ -677,7 +677,7 @@ export class MachinesListComponent implements OnInit {
    */
   private loadInitialData(): void {
     this.loading.set(true);
-    
+
     forkJoin({
       machines: this.arcadesService.getAllArcades(),
       games: this.gamesService.getAllGames()
@@ -700,7 +700,7 @@ export class MachinesListComponent implements OnInit {
     const hasBothSlots = activeSlots === 2;
     const status = this.calculateMachineStatus(machine, activeSlots);
     const utilizationRate = this.calculateUtilizationRate(machine);
-    
+
     return {
       ...machine,
       games_count: gamesCount,
@@ -724,7 +724,7 @@ export class MachinesListComponent implements OnInit {
     } else if (activeSlots === 2) {
       return 'active';
     }
-    
+
     // Logique additionnelle pour maintenance si nécessaire
     return 'active';
   }
@@ -740,7 +740,12 @@ export class MachinesListComponent implements OnInit {
   /**
    * Actualise les données des machines
    */
-  protected refreshMachines(): void {
+  refreshMachines(): void {
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Actualisation',
+      detail: 'Actualisation des bornes d\'arcade…'
+    });
     this.arcadesService.clearCache();
     this.gamesService.clearCache();
     this.loadInitialData();
@@ -811,7 +816,7 @@ export class MachinesListComponent implements OnInit {
       },
       error: (error) => this.handleError('suppression', error)
     });
-    
+
   }
 
   /**
@@ -835,7 +840,7 @@ export class MachinesListComponent implements OnInit {
   protected getStatusLabel(status: MachineStatus): string {
     const labels = {
       active: 'Active',
-      inactive: 'Inactive', 
+      inactive: 'Inactive',
       maintenance: 'Maintenance',
       partial: 'Partielle'
     };
