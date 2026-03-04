@@ -162,6 +162,20 @@ export class PromosService {
   }
   
   /**
+   * Active ou désactive un code promo (toggle)
+   */
+  togglePromoActive(id: number): Observable<PromoCode> {
+    return this.http.post<PromoCode>(`${this.adminBaseUrl}/promo-codes/${id}/toggle-active`, {}).pipe(
+      tap(() => {
+        this.cacheManager.remove(`promo_${id}`);
+        this.clearCache();
+        this.refreshPromos();
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  /**
    * Supprime un code promo
    */
   deletePromo(id: number): Observable<any> {
