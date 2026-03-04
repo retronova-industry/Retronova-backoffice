@@ -30,6 +30,16 @@
   }
   
   .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    
+    .back-button {
+      position: absolute;
+      left: var(--space-6);
+    }
+
     .page-title {
       display: flex;
       align-items: center;
@@ -100,10 +110,31 @@
   overflow: hidden;
   box-shadow: var(--shadow-lg);
   transition: all var(--transition-normal);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
   
   &:hover {
     box-shadow: var(--shadow-xl);
     transform: translateY(-2px);
+  }
+  
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 700;
+    font-size: var(--text-lg);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-color);
+    margin: 0 0 var(--space-2) 0;
+    
+    i {
+      color: var(--neon-orange);
+      font-size: var(--text-xl);
+    }
   }
   
   .section-header {
@@ -295,11 +326,41 @@
   }
 }
 
+/* === TICKETS PREVIEW === */
+.tickets-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  margin-top: var(--space-2);
+  background: var(--surface-hover);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--surface-border);
+  width: fit-content;
+  
+  i {
+    color: var(--neon-orange);
+    font-size: var(--text-base);
+  }
+  
+  .tickets-value {
+    font-weight: 700;
+    font-size: var(--text-lg);
+    color: var(--neon-orange);
+  }
+  
+  .tickets-label {
+    font-weight: 500;
+    font-size: var(--text-sm);
+    color: var(--text-color-secondary);
+  }
+}
+
 /* === CHECKBOX STYLING === */
 .checkbox-container {
   display: flex;
   gap: var(--space-3);
-  align-items: flex-start;
+  align-items: center;
   padding: var(--space-4);
   background: var(--surface-hover);
   border-radius: var(--radius-lg);
@@ -314,9 +375,23 @@
   .checkbox-label {
     flex: 1;
     display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-2);
     cursor: pointer;
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+    
+    .help-icon {
+      color: var(--text-color-secondary);
+      font-size: var(--text-base);
+      cursor: help;
+      flex-shrink: 0;
+    }
     
     .label-text {
       font-weight: 600;
@@ -329,6 +404,49 @@
       color: var(--text-color-muted);
       font-style: italic;
       line-height: 1.4;
+    }
+  }
+}
+
+/* === CONFIG SUMMARY === */
+.config-summary {
+  background: var(--surface-card);
+  border: 2px solid var(--neon-orange);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-5);
+  
+  .summary-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 700;
+    font-size: var(--text-base);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--neon-orange);
+    margin: 0 0 var(--space-3) 0;
+  }
+  
+  .summary-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  
+  .summary-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--text-color);
+    
+    i {
+      color: var(--neon-orange);
+      font-size: var(--text-base);
+      flex-shrink: 0;
     }
   }
 }

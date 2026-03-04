@@ -9,7 +9,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { Message, MessageModule } from 'primeng/message';
+import { MessageModule } from 'primeng/message';
 import { MessagesModule } from 'primeng/messages';
 import { RippleModule } from 'primeng/ripple';
 import { TooltipModule } from 'primeng/tooltip';
@@ -61,7 +61,6 @@ class PromoCodeValidators {
     TagModule,
     LoaderComponent
   ],
-  providers: [MessageService],
   templateUrl: './promo-form.component.html',
   styleUrls: ['./promo-form.component.scss'],
   encapsulation: ViewEncapsulation.None
@@ -80,7 +79,7 @@ export class PromoFormComponent implements OnInit {
   protected readonly promoId = signal<number | null>(null);
   protected readonly currentPromo = signal<PromoCode | null>(null);
   protected readonly codePreview = signal('');
-  protected readonly errorMessages = signal<Message[]>([]);
+  protected readonly errorMessages = signal<{ severity: string; detail: string }[]>([]);
   
   // Computed values
   protected readonly pageTitle = computed(() => 

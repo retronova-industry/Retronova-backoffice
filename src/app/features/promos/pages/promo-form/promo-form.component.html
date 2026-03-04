@@ -1,6 +1,6 @@
 <div class="page-container animate-fade-in">
     <div class="page-header">
-    <div class="page-title-section">
+    <div class="header-content">
         <button 
         pButton 
         pRipple 
@@ -137,7 +137,7 @@
 
             <!-- Usage unique global -->
             <div class="form-group config-group">
-                <div class="checkbox-wrapper">
+                <div class="checkbox-container">
                 <p-checkbox 
                     id="is_single_use_global" 
                     formControlName="is_single_use_global"
@@ -163,7 +163,7 @@
 
             <!-- Usage unique par utilisateur -->
             <div class="form-group config-group">
-                <div class="checkbox-wrapper">
+                <div class="checkbox-container">
                 <p-checkbox 
                     id="is_single_use_per_user" 
                     formControlName="is_single_use_per_user"
@@ -253,7 +253,7 @@
                 icon="pi pi-times"
                 severity="secondary"
                 outlined
-                class="action-button"
+                class="action-btn"
                 routerLink="/promos">
             </button>
             
@@ -266,7 +266,7 @@
                 [loading]="submitting()"
                 [disabled]="!promoForm.valid || submitting()"
                 severity="success"
-                class="action-button gaming-button"
+                class="action-btn gaming-button"
                 (click)="onSubmit()">
             </button>
             </div>
