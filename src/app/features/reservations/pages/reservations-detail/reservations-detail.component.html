@@ -1,1 +1,88 @@
-<p>reservations-detail works!</p>
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <p-button
+        icon="pi pi-arrow-left"
+        label="Retour"
+        routerLink="/reservations"
+        severity="secondary"
+        outlined>
+      </p-button>
+      <h1><i class="pi pi-calendar"></i> Détail de la réservation</h1>
+    </div>
+  </div>
+
+  <div class="page-content">
+    @if (loading()) {
+      <app-loader size="large">Chargement...</app-loader>
+    } @else if (reservation()) {
+      <div class="detail-grid">
+
+        <p-card header="Informations générales">
+          <div class="detail-row">
+            <label>Référence</label>
+            <span class="font-bold">#{{ reservation()!.id }}</span>
+          </div>
+          <p-divider />
+          <div class="detail-row">
+            <label>Statut</label>
+            <p-tag
+              [value]="getStatusLabel(reservation()!.status)"
+              [severity]="getStatusSeverity(reservation()!.status)">
+            </p-tag>
+          </div>
+          <p-divider />
+          <div class="detail-row">
+            <label>Code de déverrouillage</label>
+            <span class="unlock-code">{{ reservation()!.unlock_code }}</span>
+          </div>
+          @if (reservation()!.position_in_queue) {
+            <p-divider />
+            <div class="detail-row">
+              <label>Position dans la file</label>
+              <span>{{ reservation()!.position_in_queue }}</span>
+            </div>
+          }
+        </p-card>
+
+        <p-card header="Partie">
+          <div class="detail-row">
+            <label>Borne</label>
+            <span><i class="pi pi-desktop mr-2"></i>{{ reservation()!.arcade_name }}</span>
+          </div>
+          <p-divider />
+          <div class="detail-row">
+            <label>Jeu</label>
+            <span><i class="pi pi-play mr-2"></i>{{ reservation()!.game_name }}</span>
+          </div>
+          <p-divider />
+          <div class="detail-row">
+            <label>Tickets utilisés</label>
+            <span><i class="pi pi-ticket mr-2"></i>{{ reservation()!.tickets_used }}</span>
+          </div>
+        </p-card>
+
+        <p-card header="Joueurs">
+          <div class="detail-row">
+            <label>Joueur 1</label>
+            <span><i class="pi pi-user mr-2"></i>{{ reservation()!.player_pseudo }}</span>
+          </div>
+          @if (reservation()!.player2_pseudo) {
+            <p-divider />
+            <div class="detail-row">
+              <label>Joueur 2</label>
+              <span><i class="pi pi-user mr-2"></i>{{ reservation()!.player2_pseudo }}</span>
+            </div>
+          }
+        </p-card>
+
+      </div>
+    } @else {
+      <div class="empty-state">
+        <i class="pi pi-calendar-times"></i>
+        <h3>Réservation introuvable</h3>
+        <p-button label="Retour à la liste" routerLink="/reservations" severity="secondary" outlined />
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,50 @@
+.filters-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+
+  .search-stats {
+    color: var(--text-color-secondary);
+    font-size: 0.875rem;
+    margin-left: auto;
+  }
+}
+
+.players-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  .player2 {
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+  }
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: var(--text-color-secondary);
+  text-align: center;
+
+  i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.4;
+  }
+
+  h3 {
+    margin: 0 0 0.5rem;
+    color: var(--text-color);
+  }
+}
