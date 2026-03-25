@@ -15,7 +15,7 @@ import { TimelineModule } from 'primeng/timeline';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ChartModule } from 'primeng/chart';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { forkJoin, interval, Subject, takeUntil } from 'rxjs';
+import { forkJoin, interval, Subject, takeUntil, catchError, of } from 'rxjs';
 import { ArcadesService } from '../../../../core/services/arcades.service';
 import { Arcade, QueueItem } from '../../../../core/models/arcade.model';
 import { LoaderComponent } from '../../../../shared/components/loader/loader.component';
@@ -438,42 +438,48 @@ class MachineStatsStrategy extends StatsCalculationStrategy {
             <!-- Onglet Activité -->
             <p-tabPanel header="Journal d'activité" leftIcon="pi pi-history">
               <div class="activity-container">
-                <p-timeline 
-                  [value]="activityLog()" 
-                  styleClass="gaming-timeline">
-                  
-                  <ng-template pTemplate="marker" let-event>
-                    <div class="timeline-marker" [class]="getEventMarkerClass(event.event_type)">
-                      <i [class]="'pi ' + getEventIcon(event.event_type)"></i>
-                    </div>
-                  </ng-template>
-                  
-                  <ng-template pTemplate="content" let-event>
-                    <div class="timeline-content">
-                      <div class="event-header">
-                        <h4 class="event-title">{{ event.description }}</h4>
-                        <span class="event-time">{{ formatRelativeTime(event.timestamp) }}</span>
+                @if (activityLog().length === 0) {
+                  <div class="empty-state">
+                    <i class="pi pi-history" style="font-size: 3rem; opacity: 0.3"></i>
+                    <h3>Aucun événement disponible</h3>
+                    <p>Le journal d'activité n'est pas encore disponible via l'API.</p>
+                  </div>
+                } @else {
+                  <p-timeline
+                    [value]="activityLog()"
+                    styleClass="gaming-timeline">
+
+                    <ng-template pTemplate="marker" let-event>
+                      <div class="timeline-marker" [class]="getEventMarkerClass(event.event_type)">
+                        <i [class]="'pi ' + getEventIcon(event.event_type)"></i>
                       </div>
-                      
-                      <div class="event-details">
-                        @if (event.user) {
-                          <span class="event-user">
-                            <i class="pi pi-user"></i>
-                            {{ event.user }}
-                          </span>
-                        }
-                        @if (event.game) {
-                          <span class="event-game">
-                            <i class="pi pi-gamepad"></i>
-                            {{ event.game }}
-                          </span>
-                        }
+                    </ng-template>
+
+                    <ng-template pTemplate="content" let-event>
+                      <div class="timeline-content">
+                        <div class="event-header">
+                          <h4 class="event-title">{{ event.description }}</h4>
+                          <span class="event-time">{{ formatRelativeTime(event.timestamp) }}</span>
+                        </div>
+                        <div class="event-details">
+                          @if (event.user) {
+                            <span class="event-user">
+                              <i class="pi pi-user"></i>
+                              {{ event.user }}
+                            </span>
+                          }
+                          @if (event.game) {
+                            <span class="event-game">
+                              <i class="pi pi-gamepad"></i>
+                              {{ event.game }}
+                            </span>
+                          }
+                        </div>
+                        <span class="event-timestamp">{{ formatDateTime(event.timestamp) }}</span>
                       </div>
-                      
-                      <span class="event-timestamp">{{ formatDateTime(event.timestamp) }}</span>
-                    </div>
-                  </ng-template>
-                </p-timeline>
+                    </ng-template>
+                  </p-timeline>
+                }
               </div>
             </p-tabPanel>
           </p-tabView>
@@ -609,12 +615,12 @@ export class MachineDetailComponent implements OnInit, OnDestroy {
 
     forkJoin({
       machine: this.arcadesService.getArcadeById(id),
-      // queue: this.arcadesService.getArcadeQueue(id)
+      queue: this.arcadesService.getArcadeQueue(id).pipe(catchError(() => of([])))
     }).subscribe({
-      next: ({ machine }) => {
+      next: ({ machine, queue }) => {
         this.machine.set(this.enrichMachine(machine));
-        // this.queueItems.set(queue);
-        this.activityLog.set(this.generateMockActivityLog(id));
+        this.queueItems.set(queue);
+        this.activityLog.set([]);
         this.updateChartData();
         this.loading.set(false);
       },
@@ -655,11 +661,10 @@ export class MachineDetailComponent implements OnInit, OnDestroy {
     return {
       ...machine,
       status: this.calculateMachineStatus(machine),
-      utilization_rate: Math.random() * 100,
-      last_activity: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000),
-      total_games_played: Math.floor(Math.random() * 1000) + 100,
-      revenue_generated: Math.floor(Math.random() * 10000) + 1000,
-      average_session_time: Math.floor(Math.random() * 30) + 10
+      utilization_rate: 0,
+      total_games_played: 0,
+      revenue_generated: 0,
+      average_session_time: 0
     };
   }
 
@@ -670,55 +675,20 @@ export class MachineDetailComponent implements OnInit, OnDestroy {
     return 'active';
   }
 
-  private generateMockActivityLog(machineId: number): ActivityLogEntry[] {
-    const events: ActivityLogEntry[] = [];
-    const eventTypes: ActivityLogEntry['event_type'][] = ['game_start', 'game_end', 'configuration'];
-    const games = ['Street Fighter', 'Pac-Man', 'Tekken', 'Mortal Kombat'];
-    
-    for (let i = 0; i < 20; i++) {
-      const eventType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
-      const timestamp = new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000);
-      
-      events.push({
-        id: i + 1,
-        timestamp,
-        event_type: eventType,
-        description: this.getEventDescription(eventType),
-        user: eventType === 'configuration' ? 'Admin' : `Joueur${Math.floor(Math.random() * 100)}`,
-        game: ['game_start', 'game_end'].includes(eventType) ? games[Math.floor(Math.random() * games.length)] : undefined
-      });
-    }
-    
-    return events.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-  }
-
-  private getEventDescription(eventType: ActivityLogEntry['event_type']): string {
-    const descriptions = {
-      game_start: 'Partie démarrée',
-      game_end: 'Partie terminée',
-      maintenance: 'Maintenance effectuée',
-      configuration: 'Configuration modifiée',
-      error: 'Erreur système'
-    };
-    return descriptions[eventType];
-  }
-
   private updateChartData(): void {
     const labels = [];
-    const data = [];
-    
+
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
       labels.push(date.toLocaleDateString('fr-FR', { weekday: 'short' }));
-      data.push(Math.floor(Math.random() * 100) + 20);
     }
-    
+
     this.chartData.set({
       labels,
       datasets: [{
         label: 'Utilisation (%)',
-        data,
+        data: new Array(7).fill(0),
         fill: true,
         backgroundColor: 'rgba(0, 212, 255, 0.1)',
         borderColor: '#00d4ff',
