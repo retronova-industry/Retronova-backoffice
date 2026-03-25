@@ -19,7 +19,7 @@ export class AuthService {
     this.firebaseAuth.authState.pipe(
       switchMap(firebaseUser => {
         if (firebaseUser) {
-          return this.http.get<User>(`${environment.apiUrl}/users/firebase/${firebaseUser.uid}`).pipe(
+          return this.http.get<User>(`${environment.apiUrl}/users/me`).pipe(
             catchError(() => of(null))
           );
         }
@@ -29,18 +29,29 @@ export class AuthService {
       this.currentUser = user;
     });
   }
-  
+
   login(email: string, password: string): Observable<User | null> {
     return from(this.firebaseAuth.signInWithEmailAndPassword(email, password)).pipe(
       switchMap(credential => {
         if (!credential.user) {
           return throwError(() => new Error('Login failed'));
         }
-        
-        return this.http.get<User>(`${environment.apiUrl}/users/firebase/${credential.user.uid}`);
+
+        return from(credential.user.getIdToken()).pipe(
+          switchMap(token =>
+            this.http.get<User>(`${environment.apiUrl}/users/me`, {
+              headers: { Authorization: `Bearer ${token}` }
+            }).pipe(catchError(() => of(null)))
+          )
+        );
       }),
       tap(user => {
-        this.currentUser = user;
+        if (user) {
+          const { password: _, ...safeUser } = user as any;
+          this.currentUser = safeUser as User;
+        } else {
+          this.currentUser = null;
+        }
       })
     );
   }
