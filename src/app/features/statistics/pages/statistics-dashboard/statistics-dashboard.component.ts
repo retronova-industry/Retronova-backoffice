@@ -600,7 +600,7 @@ export class StatisticsDashboardComponent implements OnInit {
     const labels = sortedGames.map(([gameId]) => {
       const game = games.find(g => g.id === gameId);
       const shortId = String(gameId ?? '').substring(0, 8);
-      return game?.name || `Jeu ${shortId}`;
+      return game?.nom || `Jeu ${shortId}`;
     });
     
     const data = sortedGames.map(([, count]) => count);
@@ -652,7 +652,7 @@ export class StatisticsDashboardComponent implements OnInit {
       .map(([playerId, stats]) => {
         const user = users.find(u => u.id === playerId);
         return {
-          name: user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.publique_id : `Joueur ${String(playerId ?? '').substring(0, 8)}`,
+          name: user ? `${user.prenom || ''} ${user.nom || ''}`.trim() || user.pseudo : `Joueur ${String(playerId ?? '').substring(0, 8)}`,
           victories: stats.victories,
           parties: stats.parties,
           winRate: Math.round((stats.victories / stats.parties) * 100)
@@ -673,7 +673,7 @@ export class StatisticsDashboardComponent implements OnInit {
       const totalActiveParties = activeParties.length || 1;
       
       return {
-        name: machine.name || `Borne ${String(machine?.id ?? '').substring(0, 8)}`,
+        name: machine.nom || `Borne ${machine.id}`,
         activeParties: machineParties.length,
         usagePercentage: Math.round((machineParties.length / totalActiveParties) * 100)
       };
