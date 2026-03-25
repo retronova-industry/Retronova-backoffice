@@ -1,1 +1,145 @@
-<p>reservations-list works!</p>
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1><i class="pi pi-calendar"></i> Réservations</h1>
+    </div>
+    <div class="page-actions">
+      <p-button
+        icon="pi pi-refresh"
+        label="Actualiser"
+        [loading]="loading()"
+        (click)="loadReservations()"
+        severity="secondary"
+        outlined>
+      </p-button>
+    </div>
+  </div>
+
+  <div class="page-content">
+    @if (loading()) {
+      <app-loader size="large">Chargement des réservations...</app-loader>
+    } @else {
+      <div class="filters-container">
+        <span class="p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            type="text"
+            placeholder="Rechercher par borne, jeu ou joueur..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)" />
+        </span>
+        <p-selectButton
+          [options]="statusOptions"
+          [ngModel]="selectedStatus()"
+          (ngModelChange)="selectedStatus.set($event)"
+          optionLabel="label"
+          optionValue="value">
+        </p-selectButton>
+        <div class="search-stats">
+          {{ filteredReservations().length }} réservation(s)
+        </div>
+      </div>
+
+      @if (filteredReservations().length === 0) {
+        <div class="empty-state">
+          <i class="pi pi-calendar-times"></i>
+          <h3>Aucune réservation</h3>
+          <p>Aucune réservation ne correspond à vos critères.</p>
+        </div>
+      } @else {
+        <p-table
+          [value]="filteredReservations()"
+          [rows]="10"
+          [paginator]="true"
+          [rowHover]="true"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="{first} - {last} sur {totalRecords}"
+          dataKey="id"
+          styleClass="p-datatable-sm">
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="id" style="width: 5rem">
+                #<p-sortIcon field="id" />
+              </th>
+              <th pSortableColumn="arcade_name">
+                Borne<p-sortIcon field="arcade_name" />
+              </th>
+              <th pSortableColumn="game_name">
+                Jeu<p-sortIcon field="game_name" />
+              </th>
+              <th>Joueurs</th>
+              <th pSortableColumn="status">
+                Statut<p-sortIcon field="status" />
+              </th>
+              <th>Tickets</th>
+              <th>File</th>
+              <th style="width: 8rem">Actions</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-reservation>
+            <tr>
+              <td class="text-center font-bold">{{ reservation.id }}</td>
+              <td>
+                <i class="pi pi-desktop mr-2"></i>{{ reservation.arcade_name }}
+              </td>
+              <td>
+                <i class="pi pi-play mr-2"></i>{{ reservation.game_name }}
+              </td>
+              <td>
+                <div class="players-cell">
+                  <span>{{ reservation.player_pseudo }}</span>
+                  @if (reservation.player2_pseudo) {
+                    <span class="player2">vs {{ reservation.player2_pseudo }}</span>
+                  }
+                </div>
+              </td>
+              <td>
+                <p-tag
+                  [value]="getStatusLabel(reservation.status)"
+                  [severity]="getStatusSeverity(reservation.status)">
+                </p-tag>
+              </td>
+              <td class="text-center">
+                <i class="pi pi-ticket mr-1"></i>{{ reservation.tickets_used }}
+              </td>
+              <td class="text-center">
+                @if (reservation.position_in_queue) {
+                  <p-tag value="Position {{ reservation.position_in_queue }}" severity="secondary" />
+                } @else {
+                  <span class="text-color-secondary">—</span>
+                }
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <p-button
+                    icon="pi pi-eye"
+                    [routerLink]="['/reservations', reservation.id]"
+                    pTooltip="Voir le détail"
+                    tooltipPosition="top"
+                    severity="secondary"
+                    size="small"
+                    outlined>
+                  </p-button>
+                  @if (reservation.status === ReservationStatus.WAITING) {
+                    <p-button
+                      icon="pi pi-times"
+                      (click)="cancelReservation(reservation)"
+                      pTooltip="Annuler"
+                      tooltipPosition="top"
+                      severity="danger"
+                      size="small"
+                      outlined>
+                    </p-button>
+                  }
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      }
+    }
+  </div>
+</div>
+
+<p-confirmDialog />
