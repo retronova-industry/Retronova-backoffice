@@ -1,52 +1,28 @@
 <div class="dashboard-container">
   <h1>Tableau de bord</h1>
-  @if (isLoading) {
-    <app-loader>Chargement des données...</app-loader>
+
+  @if (isLoading()) {
+    <div class="loading-container">
+      <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+    </div>
   }
-  
-  <div *ngIf="!isLoading" class="dashboard-cards">
-    <p-card styleClass="dashboard-card">
-      <ng-template pTemplate="header">
-        <div class="card-header">
-          <i class="pi pi-users"></i>
-          <h3>Utilisateurs</h3>
-        </div>
-      </ng-template>
-      <h2>{{ totalUsers }}</h2>
-      <a routerLink="/users">Voir les utilisateurs</a>
-    </p-card>
-    
-    <p-card styleClass="dashboard-card">
-      <ng-template pTemplate="header">
-        <div class="card-header">
-          <i class="pi pi-desktop"></i>
-          <h3>Bornes d'arcade</h3>
-        </div>
-      </ng-template>
-      <h2>{{ totalMachines }}</h2>
-      <a routerLink="/arcade-machines">Gérer les bornes</a>
-    </p-card>
-    
-    <p-card styleClass="dashboard-card">
-      <ng-template pTemplate="header">
-        <div class="card-header">
-          <i class="pi pi-play"></i>
-          <h3>Jeux</h3>
-        </div>
-      </ng-template>
-      <h2>{{ totalGames }}</h2>
-      <a routerLink="/games">Voir les jeux</a>
-    </p-card>
-    
-    <p-card styleClass="dashboard-card">
-      <ng-template pTemplate="header">
-        <div class="card-header">
-          <i class="pi pi-ticket"></i>
-          <h3>Parties en cours</h3>
-        </div>
-      </ng-template>
-      <h2>{{ activeParties }}</h2>
-      <a routerLink="/parties">Voir les parties</a>
-    </p-card>
-  </div>
+
+  @if (!isLoading()) {
+    <div class="dashboard-cards">
+      @for (card of dashboardCards(); track card.title) {
+        <p-card styleClass="dashboard-card">
+          <ng-template pTemplate="header">
+            <div class="card-header" [style.background-color]="card.color">
+              <i [class]="card.icon"></i>
+              <h3>{{ card.title }}</h3>
+            </div>
+          </ng-template>
+          <div class="card-body">
+            <h2>{{ card.value }}</h2>
+            <a [routerLink]="card.link">{{ card.linkText }}</a>
+          </div>
+        </p-card>
+      }
+    </div>
+  }
 </div>
