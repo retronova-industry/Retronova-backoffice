@@ -2,14 +2,13 @@
 
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ButtonModule } from 'primeng/button';
-import { RippleModule } from 'primeng/ripple';
 import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
+import { ButtonComponent } from '../../ui';
 
 @Component({
   selector: 'app-confirmation-dialog',
   standalone: true,
-  imports: [CommonModule, ButtonModule, RippleModule],
+  imports: [CommonModule, ButtonComponent],
   template: `
     <div class="confirmation-dialog">
       <div class="dialog-icon">
@@ -18,14 +17,8 @@ import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
       <h2>{{ title }}</h2>
       <p>{{ message }}</p>
       <div class="confirmation-actions">
-        <button pButton pRipple type="button" 
-                label="Annuler" 
-                class="p-button-outlined p-button-secondary" 
-                (click)="cancel()"></button>
-        <button pButton pRipple type="button" 
-                label="Confirmer" 
-                class="p-button-danger" 
-                (click)="confirm()"></button>
+        <ui-button label="Annuler" variant="secondary" (clicked)="cancel()"></ui-button>
+        <ui-button label="Confirmer" variant="danger" (clicked)="confirm()"></ui-button>
       </div>
     </div>
   `,
@@ -40,19 +33,19 @@ import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
       
       i {
         font-size: 3rem;
-        color: var(--yellow-500);
+        color: var(--yellow-40);
       }
     }
-    
+
     h2 {
-      margin: 0 0 1rem 0;
-      font-size: 1.5rem;
-      color: var(--text-color);
+      margin: 0 0 var(--space-4) 0;
+      font-size: var(--text-xl);
+      color: var(--gray-80);
     }
-    
+
     p {
-      margin: 0 0 2rem 0;
-      color: var(--text-color-secondary);
+      margin: 0 0 var(--space-8) 0;
+      color: var(--text-secondary);
       line-height: 1.5;
     }
     
