@@ -18,16 +18,16 @@ interface PartyDisplay extends Party {
   imports: [CommonModule, TagModule, ButtonModule],
   template: `
     <div class="details">
-      <h3 style="margin-top:0;">{{ party?.game_name || 'Jeu inconnu' }}</h3>
+      <h3 style="margin-top:0;">{{ party.game_name || 'Jeu inconnu' }}</h3>
 
-      <p><b>ID : </b> {{ party?.id }}</p>
-      <p><b>Joueur 1 : </b> {{ party?.player1_name || party?.player1_id }}</p>
-      <p><b>Joueur 2 : </b> {{ party?.player2_name || party?.player2_id }}</p>
-      <p><b>Borne : </b> {{ party?.machine_name || party?.machine_id }}</p>
+      <p><b>ID : </b> {{ party.id }}</p>
+      <p><b>Joueur 1 : </b> {{ party.player1_name || party.player1_id }}</p>
+      <p><b>Joueur 2 : </b> {{ party.player2_name || party.player2_id }}</p>
+      <p><b>Borne : </b> {{ party.machine_name || party.machine_id }}</p>
 
       <p>
         <b>Code : </b>
-        <p-tag [value]="party?.password?.toString() || 'N/A'" severity="info"></p-tag>
+        <p-tag [value]="party.password?.toString() || 'N/A'" severity="info"></p-tag>
       </p>
 
       <div class="actions">

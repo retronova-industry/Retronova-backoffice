@@ -1,19 +1,14 @@
 // src/app/features/arcade-machines/pages/machine-form/machine-form.component.ts
 
-import { Component, OnInit, inject, signal, computed, effect, Signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
-import { CardModule } from 'primeng/card';
-import { RippleModule } from 'primeng/ripple';
-import { DividerModule } from 'primeng/divider';
-import { MessageModule } from 'primeng/message';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { forkJoin, of } from 'rxjs';
+import { ButtonComponent, CardComponent } from '../../../../shared/ui';
+import { forkJoin } from 'rxjs';
 import { ArcadesService } from '../../../../core/services/arcades.service';
 import { GamesService } from '../../../../core/services/games.service';
 import { Arcade, ArcadeCreate, ArcadeUpdate, ArcadeGameAssignment } from '../../../../core/models/arcade.model';
@@ -102,321 +97,219 @@ class GameOptionsFactory {
     CommonModule,
     ReactiveFormsModule,
     RouterModule,
-    ButtonModule,
-    InputTextModule,
     DropdownModule,
-    CardModule,
-    RippleModule,
-    DividerModule,
-    MessageModule,
     ConfirmDialogModule,
-    LoaderComponent
+    LoaderComponent,
+    ButtonComponent,
+    CardComponent,
   ],
   providers: [ConfirmationService],
   template: `
-    <div class="page-container animate-fade-in">
+    <div class="page-container">
       <div class="page-header">
-        <div class="header-content">
-          <h1 class="page-title">
-            <i class="pi pi-desktop neon-glow"></i>
-            {{ pageTitle() }}
-          </h1>
-          <p class="page-subtitle">
-            {{ isEditMode() ? 'Modifiez les informations et la configuration' : 'Créez une nouvelle borne d\'arcade' }}
-          </p>
+        <div>
+          <h1>{{ pageTitle() }}</h1>
+          <p class="page-subtitle">{{ pageSubtitle() }}</p>
         </div>
       </div>
 
       <div class="form-container">
         @if (loading()) {
           <app-loader size="large">
-            <div class="loading-content">
-              <i class="pi pi-spin pi-cog loading-icon"></i>
-              <span>{{ isEditMode() ? 'Chargement de la borne...' : 'Chargement du formulaire...' }}</span>
-            </div>
+            <span>{{ isEditMode() ? 'Chargement de la borne...' : 'Chargement du formulaire...' }}</span>
           </app-loader>
         } @else {
           <form [formGroup]="machineForm" (ngSubmit)="handleSubmit()" class="machine-form">
-            
-            <!-- Section informations générales -->
-            <p-card header="Informations générales" styleClass="form-section">
-              <ng-template pTemplate="header">
-                <div class="section-header">
-                  <i class="pi pi-info-circle"></i>
-                  <span>Informations générales</span>
-                </div>
-              </ng-template>
-              
-              <div class="form-grid">
-                <!-- Nom de la borne -->
-                <div class="form-group col-12">
-                  <label for="nom" class="required">Nom de la borne</label>
-                  <input 
-                    id="nom" 
-                    type="text" 
-                    pInputText 
-                    formControlName="nom"
-                    [class.ng-invalid]="isFieldInvalid('nom')"
-                    placeholder="Ex: Borne Rétro Zone 1"
-                    class="gaming-input" />
-                  @if (isFieldInvalid('nom')) {
-                    <small class="p-error">Le nom de la borne est requis (minimum 2 caractères)</small>
-                  }
-                </div>
 
-                <!-- Description -->
-                <div class="form-group col-12">
-                  <label for="description">Description</label>
-                  <textarea 
-                    id="description" 
-                    pInputTextarea 
-                    formControlName="description"
-                    rows="3" 
-                    placeholder="Description de la borne (optionnel)"
-                    class="gaming-input">
-                  </textarea>
+            <ui-card styleClass="ui-card--flush">
+
+              <!-- Informations générales -->
+              <div class="form-section">
+                <p class="section-title">Informations générales</p>
+                <div class="form-grid">
+                  <div class="form-group col-12">
+                    <label for="nom" class="required">Nom de la borne</label>
+                    <input
+                      id="nom"
+                      type="text"
+                      formControlName="nom"
+                      class="form-input"
+                      [class.is-invalid]="isFieldInvalid('nom')"
+                      placeholder="Ex: Borne Rétro Zone 1" />
+                    @if (isFieldInvalid('nom')) {
+                      <small class="field-error">Le nom est requis (minimum 2 caractères)</small>
+                    }
+                  </div>
+                  <div class="form-group col-12">
+                    <label for="description">Description</label>
+                    <textarea
+                      id="description"
+                      formControlName="description"
+                      class="form-textarea"
+                      rows="3"
+                      placeholder="Description de la borne (optionnel)">
+                    </textarea>
+                  </div>
                 </div>
               </div>
-            </p-card>
 
-            <!-- Section localisation -->
-            <p-card header="Localisation" styleClass="form-section">
-              <ng-template pTemplate="header">
-                <div class="section-header">
-                  <i class="pi pi-map-marker"></i>
-                  <span>Localisation</span>
-                </div>
-              </ng-template>
-              
-              <div class="form-grid">
-                <!-- Localisation -->
-                <div class="form-group col-12">
-                  <label for="localisation" class="required">Emplacement</label>
-                  <input 
-                    id="localisation" 
-                    type="text" 
-                    pInputText 
-                    formControlName="localisation"
-                    [class.ng-invalid]="isFieldInvalid('localisation')"
-                    placeholder="Ex: Salle principale, près de l'entrée"
-                    class="gaming-input" />
-                  @if (isFieldInvalid('localisation')) {
-                    <small class="p-error">La localisation est requise</small>
-                  }
-                </div>
+              <div class="section-sep"></div>
 
-                <!-- Coordonnées GPS -->
-                <div class="form-group col-6">
-                  <label for="latitude">Latitude</label>
-                  <input 
-                    id="latitude" 
-                    type="number" 
-                    pInputText 
-                    formControlName="latitude"
-                    [class.ng-invalid]="isFieldInvalid('latitude')"
-                    step="0.000001"
-                    placeholder="48.8566"
-                    class="gaming-input" />
-                  @if (isFieldInvalid('latitude')) {
-                    <small class="p-error">La latitude doit être entre -90 et 90</small>
-                  }
-                </div>
-
-                <div class="form-group col-6">
-                  <label for="longitude">Longitude</label>
-                  <input 
-                    id="longitude" 
-                    type="number" 
-                    pInputText 
-                    formControlName="longitude"
-                    [class.ng-invalid]="isFieldInvalid('longitude')"
-                    step="0.000001"
-                    placeholder="2.3522"
-                    class="gaming-input" />
-                  @if (isFieldInvalid('longitude')) {
-                    <small class="p-error">La longitude doit être entre -180 et 180</small>
-                  }
+              <!-- Localisation -->
+              <div class="form-section">
+                <p class="section-title">Localisation</p>
+                <div class="form-grid">
+                  <div class="form-group col-12">
+                    <label for="localisation" class="required">Emplacement</label>
+                    <input
+                      id="localisation"
+                      type="text"
+                      formControlName="localisation"
+                      class="form-input"
+                      [class.is-invalid]="isFieldInvalid('localisation')"
+                      placeholder="Ex: Salle principale, près de l'entrée" />
+                    @if (isFieldInvalid('localisation')) {
+                      <small class="field-error">La localisation est requise</small>
+                    }
+                  </div>
+                  <div class="form-group col-6">
+                    <label for="latitude">Latitude</label>
+                    <input
+                      id="latitude"
+                      type="number"
+                      formControlName="latitude"
+                      class="form-input"
+                      [class.is-invalid]="isFieldInvalid('latitude')"
+                      step="0.000001"
+                      placeholder="48.8566" />
+                    @if (isFieldInvalid('latitude')) {
+                      <small class="field-error">Entre -90 et 90</small>
+                    }
+                  </div>
+                  <div class="form-group col-6">
+                    <label for="longitude">Longitude</label>
+                    <input
+                      id="longitude"
+                      type="number"
+                      formControlName="longitude"
+                      class="form-input"
+                      [class.is-invalid]="isFieldInvalid('longitude')"
+                      step="0.000001"
+                      placeholder="2.3522" />
+                    @if (isFieldInvalid('longitude')) {
+                      <small class="field-error">Entre -180 et 180</small>
+                    }
+                  </div>
                 </div>
               </div>
-            </p-card>
 
-            <!-- Section configuration des jeux -->
-            <p-card header="Configuration des jeux" styleClass="form-section slots-section">
-              <ng-template pTemplate="header">
-                <div class="section-header">
-                  <i class="pi pi-gamepad"></i>
-                  <span>Configuration des jeux</span>
-                </div>
-              </ng-template>
-              
-              <div class="slots-configuration">
-                <p class="section-description">
-                  Chaque borne dispose de 2 slots pour les jeux. Vous pouvez assigner un jeu différent à chaque slot ou laisser des slots libres.
-                </p>
-                
-                <div formArrayName="slots" class="slots-grid">
+              <div class="section-sep"></div>
+
+              <!-- Configuration des jeux -->
+              <div class="form-section">
+                <p class="section-title">Configuration des jeux</p>
+                <div class="slots-list" formArrayName="slots">
                   @for (slotControl of slotsArray.controls; track $index; let i = $index) {
-                    <div [formGroupName]="i" class="slot-card">
-                      <div class="slot-header">
-                        <div class="slot-number">
-                          <span class="slot-label">Slot {{ i + 1 }}</span>
-                          <div class="slot-indicator" [class]="getSlotIndicatorClass(i)">
-                            <i [class]="getSlotIcon(i)"></i>
-                          </div>
-                        </div>
-                        @if (getSelectedGameForSlot(i); as selectedGame) {
-                          <div class="slot-status occupied">
-                            <span class="status-label">Occupé</span>
-                          </div>
-                        } @else {
-                          <div class="slot-status empty">
-                            <span class="status-label">Libre</span>
-                          </div>
-                        }
-                      </div>
-                      
-                      <div class="slot-content">
-                        <div class="form-group">
-                          <label [for]="'game_' + i">Jeu assigné</label>
-                          <p-dropdown 
-                            [id]="'game_' + i"
-                            formControlName="game_id"
-                            [options]="gameOptions()"
-                            optionLabel="label"
-                            optionValue="value"
-                            placeholder="Sélectionner un jeu"
-                            [showClear]="true"
-                            styleClass="gaming-dropdown w-full"
-                            (onChange)="onGameSlotChange(i, $event)">
-                            
-                            <ng-template pTemplate="selectedItem" let-option>
-                              @if (option && option.game) {
-                                <div class="selected-game">
-                                  <span class="game-name">{{ option.game.nom }}</span>
-                                  <span class="game-meta">{{ option.game.min_players }}-{{ option.game.max_players }} joueurs</span>
-                                </div>
-                              } @else {
-                                <span class="no-game">Aucun jeu sélectionné</span>
-                              }
-                            </ng-template>
-                            
-                            <ng-template pTemplate="item" let-option>
-                              @if (option.game) {
-                                <div class="game-option">
-                                  <div class="game-info">
-                                    <span class="game-name">{{ option.game.nom }}</span>
-                                    <span class="game-description">{{ option.game.description || 'Aucune description' }}</span>
-                                  </div>
-                                  <div class="game-meta">
-                                    <span class="players">{{ option.game.min_players }}-{{ option.game.max_players }} joueurs</span>
-                                    <span class="cost">{{ option.game.ticket_cost }} tickets</span>
-                                  </div>
-                                </div>
-                              } @else {
-                                <div class="no-game-option">
-                                  <i class="pi pi-times"></i>
-                                  <span>Aucun jeu</span>
-                                </div>
-                              }
-                            </ng-template>
-                          </p-dropdown>
-                        </div>
-                        
-                        @if (getSelectedGameForSlot(i); as selectedGame) {
-                          <div class="game-details">
-                            <div class="detail-item">
-                              <i class="pi pi-users"></i>
-                              <span>{{ selectedGame.min_players }}-{{ selectedGame.max_players }} joueurs</span>
-                            </div>
-                            <div class="detail-item">
-                              <i class="pi pi-ticket"></i>
-                              <span>{{ selectedGame.ticket_cost }} tickets</span>
-                            </div>
-                            @if (selectedGame.description) {
-                              <div class="game-description">
-                                <i class="pi pi-info-circle"></i>
-                                <span>{{ selectedGame.description }}</span>
+                    <div [formGroupName]="i" class="slot-row">
+                      <span class="slot-num">S{{ i + 1 }}</span>
+                      <div class="slot-dropdown-wrap">
+                        <p-dropdown
+                          [id]="'game_' + i"
+                          formControlName="game_id"
+                          [options]="gameOptions()"
+                          optionLabel="label"
+                          optionValue="value"
+                          placeholder="Aucun jeu assigné"
+                          [showClear]="!!getSelectedGameForSlot(i)"
+                                                    styleClass="w-full"
+                          (onChange)="onGameSlotChange(i, $event)">
+                          <ng-template pTemplate="selectedItem" let-option>
+                            @if (option?.game) {
+                              <div class="selected-game">
+                                <span class="game-name">{{ option.game.nom }}</span>
+                                <span class="game-meta">{{ option.game.min_players }}-{{ option.game.max_players }} j · {{ option.game.ticket_cost }} tickets</span>
                               </div>
                             }
-                          </div>
+                          </ng-template>
+                          <ng-template pTemplate="item" let-option>
+                            @if (option.game) {
+                              <div class="dropdown-item">
+                                <div class="item-info">
+                                  <span class="item-name">{{ option.game.nom }}</span>
+                                  @if (option.game.description) {
+                                    <span class="item-desc">{{ option.game.description }}</span>
+                                  }
+                                </div>
+                                <span class="item-meta">{{ option.game.min_players }}-{{ option.game.max_players }} j · {{ option.game.ticket_cost }} t.</span>
+                              </div>
+                            } @else {
+                              <span class="item-empty">Aucun jeu</span>
+                            }
+                          </ng-template>
+                        </p-dropdown>
+                        @if (getSelectedGameForSlot(i); as game) {
+                          @if (game.description) {
+                            <p class="slot-game-hint">{{ game.description }}</p>
+                          }
                         }
+                      </div>
+                      <div class="slot-state">
+                        <span class="dot" [class.dot--occupied]="!!getSelectedGameForSlot(i)"></span>
+                        <span class="slot-state-label">{{ getSelectedGameForSlot(i) ? 'Occupé' : 'Libre' }}</span>
                       </div>
                     </div>
                   }
+                  @if (hasSlotConflicts()) {
+                    <div class="slot-error">
+                      Un même jeu ne peut pas être assigné à plusieurs slots.
+                    </div>
+                  }
                 </div>
-                
-                @if (hasSlotConflicts()) {
-                  <p-message severity="error" styleClass="slot-error">
-                    <span>Erreur: Un même jeu ne peut pas être assigné à plusieurs slots</span>
-                  </p-message>
-                }
               </div>
-            </p-card>
 
-            <!-- Erreurs de validation globales -->
+            </ui-card>
+
+            <!-- Erreurs de validation -->
             @if (formValidationErrors().length > 0 && machineForm.touched) {
-              <p-card styleClass="validation-errors-card">
-                <div class="validation-errors">
-                  <h4>
-                    <i class="pi pi-exclamation-triangle"></i>
-                    Erreurs de validation
-                  </h4>
-                  <ul>
-                    @for (error of formValidationErrors(); track error) {
-                      <li>{{ error }}</li>
-                    }
-                  </ul>
-                </div>
-              </p-card>
+              <div class="validation-errors">
+                <ul>
+                  @for (error of formValidationErrors(); track error) {
+                    <li>{{ error }}</li>
+                  }
+                </ul>
+              </div>
             }
 
             <!-- Actions -->
             <div class="form-actions">
-              <button 
-                pButton 
-                pRipple 
-                type="button" 
-                label="Annuler" 
-                severity="secondary"
-                outlined
-                routerLink="/arcade-machines"
-                class="action-btn">
-              </button>
-              
+              <ui-button
+                type="button"
+                label="Annuler"
+                variant="secondary"
+                (clicked)="router.navigate(['/arcade-machines'])">
+              </ui-button>
               @if (isEditMode()) {
-                <button 
-                  pButton 
-                  pRipple 
-                  type="button" 
-                  label="Réinitialiser" 
-                  severity="danger"
-                  outlined
-                  (click)="resetForm()"
-                  class="action-btn">
-                </button>
+                <ui-button
+                  type="button"
+                  label="Réinitialiser"
+                  variant="ghost-danger"
+                  (clicked)="resetForm()">
+                </ui-button>
               }
-              
-              <button 
-                pButton 
-                pRipple 
-                type="submit" 
+              <ui-button
+                type="submit"
                 [label]="isEditMode() ? 'Mettre à jour' : 'Créer la borne'"
-                [loading]="submitting()" 
-                [disabled]="!canSubmit()"
-                severity="success"
-                class="gaming-button">
-              </button>
+                variant="primary"
+                [loading]="submitting()"
+                [disabled]="!canSubmit()">
+              </ui-button>
             </div>
           </form>
         }
       </div>
     </div>
-    
-    <p-confirmDialog 
-      header="Confirmation" 
-      icon="pi pi-question-circle"
-      styleClass="gaming-confirm-dialog">
-    </p-confirmDialog>
+
+    <p-confirmDialog header="Confirmation" icon="pi pi-question-circle"></p-confirmDialog>
   `,
   styleUrls: ['./machine-form.component.scss']
 })
@@ -425,7 +318,7 @@ export class MachineFormComponent implements OnInit {
   private readonly arcadesService = inject(ArcadesService);
   private readonly gamesService = inject(GamesService);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
+  protected readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly validationStrategy = new MachineFormValidationStrategy();
@@ -443,6 +336,10 @@ export class MachineFormComponent implements OnInit {
   readonly isEditMode = computed(() => !!this.machineId());
   readonly pageTitle = computed(() =>
     this.isEditMode() ? 'Modifier la borne' : 'Nouvelle borne d\'arcade'
+  );
+
+  readonly pageSubtitle = computed(() =>
+    this.isEditMode() ? 'Modifiez les informations et la configuration' : 'Créez une nouvelle borne d\'arcade'
   );
   
   readonly gameOptions = computed(() =>
@@ -583,7 +480,7 @@ export class MachineFormComponent implements OnInit {
     });
 
     // Réinitialiser les slots
-    this.slotsArray.controls.forEach((control, index) => {
+    this.slotsArray.controls.forEach(control => {
       control.patchValue({ game_id: 0 });
     });
 
@@ -694,23 +591,13 @@ export class MachineFormComponent implements OnInit {
 
   private prepareArcadeData(): ArcadeCreate {
     const formValue = this.machineForm.value;
-    
-    // Préparer les données selon l'interface ArcadeCreate
-    const arcadeData: ArcadeCreate = {
+    return {
       nom: formValue.nom.trim(),
-      description: formValue.description?.trim() || undefined,
-      localisation: formValue.localisation.trim()
+      description: formValue.description?.trim() ?? '',
+      localisation: formValue.localisation.trim(),
+      latitude: formValue.latitude != null ? Number(formValue.latitude) : 0,
+      longitude: formValue.longitude != null ? Number(formValue.longitude) : 0,
     };
-
-    // Ajouter latitude/longitude seulement si elles sont définies
-    if (formValue.latitude !== null && formValue.latitude !== undefined) {
-      arcadeData.latitude = Number(formValue.latitude);
-    }
-    if (formValue.longitude !== null && formValue.longitude !== undefined) {
-      arcadeData.longitude = Number(formValue.longitude);
-    }
-
-    return arcadeData;
   }
 
   private prepareGameAssignments(arcadeId: number): ArcadeGameAssignment[] {
@@ -766,7 +653,7 @@ export class MachineFormComponent implements OnInit {
     });
   }
 
-  private assignGamesToArcade(arcadeId: number, assignments: ArcadeGameAssignment[]): void {
+  private assignGamesToArcade(_arcadeId: number, assignments: ArcadeGameAssignment[]): void {
     // Envoyer chaque assignation séparément ou en lot selon l'API
     const requests = assignments.map(assignment => 
       this.arcadesService.assignGameToArcade(assignment)
