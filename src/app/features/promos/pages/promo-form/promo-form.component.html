@@ -1,14 +1,12 @@
 <div class="page-container animate-fade-in">
     <div class="page-header">
     <div class="header-content">
-        <button 
-        pButton 
-        pRipple 
-        icon="pi pi-arrow-left" 
-        class="p-button-text p-button-rounded back-button"
-        routerLink="/promos"
-        pTooltip="Retour à la liste">
-        </button>
+        <ui-button
+          icon="pi pi-arrow-left"
+          variant="ghost"
+          [rounded]="true"
+          tooltip="Retour à la liste"
+          (clicked)="router.navigate(['/promos'])" />
         <h1 class="page-title">
         <i class="pi pi-ticket neon-glow"></i>
         {{ pageTitle() }}
@@ -25,9 +23,8 @@
         </div>
         </app-loader>
     } @else {
-        <p-card styleClass="form-card gaming-card">
-        <ng-template pTemplate="header">
-            <div class="form-header">
+        <ui-card styleClass="form-card gaming-card ui-card--divided">
+            <div card-header class="form-header">
             <h2 class="form-title">
                 <i class="pi pi-info-circle"></i>
                 Informations du code promotionnel
@@ -36,7 +33,6 @@
                 Configurez les paramètres du code promo pour contrôler sa distribution
             </p>
             </div>
-        </ng-template>
 
         <form [formGroup]="promoForm" (ngSubmit)="onSubmit()" class="promo-form">
             <!-- Code promo -->
@@ -60,11 +56,7 @@
                 @if (codePreview()) {
                     <div class="code-preview animate-fade-in">
                     <span class="preview-label">Aperçu :</span>
-                    <p-tag 
-                        [value]="codePreview()" 
-                        severity="info"
-                        styleClass="code-tag">
-                    </p-tag>
+                    <ui-tag [label]="codePreview()" variant="info" />
                     </div>
                 }
                 </div>
@@ -202,12 +194,7 @@
                 </p-inputNumber>
                 
                 @if (!promoForm.get('usage_limit')?.value && !promoForm.get('is_single_use_global')?.value) {
-                    <p-tag 
-                    value="Utilisation illimitée" 
-                    severity="success"
-                    icon="pi pi-infinity"
-                    styleClass="limit-tag">
-                    </p-tag>
+                    <ui-tag label="Utilisation illimitée" variant="success" icon="pi pi-infinity" />
                 }
                 </div>
                 <small class="field-help">
@@ -243,35 +230,23 @@
             }
         </form>
 
-        <ng-template pTemplate="footer">
-            <div class="form-actions">
-            <button 
-                pButton 
-                pRipple 
-                type="button" 
-                label="Annuler" 
+            <div card-footer class="form-actions">
+              <ui-button
+                type="button"
+                label="Annuler"
                 icon="pi pi-times"
-                severity="secondary"
-                outlined
-                class="action-btn"
-                routerLink="/promos">
-            </button>
-            
-            <button 
-                pButton 
-                pRipple 
-                type="submit" 
-                [label]="submitLabel()" 
+                variant="secondary"
+                (clicked)="router.navigate(['/promos'])" />
+
+              <ui-button
+                type="submit"
+                [label]="submitLabel()"
                 [icon]="submitIcon()"
                 [loading]="submitting()"
                 [disabled]="!promoForm.valid || submitting()"
-                severity="success"
-                class="action-btn gaming-button"
-                (click)="onSubmit()">
-            </button>
+                (clicked)="onSubmit()" />
             </div>
-        </ng-template>
-        </p-card>
+        </ui-card>
     }
     </div>
 </div>

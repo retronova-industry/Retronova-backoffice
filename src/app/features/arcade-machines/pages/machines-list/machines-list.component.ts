@@ -2,15 +2,11 @@
 
 import { Component, OnInit, inject, signal, computed, viewChild, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Table, TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
-import { RippleModule } from 'primeng/ripple';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
-import { TagModule } from 'primeng/tag';
-import { CardModule } from 'primeng/card';
 import { BadgeModule } from 'primeng/badge';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ArcadesService } from '../../../../core/services/arcades.service';
@@ -19,6 +15,7 @@ import { Arcade, GameOnArcade } from '../../../../core/models/arcade.model';
 import { Game } from '../../../../core/models/game.model';
 import { LoaderComponent } from '../../../../shared/components/loader/loader.component';
 import { StatsCardComponent, StatsData } from '../../../../shared/components/stats-card/stats-card.component';
+import { ButtonComponent, TagComponent, CardComponent } from '../../../../shared/ui';
 import { forkJoin } from 'rxjs';
 
 interface EnrichedArcade extends Arcade {
@@ -124,50 +121,35 @@ class MachineStatsCalculator {
     CommonModule,
     RouterModule,
     TableModule,
-    ButtonModule,
-    RippleModule,
     InputTextModule,
     ConfirmDialogModule,
     TooltipModule,
-    TagModule,
-    CardModule,
     BadgeModule,
     LoaderComponent,
+    ButtonComponent,
+    TagComponent,
+    CardComponent,
   ],
   providers: [ConfirmationService],
   template: `
-    <div class="page-container animate-fade-in">
+    <div class="page-container">
       <div class="page-header">
         <div class="page-title-section">
-          <h1 class="page-title">
-            <i class="pi pi-desktop neon-glow"></i>
-            Bornes d'Arcade
-          </h1>
-          <p class="page-subtitle">
-            Gestion et monitoring de vos bornes d'arcade
-          </p>
+          <h1 class="page-title">Bornes d'arcade</h1>
+          <p class="page-subtitle">Gestion et monitoring de vos bornes d'arcade</p>
         </div>
         <div class="page-actions">
-          <button
-            pButton
-            pRipple
+          <ui-button
             icon="pi pi-plus"
             label="Nouvelle borne"
-            severity="success"
-            class="gaming-button"
-            routerLink="/arcade-machines/new">
-          </button>
+            (clicked)="router.navigate(['/arcade-machines/new'])" />
 
-          <button
-            pButton
-            pRipple
+          <ui-button
             icon="pi pi-refresh"
             label="Actualiser"
+            variant="secondary"
             [loading]="loading()"
-            (click)="refreshMachines()"
-            severity="secondary"
-            outlined>
-          </button>
+            (clicked)="refreshMachines()" />
         </div>
       </div>
 
@@ -204,7 +186,7 @@ class MachineStatsCalculator {
                   type="text"
                   placeholder="Rechercher une borne..."
                   (input)="handleGlobalFilter($event)"
-                  class="search-input gaming-input" />
+                  class="search-input" />
               </span>
               <div class="search-results">
                 <i class="pi pi-filter-fill"></i>
@@ -214,26 +196,16 @@ class MachineStatsCalculator {
 
             <div class="view-controls">
               <div class="view-toggle">
-                <button
-                  pButton
-                  pRipple
+                <ui-button
                   icon="pi pi-list"
-                  [severity]="viewMode() === 'table' ? 'primary' : 'secondary'"
-                  [outlined]="viewMode() !== 'table'"
-                  (click)="setViewMode('table')"
-                  pTooltip="Vue tableau"
-                  class="view-btn">
-                </button>
-                <button
-                  pButton
-                  pRipple
+                  [variant]="viewMode() === 'table' ? 'primary' : 'secondary'"
+                  tooltip="Vue tableau"
+                  (clicked)="setViewMode('table')" />
+                <ui-button
                   icon="pi pi-th-large"
-                  [severity]="viewMode() === 'grid' ? 'primary' : 'secondary'"
-                  [outlined]="viewMode() !== 'grid'"
-                  (click)="setViewMode('grid')"
-                  pTooltip="Vue grille"
-                  class="view-btn">
-                </button>
+                  [variant]="viewMode() === 'grid' ? 'primary' : 'secondary'"
+                  tooltip="Vue grille"
+                  (clicked)="setViewMode('grid')" />
               </div>
             </div>
           </div>
@@ -253,40 +225,15 @@ class MachineStatsCalculator {
                 [showCurrentPageReport]="true"
                 currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} bornes"
                 [loading]="loading()"
-                styleClass="machines-table gaming-table">
+                styleClass="machines-table">
 
                 <ng-template pTemplate="header">
                   <tr>
-                    <th pSortableColumn="nom" style="width: 25%">
-                      <div class="header-content">
-                        <i class="pi pi-desktop"></i>
-                        Nom <p-sortIcon field="nom"></p-sortIcon>
-                      </div>
-                    </th>
-                    <th pSortableColumn="localisation" style="width: 20%">
-                      <div class="header-content">
-                        <i class="pi pi-map-marker"></i>
-                        Localisation <p-sortIcon field="localisation"></p-sortIcon>
-                      </div>
-                    </th>
-                    <th style="width: 25%">
-                      <div class="header-content">
-                        <i class="pi pi-gamepad"></i>
-                        Configuration Jeux
-                      </div>
-                    </th>
-                    <th pSortableColumn="status" style="width: 15%">
-                      <div class="header-content">
-                        <i class="pi pi-circle"></i>
-                        Statut <p-sortIcon field="status"></p-sortIcon>
-                      </div>
-                    </th>
-                    <th style="width: 15%">
-                      <div class="header-content">
-                        <i class="pi pi-cog"></i>
-                        Actions
-                      </div>
-                    </th>
+                    <th pSortableColumn="nom" style="width: 25%">Nom <p-sortIcon field="nom"></p-sortIcon></th>
+                    <th pSortableColumn="localisation" style="width: 20%">Localisation <p-sortIcon field="localisation"></p-sortIcon></th>
+                    <th style="width: 28%">Configuration jeux</th>
+                    <th pSortableColumn="status" style="width: 15%">Statut <p-sortIcon field="status"></p-sortIcon></th>
+                    <th style="width: 12%">Actions</th>
                   </tr>
                 </ng-template>
 
@@ -330,57 +277,29 @@ class MachineStatsCalculator {
                       </div>
                     </td>
                     <td>
-                      <div class="games-configuration">
-                        @if (machine.games && machine.games.length > 0) {
-                          <div class="slots-container">
-                            @for (slot of [1, 2]; track slot) {
-                              <div class="slot-item" [class]="getSlotClass(machine, slot)">
-                                <div class="slot-header">
-                                  <span class="slot-label">Slot {{ slot }}</span>
-                                  <span class="slot-status" [class]="getSlotStatusClass(machine, slot)">
-                                    {{ getSlotStatusLabel(machine, slot) }}
-                                  </span>
-                                </div>
-                                @if (getGameForSlot(machine, slot); as game) {
-                                  <div class="game-info">
-                                    <span class="game-name">{{ game.nom }}</span>
-                                    <span class="game-players">{{ game.min_players }}-{{ game.max_players }} joueurs</span>
-                                  </div>
-                                } @else {
-                                  <div class="empty-slot">
-                                    <i class="pi pi-plus-circle"></i>
-                                    <span>Libre</span>
-                                  </div>
-                                }
-                              </div>
+                      <div class="games-slots">
+                        @for (slot of [1, 2]; track slot) {
+                          <div class="slot-row">
+                            @if (getGameForSlot(machine, slot); as game) {
+                              <span class="slot-dot slot-dot--occupied"></span>
+                              <span class="slot-num">S{{ slot }}</span>
+                              <span class="slot-game-name">{{ game.nom }}</span>
+                              <span class="slot-players">{{ game.min_players }}-{{ game.max_players }}j</span>
+                            } @else {
+                              <span class="slot-dot slot-dot--empty"></span>
+                              <span class="slot-num">S{{ slot }}</span>
+                              <span class="slot-empty-label">Libre</span>
                             }
-                          </div>
-                        } @else {
-                          <div class="no-games-configured">
-                            <i class="pi pi-exclamation-triangle"></i>
-                            <span>Aucun jeu configuré</span>
-                            <button
-                              pButton
-                              pRipple
-                              icon="pi pi-plus"
-                              label="Configurer"
-                              size="small"
-                              severity="info"
-                              text
-                              (click)="configureGames(machine)">
-                            </button>
                           </div>
                         }
                       </div>
                     </td>
                     <td>
                       <div class="status-cell">
-                        <p-tag
-                          [value]="getStatusLabel(machine.status)"
-                          [severity]="getStatusSeverity(machine.status)"
-                          [icon]="getStatusIcon(machine.status)"
-                          styleClass="status-tag animate-pulse">
-                        </p-tag>
+                        <ui-tag
+                          [label]="getStatusLabel(machine.status)"
+                          [variant]="getStatusSeverity(machine.status)"
+                          [icon]="getStatusIcon(machine.status)" />
                         @if (machine.status === 'partial') {
                           <small class="status-detail">
                             {{ machine.active_slots }}/2 slots actifs
@@ -390,61 +309,27 @@ class MachineStatsCalculator {
                     </td>
                     <td>
                       <div class="action-buttons">
-                        <!-- <button
-                          pButton
-                          pRipple
+                        <ui-button
                           icon="pi pi-eye"
+                          variant="ghost"
+                          size="sm"
                           [rounded]="true"
-                          text
-                          severity="info"
-                          size="small"
-                          pTooltip="Voir les détails"
-                          tooltipPosition="top"
-                          class="action-button hover-lift"
-                          [routerLink]="['/arcade-machines/detail', machine.id]">
-                        </button> -->
-
-                        <!-- <button
-                          pButton
-                          pRipple
-                          icon="pi pi-gamepad"
-                          [rounded]="true"
-                          text
-                          severity="danger"
-                          size="small"
-                          pTooltip="Configurer les jeux"
-                          tooltipPosition="top"
-                          class="action-button hover-scale"
-                          (click)="configureGames(machine)">
-                        </button> -->
-
-                        <!-- <button
-                          pButton
-                          pRipple
+                          tooltip="Voir les détails"
+                          (clicked)="router.navigate(['/arcade-machines', machine.id])" />
+                        <ui-button
                           icon="pi pi-pencil"
+                          variant="ghost"
+                          size="sm"
                           [rounded]="true"
-                          text
-                          severity="success"
-                          size="small"
-                          pTooltip="Éditer"
-                          tooltipPosition="top"
-                          class="action-button hover-glow"
-                          [routerLink]="['/arcade-machines/edit', machine.id]">
-                        </button> -->
-
-                        <button
-                          pButton
-                          pRipple
+                          tooltip="Éditer"
+                          (clicked)="router.navigate(['/arcade-machines/edit', machine.id])" />
+                        <ui-button
                           icon="pi pi-trash"
+                          variant="ghost-danger"
+                          size="sm"
                           [rounded]="true"
-                          text
-                          severity="danger"
-                          size="small"
-                          pTooltip="Supprimer"
-                          tooltipPosition="top"
-                          class="action-button hover-scale"
-                          (click)="confirmDelete(machine)">🗑️
-                        </button>
+                          tooltip="Supprimer"
+                          (clicked)="confirmDelete(machine)" />
                       </div>
                     </td>
                   </tr>
@@ -453,18 +338,14 @@ class MachineStatsCalculator {
                 <ng-template pTemplate="emptymessage">
                   <tr>
                     <td colspan="5" class="empty-message">
-                      <div class="empty-state animate-floating">
-                        <i class="pi pi-desktop empty-icon neon-glow"></i>
+                      <div class="empty-state">
+                        <i class="pi pi-desktop empty-icon"></i>
                         <h3>Aucune borne trouvée</h3>
                         <p>Aucune borne d'arcade ne correspond à vos critères.</p>
-                        <button
-                          pButton
-                          pRipple
+                        <ui-button
                           label="Créer une borne"
                           icon="pi pi-plus"
-                          class="gaming-button"
-                          routerLink="/arcade-machines/new">
-                        </button>
+                          (clicked)="router.navigate(['/arcade-machines/new'])" />
                       </div>
                     </td>
                   </tr>
@@ -477,9 +358,8 @@ class MachineStatsCalculator {
               @for (machine of displayedMachines(); track machine.id; let i = $index) {
                 <div class="machine-card-container stagger-fade-in"
                      [style.animation-delay]="(i * 0.1) + 's'">
-                  <p-card styleClass="machine-card gaming-card hover-lift">
-                    <ng-template pTemplate="header">
-                      <div class="machine-card-header" [class]="'status-' + machine.status">
+                  <ui-card styleClass="machine-card gaming-card hover-lift ui-card--flush">
+                    <div card-header class="machine-card-header" [class]="'status-' + machine.status">
                         <div class="machine-card-icon" [class]="getMachineIconClass(machine.status)">
                           <i class="pi pi-desktop"></i>
                           @if (machine.games_count > 0) {
@@ -492,15 +372,12 @@ class MachineStatsCalculator {
                         </div>
                         <div class="card-title-section">
                           <h3 class="machine-card-title">{{ machine.nom }}</h3>
-                          <p-tag
-                            [value]="getStatusLabel(machine.status)"
-                            [severity]="getStatusSeverity(machine.status)"
-                            [icon]="getStatusIcon(machine.status)"
-                            styleClass="status-tag-card">
-                          </p-tag>
+                          <ui-tag
+                            [label]="getStatusLabel(machine.status)"
+                            [variant]="getStatusSeverity(machine.status)"
+                            [icon]="getStatusIcon(machine.status)" />
                         </div>
                       </div>
-                    </ng-template>
 
                     <div class="machine-card-content">
                       @if (machine.description) {
@@ -555,46 +432,29 @@ class MachineStatsCalculator {
                       </div>
                     </div>
 
-                    <ng-template pTemplate="footer">
-                      <div class="machine-card-actions">
-                        <button
-                          pButton
-                          pRipple
-                          label="Détails"
-                          icon="pi pi-eye"
-                          severity="info"
-                          outlined
-                          size="small"
-                          class="card-action-btn"
-                          [routerLink]="['/arcade-machines', machine.id]">
-                        </button>
+                    <div card-footer class="machine-card-actions">
+                      <ui-button
+                        label="Détails"
+                        icon="pi pi-eye"
+                        variant="secondary"
+                        size="sm"
+                        (clicked)="router.navigate(['/arcade-machines', machine.id])" />
 
-                        <button
-                          pButton
-                          pRipple
-                          label="Jeux"
-                          icon="pi pi-gamepad"
-                          severity="danger"
-                          outlined
-                          size="small"
-                          class="card-action-btn"
-                          (click)="configureGames(machine)">
-                        </button>
+                      <ui-button
+                        label="Jeux"
+                        icon="pi pi-gamepad"
+                        variant="secondary"
+                        size="sm"
+                        (clicked)="configureGames(machine)" />
 
-                        <button
-                          pButton
-                          pRipple
-                          icon="pi pi-pencil"
-                          severity="success"
-                          outlined
-                          size="small"
-                          class="card-action-btn"
-                          pTooltip="Éditer"
-                          [routerLink]="['/arcade-machines/edit', machine.id]">
-                        </button>
-                      </div>
-                    </ng-template>
-                  </p-card>
+                      <ui-button
+                        icon="pi pi-pencil"
+                        variant="secondary"
+                        size="sm"
+                        tooltip="Éditer"
+                        (clicked)="router.navigate(['/arcade-machines/edit', machine.id])" />
+                    </div>
+                  </ui-card>
                 </div>
               }
             </div>
@@ -613,6 +473,7 @@ class MachineStatsCalculator {
 })
 export class MachinesListComponent implements OnInit {
   // Services injectés avec inject()
+  protected readonly router = inject(Router);
   private readonly arcadesService = inject(ArcadesService);
   private readonly gamesService = inject(GamesService);
   private readonly confirmationService = inject(ConfirmationService);

@@ -2,18 +2,14 @@
 
 import { Component, OnInit, inject, signal, viewChild, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { TableModule, Table } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
-import { RippleModule } from 'primeng/ripple';
-import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { TooltipModule } from 'primeng/tooltip';
-import { TagModule } from 'primeng/tag';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { UsersService } from '../../../../core/services/users.service';
 import { User } from '../../../../core/models/user.model';
 import { LoaderComponent } from '../../../../shared/components/loader/loader.component';
+import { ButtonComponent, TagComponent } from '../../../../shared/ui';
 
 @Component({
   selector: 'app-users-list',
@@ -22,13 +18,10 @@ import { LoaderComponent } from '../../../../shared/components/loader/loader.com
     CommonModule,
     RouterModule,
     TableModule,
-    ButtonModule,
-    RippleModule,
-    InputTextModule,
     ConfirmDialogModule,
-    TooltipModule,
-    TagModule,
-    LoaderComponent
+    LoaderComponent,
+    ButtonComponent,
+    TagComponent,
   ],
   providers: [ConfirmationService],
   template: `
@@ -39,14 +32,13 @@ import { LoaderComponent } from '../../../../shared/components/loader/loader.com
           <i>Permet la restauration d'un compte utilisateur supprimé</i>
         </div>
         <div class="page-actions">
-          <p-button 
-            icon="pi pi-refresh" 
-            label="Actualiser" 
+          <ui-button
+            icon="pi pi-refresh"
+            label="Actualiser"
+            variant="secondary"
             [loading]="loading()"
-            (click)="refreshUsers()"
-            severity="secondary"
-            outlined>
-          </p-button>
+            (clicked)="refreshUsers()">
+          </ui-button>
         </div>
       </div>
       
@@ -55,14 +47,14 @@ import { LoaderComponent } from '../../../../shared/components/loader/loader.com
           <app-loader size="large">Chargement des utilisateurs...</app-loader>
         } @else {
           <div class="search-container">
-            <span class="p-input-icon-left">
-              <i class="pi pi-search"></i>
-              <input 
-                pInputText 
-                type="text" 
-                placeholder="Rechercher par nom, prénom ou pseudo..." 
+            <div class="search-input-wrapper">
+              <i class="pi pi-search search-icon"></i>
+              <input
+                type="text"
+                class="search-input"
+                placeholder="Rechercher par nom, prénom ou pseudo..."
                 (input)="applyFilterGlobal($event)" />
-            </span>
+            </div>
             <div class="search-stats">
               {{ filteredUsers().length }} utilisateur(s) trouvé(s)
             </div>
@@ -118,49 +110,43 @@ import { LoaderComponent } from '../../../../shared/components/loader/loader.com
                   <span class="user-pseudo">{{ user.pseudo }}</span>
                 </td>
                 <td>
-                  <p-tag 
-                    [value]="user.tickets_balance.toString()" 
-                    [severity]="getTicketsSeverity(user.tickets_balance)"
+                  <ui-tag
+                    [label]="user.tickets_balance.toString()"
+                    [variant]="getTicketsSeverity(user.tickets_balance)"
                     icon="pi pi-ticket">
-                  </p-tag>
+                  </ui-tag>
                 </td>
                 <td>
                   <span class="date-cell">{{ formatDate(user.created_at) }}</span>
                 </td>
                 <td>
                   <div class="action-buttons">
-                    <p-button 
-                      icon="pi pi-eye" 
+                    <ui-button
+                      icon="pi pi-eye"
+                      variant="ghost"
+                      size="sm"
                       [rounded]="true"
-                      text
-                      severity="info"
-                      size="small"
-                      pTooltip="Voir le profil" 
-                      tooltipPosition="top"
-                      [routerLink]="['/users', user.id]">
-                    </p-button>
-                    
-                    <p-button 
-                      icon="pi pi-pencil" 
+                      tooltip="Voir le profil"
+                      (clicked)="router.navigate(['/users', user.id])">
+                    </ui-button>
+
+                    <ui-button
+                      icon="pi pi-pencil"
+                      variant="ghost"
+                      size="sm"
                       [rounded]="true"
-                      text
-                      severity="success"
-                      size="small"
-                      pTooltip="Éditer" 
-                      tooltipPosition="top"
-                      [routerLink]="['/users/edit', user.id]">
-                    </p-button>
-                    
-                    <p-button 
-                      icon="pi pi-trash" 
+                      tooltip="Éditer"
+                      (clicked)="router.navigate(['/users/edit', user.id])">
+                    </ui-button>
+
+                    <ui-button
+                      icon="pi pi-trash"
+                      variant="ghost-danger"
+                      size="sm"
                       [rounded]="true"
-                      text
-                      severity="danger"
-                      size="small"
-                      pTooltip="Supprimer" 
-                      tooltipPosition="top"
-                      (click)="confirmDelete(user)">
-                    </p-button>
+                      tooltip="Supprimer"
+                      (clicked)="confirmDelete(user)">
+                    </ui-button>
                   </div>
                 </td>
               </tr>
@@ -195,6 +181,7 @@ export class UsersListComponent implements OnInit {
   private readonly usersService = inject(UsersService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
+  readonly router = inject(Router);
 
   // ViewChild pour la table
   readonly table = viewChild<Table>('dt');
@@ -331,7 +318,7 @@ export class UsersListComponent implements OnInit {
   /**
    * Détermine la sévérité du tag tickets
    */
-  getTicketsSeverity(balance: number): 'success' | 'warning' | 'danger' | 'info' {
+  getTicketsSeverity(balance: number): 'success' | 'warning' | 'danger' | 'info' | 'default' {
     if (balance >= 50) return 'success';
     if (balance >= 10) return 'info';
     if (balance >= 1) return 'warning';

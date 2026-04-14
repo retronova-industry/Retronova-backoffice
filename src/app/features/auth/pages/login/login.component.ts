@@ -2,16 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { RippleModule } from 'primeng/ripple';
+import { ButtonComponent } from '../../../../shared/ui';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonModule, InputTextModule, RippleModule],
+  imports: [CommonModule, ReactiveFormsModule, InputTextModule, ButtonComponent],
   template: `
     <div class="login-container">
       <div class="login-card">
@@ -40,9 +39,11 @@ import { NotificationService } from '../../../../core/services/notification.serv
           </div>
           
           <div class="field">
-            <button pButton pRipple type="submit" label="Se connecter" 
-                   [disabled]="loginForm.invalid || isLoading" 
-                   [loading]="isLoading"></button>
+            <ui-button
+              type="submit"
+              label="Se connecter"
+              [disabled]="loginForm.invalid || isLoading"
+              [loading]="isLoading" />
           </div>
         </form>
       </div>

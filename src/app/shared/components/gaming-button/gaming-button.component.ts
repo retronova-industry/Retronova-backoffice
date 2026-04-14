@@ -29,6 +29,7 @@ class ArcadeButtonVariant extends ButtonVariant {
 @Component({
   selector: 'app-gaming-button',
   standalone: true,
+  styleUrl: './gaming-button.component.scss',
   template: `
     <button 
       [class]="buttonClasses()"
@@ -44,50 +45,6 @@ class ArcadeButtonVariant extends ButtonVariant {
       </span>
     </button>
   `,
-  styles: [`
-    :host {
-      display: inline-block;
-    }
-    
-    button {
-      position: relative;
-      padding: var(--space-3) var(--space-6);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      transition: all var(--transition-normal);
-      cursor: pointer;
-      
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-    }
-    
-    .btn-primary {
-      background: var(--gaming-gradient-primary);
-      color: white;
-      border: none;
-      border-radius: var(--radius-lg);
-    }
-    
-    .btn-arcade {
-      background: transparent;
-      color: var(--neon-blue);
-      border: 2px solid currentColor;
-      
-      &:hover {
-        background: var(--neon-blue);
-        color: black;
-        transform: scale(1.05);
-      }
-    }
-    
-    @keyframes arcade-press {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(0.95); }
-    }
-  `]
 })
 export class GamingButtonComponent {
   // Inputs avec signals

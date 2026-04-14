@@ -1,0 +1,12 @@
+import { Component, input } from '@angular/core';
+
+@Component({
+  selector: 'ui-card',
+  standalone: true,
+  templateUrl: './card.component.html',
+  styleUrl: './card.component.scss',
+})
+export class CardComponent {
+  // Classe CSS additionnelle passée depuis l'extérieur
+  readonly styleClass = input<string>('');
+}

@@ -1,0 +1,11 @@
+<input
+  class="ui-input"
+  [type]="type()"
+  [placeholder]="placeholder()"
+  [id]="id()"
+  [autocomplete]="autocomplete()"
+  [value]="value()"
+  [disabled]="isDisabled()"
+  (input)="handleInput($event)"
+  (blur)="handleBlur()"
+/>

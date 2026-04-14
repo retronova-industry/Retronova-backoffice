@@ -1,28 +1,97 @@
-<div class="dashboard-container">
-  <h1>Tableau de bord</h1>
+<div class="dashboard">
 
-  @if (isLoading()) {
-    <div class="loading-container">
-      <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+  <!-- En-tête -->
+  <div class="dashboard-header">
+    <div class="dashboard-title">
+      <h1>Tableau de bord</h1>
+      <p class="dashboard-date">{{ today }}</p>
     </div>
-  }
+  </div>
 
-  @if (!isLoading()) {
-    <div class="dashboard-cards">
-      @for (card of dashboardCards(); track card.title) {
-        <p-card styleClass="dashboard-card">
-          <ng-template pTemplate="header">
-            <div class="card-header" [style.background-color]="card.color">
-              <i [class]="card.icon"></i>
-              <h3>{{ card.title }}</h3>
-            </div>
-          </ng-template>
-          <div class="card-body">
-            <h2>{{ card.value }}</h2>
-            <a [routerLink]="card.link">{{ card.linkText }}</a>
-          </div>
-        </p-card>
+  <!-- Metrics strip -->
+  @if (isLoading()) {
+    <div class="metrics-strip metrics-strip--loading">
+      @for (_ of [1,2,3,4]; track $index) {
+        <div class="metric-item metric-skeleton"></div>
       }
     </div>
+  } @else {
+    <div class="metrics-strip">
+      @for (metric of metrics(); track metric.label) {
+        <a class="metric-item" [routerLink]="metric.link">
+          <span class="metric-value">{{ metric.value }}</span>
+          <span class="metric-label">{{ metric.label }}</span>
+          <span class="metric-arrow">→</span>
+        </a>
+      }
+    </div>
+
+    <!-- Grille principale -->
+    <div class="dashboard-grid">
+
+      <!-- Activité en cours -->
+      <section class="dashboard-card">
+        <h2 class="card-title">En ce moment</h2>
+        <div class="activity-list">
+          <div class="activity-row">
+            <span class="activity-dot" [class.activity-dot--active]="activePartiesCount() > 0"></span>
+            <span class="activity-text">
+              @if (activePartiesCount() > 0) {
+                <strong>{{ activePartiesCount() }}</strong> partie{{ activePartiesCount() > 1 ? 's' : '' }} en cours
+              } @else {
+                Aucune partie active
+              }
+            </span>
+          </div>
+          <div class="activity-row">
+            <span class="activity-dot activity-dot--machine"></span>
+            <span class="activity-text">
+              <strong>{{ activeMachinesCount() }}</strong> borne{{ activeMachinesCount() > 1 ? 's' : '' }} utilisée{{ activeMachinesCount() > 1 ? 's' : '' }}
+              <span class="activity-meta">sur {{ totalMachinesCount() }}</span>
+            </span>
+          </div>
+          <div class="activity-row">
+            <span class="activity-dot activity-dot--neutral"></span>
+            <span class="activity-text">
+              <strong>{{ totalMachinesCount() - activeMachinesCount() }}</strong> borne{{ (totalMachinesCount() - activeMachinesCount()) > 1 ? 's' : '' }} disponible{{ (totalMachinesCount() - activeMachinesCount()) > 1 ? 's' : '' }}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Navigation rapide -->
+      <section class="dashboard-card">
+        <h2 class="card-title">Navigation rapide</h2>
+        <nav class="quicknav">
+          <a routerLink="/arcade-machines" class="quicknav-item">
+            <i class="pi pi-desktop quicknav-icon"></i>
+            <span>Gérer les bornes</span>
+            <i class="pi pi-arrow-right quicknav-arrow"></i>
+          </a>
+          <a routerLink="/games" class="quicknav-item">
+            <i class="pi pi-play quicknav-icon"></i>
+            <span>Bibliothèque de jeux</span>
+            <i class="pi pi-arrow-right quicknav-arrow"></i>
+          </a>
+          <a routerLink="/users" class="quicknav-item">
+            <i class="pi pi-users quicknav-icon"></i>
+            <span>Utilisateurs</span>
+            <i class="pi pi-arrow-right quicknav-arrow"></i>
+          </a>
+          <a routerLink="/promos" class="quicknav-item">
+            <i class="pi pi-tag quicknav-icon"></i>
+            <span>Codes promotionnels</span>
+            <i class="pi pi-arrow-right quicknav-arrow"></i>
+          </a>
+          <a routerLink="/statistics" class="quicknav-item">
+            <i class="pi pi-chart-bar quicknav-icon"></i>
+            <span>Statistiques</span>
+            <i class="pi pi-arrow-right quicknav-arrow"></i>
+          </a>
+        </nav>
+      </section>
+
+    </div>
   }
+
 </div>
