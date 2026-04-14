@@ -3,20 +3,14 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
-import { TagModule } from 'primeng/tag';
-import { TooltipModule } from 'primeng/tooltip';
-import { DividerModule } from 'primeng/divider';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { TimelineModule } from 'primeng/timeline';
-import { ChipModule } from 'primeng/chip';
-import { RippleModule } from 'primeng/ripple';
 import { MessageService } from 'primeng/api';
+import { ButtonComponent, CardComponent, TagComponent } from '../../../../shared/ui';
 import { PromosService } from '../../../../core/services/promos.service';
 import { PromoCode, PromoHistory } from '../../../../core/models/promo.model';
 import { LoaderComponent } from '../../../../shared/components/loader/loader.component';
-import { StatsCardComponent, StatsData } from '../../../../shared/components/stats-card/stats-card.component';
+import { StatsData } from '../../../../shared/components/stats-card/stats-card.component';
 
 interface PromoUsageEvent {
   readonly date: string;
@@ -96,23 +90,18 @@ class PromoDetailsStatsCalculator {
   imports: [
     CommonModule,
     RouterModule,
-    ButtonModule,
-    CardModule,
-    TagModule,
-    TooltipModule,
-    DividerModule,
     ProgressBarModule,
     TimelineModule,
-    ChipModule,
-    RippleModule,
     LoaderComponent,
-    StatsCardComponent
+    ButtonComponent,
+    CardComponent,
+    TagComponent,
   ],
   templateUrl: './promos-details.component.html',
   styleUrls: ['./promos-details.component.scss']
 })
 export class PromosDetailsComponent implements OnInit {
-  private readonly router = inject(Router);
+  readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly promosService = inject(PromosService);
   private readonly messageService = inject(MessageService);
@@ -159,12 +148,12 @@ export class PromosDetailsComponent implements OnInit {
     return labels[status] || 'Inactif';
   });
   
-  protected readonly statusSeverity = computed((): 'success' | 'warning' | 'danger' => {
+  protected readonly statusSeverity = computed((): 'success' | 'warning' | 'danger' | 'info' | 'default' => {
     const p = this.promo();
     if (!p) return 'danger';
-    
+
     if (!p.is_active) return 'danger';
-    
+
     const status = PromoDetailsStatsCalculator.getPromoStatus(p);
     const severities: Record<string, 'success' | 'warning' | 'danger'> = {
       active: 'success',

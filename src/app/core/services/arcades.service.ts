@@ -60,7 +60,7 @@ export class ArcadesService {
    * Assigne un jeu à une borne (admin)
    */
   assignGameToArcade(assignment: ArcadeGameAssignment): Observable<any> {
-    return this.apiService.put('/admin/arcades/games', assignment);
+    return this.apiService.put(`/admin/arcades/${assignment.arcade_id}/games`, assignment);
   }
 
   /**

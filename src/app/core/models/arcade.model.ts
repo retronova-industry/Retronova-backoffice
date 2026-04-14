@@ -25,10 +25,10 @@ export interface GameOnArcade {
 
 export interface ArcadeCreate {
   nom: string;
-  description?: string;
-  localisation?: string;
-  latitude?: number;
-  longitude?: number;
+  description: string;
+  localisation: string;
+  latitude: number;
+  longitude: number;
 }
 
 export interface ArcadeUpdate {
