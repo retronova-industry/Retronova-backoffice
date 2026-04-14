@@ -5,8 +5,10 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { TimelineModule } from 'primeng/timeline';
-import { MessageService } from 'primeng/api';
-import { ButtonComponent, CardComponent, TagComponent } from '../../../../shared/ui';
+import { ChipModule } from 'primeng/chip';
+import { RippleModule } from 'primeng/ripple';
+import { MessageService, MenuItem } from 'primeng/api';
+import { MenuModule } from 'primeng/menu';
 import { PromosService } from '../../../../core/services/promos.service';
 import { PromoCode, PromoHistory } from '../../../../core/models/promo.model';
 import { LoaderComponent } from '../../../../shared/components/loader/loader.component';
@@ -93,9 +95,8 @@ class PromoDetailsStatsCalculator {
     ProgressBarModule,
     TimelineModule,
     LoaderComponent,
-    ButtonComponent,
-    CardComponent,
-    TagComponent,
+    StatsCardComponent,
+    MenuModule
   ],
   templateUrl: './promos-details.component.html',
   styleUrls: ['./promos-details.component.scss']
@@ -229,6 +230,7 @@ export class PromosDetailsComponent implements OnInit {
   });
   
   ngOnInit(): void {
+    this.buildShareMenu();
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.promoId.set(+id);
@@ -305,21 +307,84 @@ export class PromosDetailsComponent implements OnInit {
   }
   
   /**
-   * Partage le code promo
+   * Items du menu de partage
    */
-  protected sharePromoCode(): void {
+  protected shareMenuItems: MenuItem[] = [];
+
+  /**
+   * Construit dynamiquement le menu de partage selon les capacités de la plateforme
+   */
+  private buildShareMenu(): void {
+    const items: MenuItem[] = [];
+
+    // Partage web / liens directs qui ouvrent l'app si elle est installée
+    items.push(
+      { label: 'WhatsApp', icon: 'pi pi-whatsapp', command: () => this.shareToWhatsApp() },
+      { label: 'Facebook', icon: 'pi pi-facebook', command: () => this.shareToFacebook() },
+      { label: 'X (Twitter)', icon: 'pi pi-twitter', command: () => this.shareToX() },
+      { label: 'Gmail', icon: 'pi pi-envelope', command: () => this.shareToGmail() },
+      { label: 'Outlook', icon: 'pi pi-envelope', command: () => this.shareToOutlook() }
+    );
+
+    items.push({ separator: true }, { label: 'Envoyer par email', icon: 'pi pi-envelope', command: () => this.shareViaEmail() });
+
+    this.shareMenuItems = items;
+  }
+
+  private getShareText(): { text: string; url: string; subject: string } {
+    const code = this.promo()?.code || '';
+    const tickets = this.promo()?.tickets_reward ?? '';
+    const text = `Utilisez le code ${code} pour obtenir ${tickets} tickets gratuits sur RetroNova !`;
+    return { text, url: window.location.href, subject: 'Code promo RetroNova' };
+  }
+
+  protected shareToWhatsApp(): void {
+    const { text } = this.getShareText();
+    const encoded = encodeURIComponent(text);
+    window.open(`https://wa.me/?text=${encoded}`, '_blank');
+  }
+
+  protected shareToFacebook(): void {
+    const { text, url } = this.getShareText();
+    const q = encodeURIComponent(text);
+    const u = encodeURIComponent(url);
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${u}&quote=${q}`, '_blank');
+  }
+
+  protected shareToX(): void {
+    const { text, url } = this.getShareText();
+    const t = encodeURIComponent(text);
+    const u = encodeURIComponent(url);
+    window.open(`https://twitter.com/intent/tweet?text=${t}&url=${u}`, '_blank');
+  }
+
+  protected shareToGmail(): void {
+    const { text, subject } = this.getShareText();
+    const s = encodeURIComponent(subject);
+    const b = encodeURIComponent(text);
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&su=${s}&body=${b}`, '_blank');
+  }
+
+  protected shareToOutlook(): void {
+    const { text, subject } = this.getShareText();
+    const s = encodeURIComponent(subject);
+    const b = encodeURIComponent(text);
+    window.open(`https://outlook.live.com/owa/?path=/mail/action/compose&subject=${s}&body=${b}`, '_blank');
+  }
+
+  /**
+   * Partage par email via mailto (corps maîtrisé)
+   */
+  protected shareViaEmail(): void {
     const code = this.promo()?.code;
+    const tickets = this.promo()?.tickets_reward;
     if (!code) return;
-    
-    if (navigator.share) {
-      navigator.share({
-        title: 'Code promo RetroNova',
-        text: `Utilisez le code ${code} pour obtenir ${this.promo()?.tickets_reward} tickets gratuits !`,
-        url: window.location.href
-      });
-    } else {
-      this.copyPromoCode();
-    }
+
+    const subject = encodeURIComponent('Code promo RetroNova');
+    const body = encodeURIComponent(
+      `Utilisez le code ${code} pour obtenir ${tickets} tickets gratuits sur RetroNova !`
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
   }
   
   /**
