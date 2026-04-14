@@ -1,10 +1,13 @@
 .confirmation-dialog {
-  padding: 1rem;
-  
+  padding: 1.5rem;
+
   h2 {
     margin-top: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-body);
   }
-  
+
   .confirmation-actions {
     display: flex;
     justify-content: flex-end;

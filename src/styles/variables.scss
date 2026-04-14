@@ -1,193 +1,133 @@
-// src/styles/variables.scss
+// =============================================================================
+// variables.scss — Variables SCSS
+// Valeurs brutes pour usage dans les mixins (math, fonctions SCSS)
+// Les CSS custom properties sont dans tokens.scss
+// =============================================================================
 
-// === DESIGN TOKENS ===
-:root {
-  // Primary Colors
-  --primary-50: #eff6ff;
-  --primary-100: #dbeafe;
-  --primary-200: #bfdbfe;
-  --primary-300: #93c5fd;
-  --primary-400: #60a5fa;
-  --primary-500: #3b82f6;
-  --primary-600: #2563eb;
-  --primary-700: #1d4ed8;
-  --primary-800: #1e40af;
-  --primary-900: #1e3a8a;
+// ===========================================================================
+// BREAKPOINTS (SCSS uniquement — ne peuvent pas être des CSS custom properties)
+// ===========================================================================
 
-  // Gaming Accent Colors
-  --neon-blue: #00d4ff;
-  --neon-purple: #7c3aed;
-  --neon-pink: #ec4899;
-  --neon-green: #10b981;
-  --neon-orange: #f59e0b;
-  --arcade-red: #ef4444;
+$bp-md:  768px;
+$bp-lg:  1024px;
+$bp-xl:  1280px;
+$bp-2xl: 1536px;
 
-  // Neutral Colors
-  --gray-50: #f9fafb;
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-400: #9ca3af;
-  --gray-500: #6b7280;
-  --gray-600: #4b5563;
-  --gray-700: #374151;
-  --gray-800: #1f2937;
-  --gray-900: #111827;
+// ===========================================================================
+// COULEURS BRUTES (pour rgba/fonctions dans les mixins)
+// ===========================================================================
 
-  // Surface Colors
-  --surface-50: #fafafa;
-  --surface-100: #f5f5f5;
-  --surface-200: #eeeeee;
-  --surface-300: #e0e0e0;
-  --surface-card: #ffffff;
-  --surface-ground: #f8fafc;
-  --surface-section: #f1f5f9;
-  --surface-border: #e2e8f0;
-  --surface-hover: #f1f5f9;
+$blue-60:    #0062fe;
+$blue-70:    #0043ce;
+$blue-80:    #002d9c;
+$blue-20:    #d0e2ff;
 
-  // Dark Mode
-  --dark-surface-card: #1e293b;
-  --dark-surface-ground: #0f172a;
-  --dark-surface-section: #334155;
-  --dark-surface-border: #475569;
+$gray-10:    #f2f4f8;
+$gray-20:    #dde1e6;
+$gray-30:    #c1c7cd;
+$gray-40:    #a2a9b0;
+$gray-50:    #878d96;
+$gray-60:    #697077;
+$gray-80:    #343a3f;
+$gray-90:    #21272a;
+$white:      #ffffff;
 
-  // Typography
-  --text-color: var(--gray-900);
-  --text-color-secondary: var(--gray-600);
-  --text-color-muted: var(--gray-500);
-  --text-size-xs: 0.75rem;
-  --text-size-sm: 0.875rem;
-  --text-size-base: 1rem;
-  --text-size-lg: 1.125rem;
-  --text-size-xl: 1.25rem;
-  --text-size-2xl: 1.5rem;
-  --text-size-3xl: 1.875rem;
+$green-10:   #defbe6;
+$green-40:   #42be65;
+$green-60:   #198038;
 
-  // Spacing Scale
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-10: 2.5rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
-  --space-20: 5rem;
+$yellow-10:  #fcf4d6;
+$yellow-30:  #f1c21b;
+$yellow-60:  #b28600;
 
-  // Border Radius
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.5rem;
-  --radius-full: 9999px;
+$red-10:     #fff1f1;
+$red-40:     #fa4d56;
+$red-60:     #da1e28;
 
-  // Shadows
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  --shadow-glow: 0 0 20px rgb(59 130 246 / 0.3);
-  --shadow-neon: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor;
+$cyan-10:    #e5f6ff;
+$cyan-40:    #33b1ff;
+$cyan-60:    #0072c3;
 
-  // Transitions
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+// ===========================================================================
+// OMBRES BRUTES
+// ===========================================================================
 
-  // Gaming Specific
-  --gaming-gradient-primary: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
-  --gaming-gradient-secondary: linear-gradient(135deg, var(--neon-pink), var(--neon-orange));
-  --gaming-gradient-success: linear-gradient(135deg, var(--neon-green), var(--primary-500));
-  --gaming-gradient-danger: linear-gradient(135deg, var(--arcade-red), var(--neon-pink));
+$shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.04);
+$shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+$shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
 
-  // Z-Index Scale
-  --z-dropdown: 1000;
-  --z-sticky: 1010;
-  --z-fixed: 1020;
-  --z-modal-backdrop: 1030;
-  --z-modal: 1040;
-  --z-popover: 1050;
-  --z-tooltip: 1060;
-  --z-toast: 1070;
-}
+// ===========================================================================
+// ESPACEMENTS BRUTS
+// ===========================================================================
 
-// Dark Theme Override
-[data-theme="dark"] {
-  --surface-card: var(--dark-surface-card);
-  --surface-ground: var(--dark-surface-ground);
-  --surface-section: var(--dark-surface-section);
-  --surface-border: var(--dark-surface-border);
-  --text-color: var(--gray-100);
-  --text-color-secondary: var(--gray-300);
-  --text-color-muted: var(--gray-400);
-}
+$space-1:  0.25rem;
+$space-2:  0.5rem;
+$space-3:  0.75rem;
+$space-4:  1rem;
+$space-5:  1.25rem;
+$space-6:  1.5rem;
+$space-8:  2rem;
+$space-10: 2.5rem;
 
-// src/styles/_variables.scss
+// ===========================================================================
+// BORDER RADIUS BRUTS
+// ===========================================================================
 
-// Couleurs principales
-$primary-color: #2e2c29;
-$primary-color-light: #818cf8;
-$primary-color-dark: #4f46e5;
-$primary-color-text: #ffffff;
+$radius-sm:   2px;
+$radius-md:   4px;
+$radius-lg:   6px;
+$radius-xl:   8px;
+$radius-2xl:  12px;
+$radius-full: 9999px;
 
-// Couleurs de surface
-$surface-ground: #f8fafc;
-$surface-section: #ffffff;
-$surface-card: #ffffff;
-$surface-hover: #f1f5f9;
-$surface-border: #e2e8f0;
+// ===========================================================================
+// TRANSITIONS BRUTES
+// ===========================================================================
 
-// Couleurs de texte
-$text-color: #334155;
-$text-color-secondary: #64748b;
-$text-color-light: #94a3b8;
+$ease-default: cubic-bezier(0.16, 1, 0.3, 1);
 
-// Couleurs sémantiques
-$success-color: #10b981;
-$warning-color: #f59e0b;
-$danger-color: #ef4444;
-$info-color: #3b82f6;
+$transition-instant: 100ms #{$ease-default};
+$transition-fast:    150ms #{$ease-default};
+$transition-normal:  200ms #{$ease-default};
+$transition-slow:    300ms #{$ease-default};
 
-// Espacements
-$spacing-xs: 0.25rem;
-$spacing-sm: 0.5rem;
-$spacing-md: 1rem;
-$spacing-lg: 1.5rem;
-$spacing-xl: 2rem;
+// ===========================================================================
+// ALIASES DE COMPATIBILITÉ — Migration en cours
+// Ces aliases permettent aux anciens composants de compiler pendant la migration
+// TODO: supprimer progressivement à mesure que les composants migrent vers les tokens
+// ===========================================================================
+
+$primary-color:        $blue-60;
+$primary-color-dark:   $blue-70;
+$primary-color-light:  $blue-20;
+$primary-color-text:   $white;
+
+$surface-ground:       $gray-10;
+$surface-section:      $white;
+$surface-card:         $white;
+$surface-hover:        $gray-10;
+$surface-border:       $gray-30;
+
+$text-color:           $gray-90;
+$text-color-secondary: $gray-60;
+$text-color-light:     $gray-50;
+
+$success-color:        $green-40;
+$warning-color:        $yellow-30;
+$danger-color:         $red-40;
+$info-color:           $blue-60;
+
+$spacing-xs:  $space-1;
+$spacing-sm:  $space-2;
+$spacing-md:  $space-4;
+$spacing-lg:  $space-6;
+$spacing-xl:  $space-8;
 $spacing-2xl: 3rem;
 
-// Bordures
-$border-radius-sm: 4px;
-$border-radius-md: 6px;
-$border-radius-lg: 8px;
-$border-radius-xl: 12px;
-$border-radius-round: 50%;
+$border-radius-sm:    $radius-sm;
+$border-radius-md:    $radius-md;
+$border-radius-lg:    $radius-lg;
+$border-radius-xl:    $radius-xl;
+$border-radius-round: $radius-full;
 
-// Ombres
-$shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
-$shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-$shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
-
-// Transitions
-$transition-fast: 0.15s ease;
-$transition-base: 0.2s ease;
-$transition-slow: 0.3s ease;
-
-// Breakpoints
-$breakpoint-sm: 640px;
-$breakpoint-md: 768px;
-$breakpoint-lg: 1024px;
-$breakpoint-xl: 1280px;
-
-// Z-index
-$z-index-dropdown: 1000;
-$z-index-sticky: 1020;
-$z-index-fixed: 1030;
-$z-index-modal-backdrop: 1040;
-$z-index-modal: 1050;
-$z-index-popover: 1060;
-$z-index-tooltip: 1070;
+$transition-base: $transition-normal;

@@ -7,18 +7,15 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { CheckboxModule } from 'primeng/checkbox';
-import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
 import { MessageModule } from 'primeng/message';
 import { MessagesModule } from 'primeng/messages';
-import { RippleModule } from 'primeng/ripple';
 import { TooltipModule } from 'primeng/tooltip';
 import { DividerModule } from 'primeng/divider';
-import { TagModule } from 'primeng/tag';
 import { MessageService } from 'primeng/api';
 import { PromosService } from '../../../../core/services/promos.service';
 import { PromoCode, CreatePromoCodeRequest } from '../../../../core/models/promo.model';
 import { LoaderComponent } from '../../../../shared/components/loader/loader.component';
+import { ButtonComponent, TagComponent, CardComponent } from '../../../../shared/ui';
 
 type FormMode = 'create' | 'edit';
 
@@ -51,15 +48,14 @@ class PromoCodeValidators {
     InputTextModule,
     InputNumberModule,
     CheckboxModule,
-    ButtonModule,
-    CardModule,
     MessageModule,
     MessagesModule,
-    RippleModule,
     TooltipModule,
     DividerModule,
-    TagModule,
-    LoaderComponent
+    LoaderComponent,
+    ButtonComponent,
+    TagComponent,
+    CardComponent,
   ],
   templateUrl: './promo-form.component.html',
   styleUrls: ['./promo-form.component.scss'],
@@ -67,7 +63,7 @@ class PromoCodeValidators {
 })
 export class PromoFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
-  private readonly router = inject(Router);
+  protected readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly promosService = inject(PromosService);
   private readonly messageService = inject(MessageService);

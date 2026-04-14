@@ -3,29 +3,32 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 1rem;
-  height: 60px;
-  background-color: var(--surface-card);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  
+  height: 56px;
+  background-color: var(--white);
+  border-bottom: 1px solid var(--border-subtle);
+
   .logo {
     a {
       text-decoration: none;
-      color: var(--text-color);
-      
+      color: var(--text-body);
+
       h1 {
         margin: 0;
-        font-size: 1.5rem;
+        font-size: 1.25rem;
+        font-weight: 600;
       }
     }
   }
-  
+
   .user-info {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    
+
     span {
       font-weight: 500;
+      color: var(--text-body);
+      font-size: 0.875rem;
     }
   }
 }

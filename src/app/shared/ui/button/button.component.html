@@ -1,0 +1,21 @@
+<button
+  [class]="hostClass()"
+  [type]="type()"
+  [disabled]="disabled() || loading()"
+  [title]="tooltip() ?? ''"
+  (click)="handleClick($event)"
+>
+  @if (loading()) {
+    <i class="ui-btn__spinner pi pi-spin pi-spinner" aria-hidden="true"></i>
+  } @else if (icon() && iconPos() === 'left') {
+    <i [class]="icon() + ' ui-btn__icon'" aria-hidden="true"></i>
+  }
+
+  @if (label()) {
+    <span class="ui-btn__label">{{ label() }}</span>
+  }
+
+  @if (!loading() && icon() && iconPos() === 'right') {
+    <i [class]="icon() + ' ui-btn__icon'" aria-hidden="true"></i>
+  }
+</button>

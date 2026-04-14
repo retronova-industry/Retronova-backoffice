@@ -1,122 +1,130 @@
-// src/styles/animations.scss
+// =============================================================================
+// animations.scss — Keyframes & classes d'animation
+// Style Raycast : subtils, rapides, jamais exagérés
+// =============================================================================
 
-// === KEYFRAMES ESSENTIELS ===
+// ===========================================================================
+// KEYFRAMES
+// ===========================================================================
+
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
+// Entrée principale des composants (cards, listes)
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
+// Entrée des modales et overlays
 @keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
+// Entrée des dropdowns et tooltips (vers le bas)
 @keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-// === CLASSES D'ANIMATION UTILITAIRES ===
+// Entrée des toasts (vers le haut)
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// Spinner de chargement
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+// Skeleton loading shimmer
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+// ===========================================================================
+// CLASSES D'ANIMATION
+// ===========================================================================
+
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn var(--duration-normal) var(--ease-default);
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 0.4s ease-out;
+  animation: fadeInUp var(--duration-normal) var(--ease-default);
 }
 
 .animate-scale-in {
-  animation: scaleIn 0.3s ease-out;
+  animation: scaleIn var(--duration-normal) var(--ease-default);
+}
+
+.animate-slide-down {
+  animation: slideDown var(--duration-fast) var(--ease-default);
+}
+
+.animate-slide-up {
+  animation: slideUp var(--duration-fast) var(--ease-default);
 }
 
 .animate-spin {
-  animation: spin 1s linear infinite;
+  animation: spin 1s var(--ease-linear) infinite;
 }
 
-// === EFFETS DE SURVOL SUBTILS ===
-.hover-lift {
-  transition: transform var(--transition-fast);
-  
-  &:hover {
-    transform: translateY(-1px);
-  }
-}
+// ===========================================================================
+// SKELETON LOADING
+// ===========================================================================
 
-.hover-scale {
-  transition: transform var(--transition-fast);
-  
-  &:hover {
-    transform: scale(1.01);
-  }
-}
-
-// === TRANSITIONS DE PAGE ===
-.page-transition-enter {
-  animation: fadeIn 0.3s ease-out;
-}
-
-.page-transition-leave {
-  animation: fadeIn 0.2s ease-in reverse;
-}
-
-// === ÉTATS DE CHARGEMENT ===
-.skeleton-loading {
+.skeleton {
   background: linear-gradient(
     90deg,
-    var(--gray-200) 25%,
-    var(--gray-100) 50%,
-    var(--gray-200) 75%
+    var(--gray-20) 25%,
+    var(--gray-10) 50%,
+    var(--gray-20) 75%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
+  border-radius: var(--radius-md);
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
+  @media (prefers-reduced-motion: no-preference) {
+    animation: shimmer 1.5s var(--ease-linear) infinite;
   }
 }
 
-// === ACCESSIBILITÉ - RESPECT DES PRÉFÉRENCES UTILISATEUR ===
+// Variantes skeleton pour les layouts courants
+.skeleton-text {
+  @extend .skeleton;
+  height: 0.875rem;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-heading {
+  @extend .skeleton;
+  height: 1.25rem;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-circle {
+  @extend .skeleton;
+  border-radius: var(--radius-full);
+}
+
+// ===========================================================================
+// TRANSITIONS DE PAGE
+// ===========================================================================
+
+.page-enter {
+  animation: fadeInUp var(--duration-normal) var(--ease-default);
+}
+
+// ===========================================================================
+// PREFERS REDUCED MOTION
+// ===========================================================================
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

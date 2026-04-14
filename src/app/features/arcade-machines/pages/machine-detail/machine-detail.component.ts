@@ -3,18 +3,12 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { RippleModule } from 'primeng/ripple';
-import { TagModule } from 'primeng/tag';
-import { BadgeModule } from 'primeng/badge';
-import { DividerModule } from 'primeng/divider';
-import { TooltipModule } from 'primeng/tooltip';
 import { TabViewModule } from 'primeng/tabview';
 import { TimelineModule } from 'primeng/timeline';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ChartModule } from 'primeng/chart';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { ButtonComponent, CardComponent, TagComponent } from '../../../../shared/ui';
 import { forkJoin, interval, Subject, takeUntil, catchError, of } from 'rxjs';
 import { ArcadesService } from '../../../../core/services/arcades.service';
 import { Arcade, QueueItem } from '../../../../core/models/arcade.model';
@@ -96,19 +90,15 @@ class MachineStatsStrategy extends StatsCalculationStrategy {
   imports: [
     CommonModule,
     RouterModule,
-    CardModule,
-    ButtonModule,
-    RippleModule,
-    TagModule,
-    BadgeModule,
-    DividerModule,
-    TooltipModule,
     TabViewModule,
     TimelineModule,
     ProgressBarModule,
     ChartModule,
     LoaderComponent,
-    StatsCardComponent
+    StatsCardComponent,
+    ButtonComponent,
+    CardComponent,
+    TagComponent,
   ],
   providers: [ConfirmationService],
   template: `
@@ -150,45 +140,34 @@ class MachineStatsStrategy extends StatsCalculationStrategy {
             </div>
             
             <div class="machine-status-section">
-              <p-tag 
-                [value]="getStatusLabel()" 
-                [severity]="getStatusSeverity()"
-                [icon]="getStatusIcon()"
-                styleClass="status-tag-large animate-pulse">
-              </p-tag>
-              
+              <ui-tag
+                [label]="getStatusLabel()"
+                [variant]="getStatusSeverity()"
+                [icon]="getStatusIcon()">
+              </ui-tag>
+
               <div class="action-buttons">
-                <button 
-                  pButton 
-                  pRipple 
-                  icon="pi pi-pencil" 
+                <ui-button
+                  icon="pi pi-pencil"
                   label="Modifier"
-                  severity="success"
-                  [routerLink]="['/arcade-machines/edit', machine()!.id]"
-                  class="action-btn">
-                </button>
-                
-                <button 
-                  pButton 
-                  pRipple 
-                  icon="pi pi-gamepad" 
+                  variant="primary"
+                  (clicked)="router.navigate(['/arcade-machines/edit', machine()!.id])">
+                </ui-button>
+
+                <ui-button
+                  icon="pi pi-gamepad"
                   label="Configurer"
-                  severity="danger"
-                  (click)="configureGames()"
-                  class="action-btn">
-                </button>
-                
-                <button 
-                  pButton 
-                  pRipple 
-                  icon="pi pi-refresh" 
+                  variant="secondary"
+                  (clicked)="configureGames()">
+                </ui-button>
+
+                <ui-button
+                  icon="pi pi-refresh"
                   label="Actualiser"
-                  severity="info"
-                  outlined
+                  variant="ghost"
                   [loading]="refreshing()"
-                  (click)="refreshData()"
-                  class="action-btn">
-                </button>
+                  (clicked)="refreshData()">
+                </ui-button>
               </div>
             </div>
           </div>
@@ -214,14 +193,12 @@ class MachineStatsStrategy extends StatsCalculationStrategy {
               <div class="overview-grid">
                 
                 <!-- Informations générales -->
-                <p-card header="Informations générales" styleClass="info-card">
-                  <ng-template pTemplate="header">
-                    <div class="card-header">
-                      <i class="pi pi-info-circle"></i>
-                      <span>Informations générales</span>
-                    </div>
-                  </ng-template>
-                  
+                <ui-card>
+                  <div card-header class="card-header">
+                    <i class="pi pi-info-circle"></i>
+                    <span>Informations générales</span>
+                  </div>
+
                   <div class="info-grid">
                     <div class="info-item">
                       <label>Nom de la borne</label>
@@ -257,16 +234,14 @@ class MachineStatsStrategy extends StatsCalculationStrategy {
                       <span class="value">{{ formatDateTime(machine()!.updated_at) }}</span>
                     </div>
                   </div>
-                </p-card>
+                </ui-card>
 
                 <!-- Configuration des jeux -->
-                <p-card header="Configuration des jeux" styleClass="games-card">
-                  <ng-template pTemplate="header">
-                    <div class="card-header">
-                      <i class="pi pi-gamepad"></i>
-                      <span>Configuration des jeux</span>
-                    </div>
-                  </ng-template>
+                <ui-card>
+                  <div card-header class="card-header">
+                    <i class="pi pi-gamepad"></i>
+                    <span>Configuration des jeux</span>
+                  </div>
                   
                   @if (hasGames()) {
                     <div class="games-grid">
@@ -300,14 +275,12 @@ class MachineStatsStrategy extends StatsCalculationStrategy {
                             <div class="empty-slot">
                               <i class="pi pi-plus-circle"></i>
                               <span>Slot libre</span>
-                              <button 
-                                pButton 
-                                pRipple 
-                                label="Configurer" 
-                                size="small"
-                                text
-                                (click)="configureSlot(slot)">
-                              </button>
+                              <ui-button
+                                label="Configurer"
+                                variant="ghost"
+                                size="sm"
+                                (clicked)="configureSlot(slot)">
+                              </ui-button>
                             </div>
                           }
                         </div>
@@ -318,31 +291,23 @@ class MachineStatsStrategy extends StatsCalculationStrategy {
                       <i class="pi pi-exclamation-triangle"></i>
                       <h3>Aucun jeu configuré</h3>
                       <p>Cette borne n'a aucun jeu configuré pour le moment.</p>
-                      <button 
-                        pButton 
-                        pRipple 
-                        label="Configurer les jeux" 
+                      <ui-button
+                        label="Configurer les jeux"
                         icon="pi pi-plus"
-                        severity="success"
-                        (click)="configureGames()">
-                      </button>
+                        variant="primary"
+                        (clicked)="configureGames()">
+                      </ui-button>
                     </div>
                   }
-                </p-card>
+                </ui-card>
 
                 <!-- File d'attente en temps réel -->
-                <p-card header="File d'attente" styleClass="queue-card">
-                  <ng-template pTemplate="header">
-                    <div class="card-header">
-                      <i class="pi pi-users"></i>
-                      <span>File d'attente</span>
-                      <p-badge 
-                        [value]="queueItems().length.toString()" 
-                        severity="info"
-                        styleClass="queue-badge">
-                      </p-badge>
-                    </div>
-                  </ng-template>
+                <ui-card>
+                  <div card-header class="card-header">
+                    <i class="pi pi-users"></i>
+                    <span>File d'attente</span>
+                    <ui-tag [label]="queueItems().length.toString()" variant="info"></ui-tag>
+                  </div>
                   
                   @if (queueItems().length > 0) {
                     <div class="queue-list">
@@ -370,27 +335,35 @@ class MachineStatsStrategy extends StatsCalculationStrategy {
                       <span>Aucun joueur en attente</span>
                     </div>
                   }
-                </p-card>
+                </ui-card>
               </div>
             </p-tabPanel>
 
             <!-- Onglet Statistiques -->
             <p-tabPanel header="Statistiques" leftIcon="pi pi-chart-line">
               <div class="stats-grid">
-                
+
                 <!-- Graphique d'utilisation -->
-                <p-card header="Utilisation hebdomadaire" styleClass="chart-card">
-                  <p-chart 
+                <ui-card>
+                  <div card-header class="card-header">
+                    <i class="pi pi-chart-line"></i>
+                    <span>Utilisation hebdomadaire</span>
+                  </div>
+                  <p-chart
                     type="line" 
                     [data]="chartData()"
                     [options]="chartOptions()"
                     width="100%"
                     height="300px">
                   </p-chart>
-                </p-card>
-                
+                </ui-card>
+
                 <!-- Métriques de performance -->
-                <p-card header="Métriques de performance" styleClass="metrics-card">
+                <ui-card>
+                  <div card-header class="card-header">
+                    <i class="pi pi-chart-bar"></i>
+                    <span>Métriques de performance</span>
+                  </div>
                   <div class="metrics-grid">
                     <div class="metric-item">
                       <div class="metric-value">{{ enrichedMachine().total_games_played || 0 }}</div>
@@ -431,7 +404,7 @@ class MachineStatsStrategy extends StatsCalculationStrategy {
                       </div>
                     </div>
                   </div>
-                </p-card>
+                </ui-card>
               </div>
             </p-tabPanel>
 
@@ -490,13 +463,12 @@ class MachineStatsStrategy extends StatsCalculationStrategy {
           <i class="pi pi-exclamation-triangle error-icon"></i>
           <h2>Borne introuvable</h2>
           <p>La borne demandée n'existe pas ou a été supprimée.</p>
-          <button 
-            pButton 
-            pRipple 
-            label="Retour à la liste" 
+          <ui-button
+            label="Retour à la liste"
             icon="pi pi-arrow-left"
-            routerLink="/arcade-machines">
-          </button>
+            variant="primary"
+            (clicked)="router.navigate(['/arcade-machines'])">
+          </ui-button>
         </div>
       }
     </div>
@@ -505,7 +477,7 @@ class MachineStatsStrategy extends StatsCalculationStrategy {
 })
 export class MachineDetailComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
+  readonly router = inject(Router);
   private readonly arcadesService = inject(ArcadesService);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
@@ -727,7 +699,7 @@ export class MachineDetailComponent implements OnInit, OnDestroy {
     return labels[this.machineStatus()] || 'Inconnu';
   }
 
-  protected getStatusSeverity(): 'success' | 'warning' | 'danger' | 'info' {
+  protected getStatusSeverity(): 'success' | 'warning' | 'danger' | 'info' | 'default' {
     const severities = {
       active: 'success' as const,
       inactive: 'danger' as const,

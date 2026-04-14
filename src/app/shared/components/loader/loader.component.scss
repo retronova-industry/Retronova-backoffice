@@ -1,33 +1,31 @@
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
 
-    .loader-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 1rem;
-    }
-    
-    .loader-container.fullscreen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(0, 0, 0, 0.4);
-      z-index: 1000;
-    }
-    
-    :host ::ng-deep .loader-small {
-      width: 2rem;
-      height: 2rem;
-    }
-    
-    :host ::ng-deep .loader-medium {
-      width: 4rem;
-      height: 4rem;
-    }
-    
-    :host ::ng-deep .loader-large {
-      width: 6rem;
-      height: 6rem;
-    }
-  
+.loader-container.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+}
+
+:host ::ng-deep .loader-small {
+  width: 2rem;
+  height: 2rem;
+}
+
+:host ::ng-deep .loader-medium {
+  width: 4rem;
+  height: 4rem;
+}
+
+:host ::ng-deep .loader-large {
+  width: 6rem;
+  height: 6rem;
+}

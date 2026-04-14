@@ -1,10 +1,47 @@
-<div class="sidebar">
-  <ul class="menu-list">
-    <li *ngFor="let item of menuItems" [routerLinkActive]="'active'">
-      <a [routerLink]="item.routerLink">
-        <i class="menu-icon" [ngClass]="item.icon"></i>
-        <span class="menu-label">{{ item.label }}</span>
-      </a>
-    </li>
-  </ul>
-</div>
+<aside class="sidebar">
+
+  <!-- Zone 1 : Brand -->
+  <div class="sidebar-brand">
+    <div class="brand-mark">RN</div>
+    <div class="brand-text">
+      <span class="brand-name">RetroNova</span>
+      <span class="brand-tag">Back Office</span>
+    </div>
+  </div>
+
+  <!-- Zone 2 : Navigation groupée -->
+  <nav class="sidebar-nav">
+    @for (group of navGroups; track group.label) {
+      <div class="nav-group">
+        <span class="nav-group-label">{{ group.label }}</span>
+        <ul class="nav-list">
+          @for (item of group.items; track item.routerLink) {
+            <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+              <a [routerLink]="item.routerLink">
+                <i [class]="item.icon" class="nav-icon"></i>
+                <span class="nav-label">{{ item.label }}</span>
+              </a>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  </nav>
+
+  <!-- Zone 3 : Utilisateur + déconnexion -->
+  <div class="sidebar-footer">
+    <div class="user-cell">
+      <div class="user-avatar">{{ userInitials() }}</div>
+      <span class="user-name">{{ userName() }}</span>
+    </div>
+    <button
+      class="logout-btn"
+      (click)="logout()"
+      [disabled]="isLoggingOut()"
+      title="Se déconnecter"
+      type="button">
+      <i [class]="isLoggingOut() ? 'pi pi-spin pi-spinner' : 'pi pi-sign-out'"></i>
+    </button>
+  </div>
+
+</aside>

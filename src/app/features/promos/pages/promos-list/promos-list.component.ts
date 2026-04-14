@@ -2,15 +2,11 @@
 
 import { Component, OnInit, inject, signal, computed, viewChild, effect, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Table, TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
-import { RippleModule } from 'primeng/ripple';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
-import { TagModule } from 'primeng/tag';
-import { CardModule } from 'primeng/card';
 import { BadgeModule } from 'primeng/badge';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -18,6 +14,7 @@ import { PromosService } from '../../../../core/services/promos.service';
 import { PromoCode } from '../../../../core/models/promo.model';
 import { LoaderComponent } from '../../../../shared/components/loader/loader.component';
 import { StatsCardComponent, StatsData } from '../../../../shared/components/stats-card/stats-card.component';
+import { ButtonComponent, TagComponent, CardComponent } from '../../../../shared/ui';
 import { forkJoin } from 'rxjs';
 
 interface EnrichedPromoCode extends PromoCode {
@@ -121,17 +118,16 @@ class PromoStatsCalculator {
     CommonModule,
     RouterModule,
     TableModule,
-    ButtonModule,
-    RippleModule,
     InputTextModule,
     ConfirmDialogModule,
     TooltipModule,
-    TagModule,
-    CardModule,
     BadgeModule,
     ProgressBarModule,
     LoaderComponent,
-    StatsCardComponent
+    StatsCardComponent,
+    ButtonComponent,
+    TagComponent,
+    CardComponent,
   ],
   providers: [ConfirmationService],
   templateUrl: './promos-list.component.html',
@@ -140,6 +136,7 @@ class PromoStatsCalculator {
 })
 export class PromosListComponent implements OnInit {
   // Services injectés
+  protected readonly router = inject(Router);
   private readonly promosService = inject(PromosService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);

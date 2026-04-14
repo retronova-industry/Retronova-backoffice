@@ -1,0 +1,79 @@
+// =============================================================================
+// ui-input — Champ de saisie RetroNova
+// Implémente ControlValueAccessor — les classes ng-invalid/ng-dirty
+// sont appliquées sur l'élément :host par Angular.
+// =============================================================================
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.ui-input {
+  display: block;
+  width: 100%;
+
+  // Dimensions
+  height: 36px;
+  padding: 0 var(--space-3);
+
+  // Typography
+  font-family: var(--font-primary);
+  font-size: var(--text-base);
+  font-weight: var(--weight-regular);
+  color: var(--text-body);
+  line-height: 36px;
+
+  // Visual — état par défaut
+  background: var(--white);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+
+  // Reset
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+
+  // Transition
+  transition:
+    border-color var(--duration-instant) var(--ease-default),
+    box-shadow var(--duration-instant) var(--ease-default);
+
+  // Placeholder
+  &::placeholder {
+    color: var(--text-muted);
+  }
+
+  // Hover
+  &:hover:not(:disabled) {
+    border-color: var(--border-strong);
+  }
+
+  // Focus
+  &:focus {
+    border-color: var(--blue-60);
+    box-shadow: 0 0 0 2px var(--blue-20);
+  }
+
+  // Disabled
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--gray-10);
+  }
+}
+
+// =========================================================================
+// ÉTATS DE VALIDATION
+// Angular applique ng-invalid / ng-dirty / ng-touched sur :host
+// =========================================================================
+
+:host.ng-invalid.ng-dirty .ui-input,
+:host.ng-invalid.ng-touched .ui-input {
+  border-color: var(--red-40);
+
+  &:focus {
+    border-color: var(--red-40);
+    box-shadow: 0 0 0 2px var(--red-10);
+  }
+}

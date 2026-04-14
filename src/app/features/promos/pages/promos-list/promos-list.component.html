@@ -10,36 +10,23 @@
         </p>
     </div>
     <div class="page-actions">
-        <button 
-        pButton 
-        pRipple 
-        icon="pi pi-plus" 
-        label="Nouveau code" 
-        severity="success"
-        class="gaming-button"
-        routerLink="/promos/new">
-        </button>
-        
-        <button 
-        pButton 
-        pRipple 
-        icon="pi pi-download" 
-        label="Exporter" 
-        severity="info"
-        outlined
-        (click)="exportPromos()">
-        </button>
-        
-        <button 
-        pButton 
-        pRipple 
-        icon="pi pi-refresh" 
-        label="Actualiser" 
-        [loading]="loading()"
-        (click)="refreshPromos()"
-        severity="secondary"
-        outlined>
-        </button>
+        <ui-button
+          icon="pi pi-plus"
+          label="Nouveau code"
+          (clicked)="router.navigate(['/promos/new'])" />
+
+        <ui-button
+          icon="pi pi-download"
+          label="Exporter"
+          variant="secondary"
+          (clicked)="exportPromos()" />
+
+        <ui-button
+          icon="pi pi-refresh"
+          label="Actualiser"
+          variant="secondary"
+          [loading]="loading()"
+          (clicked)="refreshPromos()" />
     </div>
     </div>
 
@@ -86,26 +73,16 @@
         
         <div class="view-controls">
             <div class="view-toggle">
-            <button 
-                pButton 
-                pRipple 
-                icon="pi pi-list" 
-                [severity]="viewMode() === 'table' ? 'primary' : 'secondary'"
-                [outlined]="viewMode() !== 'table'"
-                (click)="setViewMode('table')"
-                pTooltip="Vue tableau"
-                class="view-btn">
-            </button>
-            <button 
-                pButton 
-                pRipple 
-                icon="pi pi-th-large" 
-                [severity]="viewMode() === 'grid' ? 'primary' : 'secondary'"
-                [outlined]="viewMode() !== 'grid'"
-                (click)="setViewMode('grid')"
-                pTooltip="Vue grille"
-                class="view-btn">
-            </button>
+              <ui-button
+                icon="pi pi-list"
+                [variant]="viewMode() === 'table' ? 'primary' : 'secondary'"
+                tooltip="Vue tableau"
+                (clicked)="setViewMode('table')" />
+              <ui-button
+                icon="pi pi-th-large"
+                [variant]="viewMode() === 'grid' ? 'primary' : 'secondary'"
+                tooltip="Vue grille"
+                (clicked)="setViewMode('grid')" />
             </div>
         </div>
         </div>
@@ -175,18 +152,13 @@
                     <div class="promo-code-cell">
                     <div class="code-display">
                         <span class="promo-code">{{ promo.code }}</span>
-                        <button 
-                        pButton 
-                        pRipple 
-                        icon="pi pi-copy" 
-                        [rounded]="true"
-                        text
-                        size="small"
-                        severity="info"
-                        pTooltip="Copier le code"
-                        (click)="copyPromoCode(promo.code)"
-                        class="copy-btn">
-                        </button>
+                        <ui-button
+                          icon="pi pi-copy"
+                          [rounded]="true"
+                          variant="ghost"
+                          size="sm"
+                          tooltip="Copier le code"
+                          (clicked)="copyPromoCode(promo.code)" />
                     </div>
                     <small class="promo-id">ID: {{ promo.id }}</small>
                     </div>
@@ -249,57 +221,37 @@
                 </td>
                 <td>
                     <div class="status-cell">
-                    <p-tag 
-                        [value]="getStatusLabel(promo.status)" 
-                        [severity]="getStatusSeverity(promo.status)"
-                        [icon]="getStatusIcon(promo.status)"
-                        styleClass="status-tag animate-pulse">
-                    </p-tag>
+                    <ui-tag
+                      [label]="getStatusLabel(promo.status)"
+                      [variant]="getStatusSeverity(promo.status)"
+                      [icon]="getStatusIcon(promo.status)" />
                     </div>
                 </td>
                 <td>
                     <div class="action-buttons">
-                    <button 
-                        pButton 
-                        pRipple 
-                        icon="pi pi-eye" 
+                      <ui-button
+                        icon="pi pi-eye"
                         [rounded]="true"
-                        text
-                        severity="info"
-                        size="small"
-                        pTooltip="Voir les détails" 
-                        tooltipPosition="top"
-                        class="action-button hover-lift"
-                        [routerLink]="['/promos/detail', promo.id]">
-                    </button>
-                    
-                    <button 
-                        pButton 
-                        pRipple 
-                        icon="pi pi-pencil" 
+                        variant="ghost"
+                        size="sm"
+                        tooltip="Voir les détails"
+                        (clicked)="router.navigate(['/promos/detail', promo.id])" />
+
+                      <ui-button
+                        icon="pi pi-pencil"
                         [rounded]="true"
-                        text
-                        severity="success"
-                        size="small"
-                        pTooltip="Éditer" 
-                        tooltipPosition="top"
-                        class="action-button hover-glow"
-                        [routerLink]="['/promos/edit', promo.id]">
-                    </button>
-                    
-                    <button 
-                        pButton 
-                        pRipple 
-                        icon="pi pi-trash" 
+                        variant="ghost"
+                        size="sm"
+                        tooltip="Éditer"
+                        (clicked)="router.navigate(['/promos/edit', promo.id])" />
+
+                      <ui-button
+                        icon="pi pi-trash"
                         [rounded]="true"
-                        text
-                        severity="danger"
-                        size="small"
-                        pTooltip="Supprimer" 
-                        tooltipPosition="top"
-                        class="action-button hover-scale"
-                        (click)="confirmDelete(promo)">
-                    </button>
+                        variant="ghost-danger"
+                        size="sm"
+                        tooltip="Supprimer"
+                        (clicked)="confirmDelete(promo)" />
                     </div>
                 </td>
                 </tr>
@@ -312,14 +264,10 @@
                     <i class="pi pi-ticket empty-icon neon-glow"></i>
                     <h3>Aucun code promo trouvé</h3>
                     <p>Aucun code promotionnel ne correspond à vos critères.</p>
-                    <button 
-                        pButton 
-                        pRipple 
-                        label="Créer un code" 
-                        icon="pi pi-plus"
-                        class="gaming-button"
-                        routerLink="/promos/new">
-                    </button>
+                    <ui-button
+                      label="Créer un code"
+                      icon="pi pi-plus"
+                      (clicked)="router.navigate(['/promos/new'])" />
                     </div>
                 </td>
                 </tr>
@@ -332,14 +280,13 @@
             @for (promo of displayedPromos(); track promo.id; let i = $index) {
             <div class="promo-card-container stagger-fade-in" 
                     [style.animation-delay]="(i * 0.1) + 's'">
-                <p-card styleClass="promo-card gaming-card hover-lift">
-                <ng-template pTemplate="header">
-                    <div class="promo-card-header" [class]="'status-' + promo.status">
+                <ui-card styleClass="promo-card gaming-card hover-lift ui-card--flush">
+                    <div card-header class="promo-card-header" [class]="'status-' + promo.status">
                     <div class="promo-card-icon">
                         <i class="pi pi-ticket"></i>
                         @if (promo.current_uses > 0) {
-                        <p-badge 
-                            [value]="promo.current_uses.toString()" 
+                        <p-badge
+                            [value]="promo.current_uses.toString()"
                             severity="info"
                             styleClass="uses-badge">
                         </p-badge>
@@ -347,15 +294,12 @@
                     </div>
                     <div class="card-title-section">
                         <h3 class="promo-card-title">{{ promo.code }}</h3>
-                        <p-tag 
-                        [value]="getStatusLabel(promo.status)" 
-                        [severity]="getStatusSeverity(promo.status)"
-                        [icon]="getStatusIcon(promo.status)"
-                        styleClass="status-tag-card">
-                        </p-tag>
+                        <ui-tag
+                          [label]="getStatusLabel(promo.status)"
+                          [variant]="getStatusSeverity(promo.status)"
+                          [icon]="getStatusIcon(promo.status)" />
                     </div>
                     </div>
-                </ng-template>
                 
                 <div class="promo-card-content">
                     <div class="reward-section">
@@ -418,46 +362,29 @@
                     </div>
                 </div>
                 
-                <ng-template pTemplate="footer">
-                    <div class="promo-card-actions">
-                    <button 
-                        pButton 
-                        pRipple 
-                        label="Détails" 
+                    <div card-footer class="promo-card-actions">
+                      <ui-button
+                        label="Détails"
                         icon="pi pi-eye"
-                        severity="info"
-                        outlined
-                        size="small"
-                        class="card-action-btn"
-                        [routerLink]="['/promos/detail', promo.id]">
-                    </button>
-                    
-                    <button 
-                        pButton 
-                        pRipple 
-                        label="Copier" 
+                        variant="secondary"
+                        size="sm"
+                        (clicked)="router.navigate(['/promos/detail', promo.id])" />
+
+                      <ui-button
+                        label="Copier"
                         icon="pi pi-copy"
-                        severity="secondary"
-                        outlined
-                        size="small"
-                        class="card-action-btn"
-                        (click)="copyPromoCode(promo.code)">
-                    </button>
-                    
-                    <button 
-                        pButton 
-                        pRipple 
+                        variant="secondary"
+                        size="sm"
+                        (clicked)="copyPromoCode(promo.code)" />
+
+                      <ui-button
                         icon="pi pi-pencil"
-                        severity="success"
-                        outlined
-                        size="small"
-                        class="card-action-btn"
-                        pTooltip="Éditer"
-                        [routerLink]="['/promos/edit', promo.id]">
-                    </button>
+                        variant="secondary"
+                        size="sm"
+                        tooltip="Éditer"
+                        (clicked)="router.navigate(['/promos/edit', promo.id])" />
                     </div>
-                </ng-template>
-                </p-card>
+                </ui-card>
             </div>
             }
         </div>

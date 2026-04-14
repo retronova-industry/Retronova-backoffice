@@ -1,0 +1,219 @@
+// =============================================================================
+// tokens.scss — Source de vérité des design tokens RetroNova
+// Direction : IBM Carbon × Raycast | Mode clair uniquement
+// =============================================================================
+
+:root {
+
+  // ===========================================================================
+  // COULEURS — IBM Blue
+  // Couleur d'action principale de l'interface
+  // ===========================================================================
+
+  --blue-10: #edf5ff;   // Fond badge, surbrillance sélection
+  --blue-20: #d0e2ff;   // Fond focus ring, selected light
+  --blue-30: #a6c8ff;   // Bordures actives légères
+  --blue-40: #78a9ff;   // Accents secondaires
+  --blue-50: #4589ff;   // Liens, actions intermédiaires
+  --blue-60: #0062fe;   // Action principale (bouton primary, focus, lien)
+  --blue-70: #0043ce;   // Hover sur éléments primaires
+  --blue-80: #002d9c;   // Active / pressed
+  --blue-90: #001d6c;   // Usage rare — emphase forte
+  --blue-100: #001141;  // Usage rare — emphase maximale
+
+  // ===========================================================================
+  // COULEURS — Cool Gray IBM
+  // 90% de l'interface : texte, fonds, bordures
+  // ===========================================================================
+
+  --gray-10: #f2f4f8;   // Fond de page (body)
+  --gray-20: #dde1e6;   // Fond sidebar, fills subtils, hover léger
+  --gray-30: #c1c7cd;   // Bordures standards, dividers
+  --gray-40: #a2a9b0;   // Icônes inactives, placeholders
+  --gray-50: #878d96;   // Labels secondaires, texte désactivé
+  --gray-60: #697077;   // Corps de texte secondaire
+  --gray-70: #4d5358;   // Labels, sous-titres
+  --gray-80: #343a3f;   // Corps de texte principal
+  --gray-90: #21272a;   // Titres, emphase forte
+  --gray-100: #121619;  // Emphase maximale (rare)
+  --white:    #ffffff;  // Surfaces élevées (cards, panels, header)
+
+  // ===========================================================================
+  // COULEURS SÉMANTIQUES
+  // Usage strict : uniquement pour signaler un état système
+  // ===========================================================================
+
+  // Succès
+  --green-10: #defbe6;
+  --green-40: #42be65;
+  --green-60: #198038;
+
+  // Avertissement
+  --yellow-10: #fcf4d6;
+  --yellow-30: #f1c21b;
+  --yellow-60: #b28600;
+
+  // Erreur / Danger
+  --red-10: #fff1f1;
+  --red-40: #fa4d56;
+  --red-60: #da1e28;
+
+  // Information
+  --cyan-10: #e5f6ff;
+  --cyan-40: #33b1ff;
+  --cyan-60: #0072c3;
+
+  // ===========================================================================
+  // COULEURS ARCADE — Contexte données uniquement
+  // Réutilisent la palette sémantique — aucune couleur supplémentaire
+  // Usage : composants de données (scores, statuts machines, achievements)
+  // NE PAS utiliser dans le chrome de l'interface (nav, forms, tableaux)
+  // ===========================================================================
+
+  --arcade-active:  var(--blue-60);    // Borne active / en ligne
+  --arcade-playing: var(--green-40);   // Partie en cours (pulsing dot)
+  --arcade-offline: var(--gray-50);    // Borne hors ligne
+  --arcade-error:   var(--red-40);     // Borne en erreur
+  --arcade-score:   var(--yellow-30);  // Scores, records, highscores
+
+  // ===========================================================================
+  // SURFACES & STRUCTURE
+  // ===========================================================================
+
+  --surface-page:     var(--gray-10);           // Fond de page
+  --surface-card:     var(--white);             // Cartes, panels élevés
+  --surface-overlay:  rgba(33, 39, 42, 0.5);   // Backdrop modales
+
+  --border-subtle:  var(--gray-20);  // Séparateurs légers (card borders par défaut)
+  --border-default: var(--gray-30);  // Bordures standards (inputs, dividers)
+  --border-strong:  var(--gray-50);  // Bordures emphase (hover, active)
+
+  // ===========================================================================
+  // TYPOGRAPHIE
+  // ===========================================================================
+
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:    'IBM Plex Mono', 'JetBrains Mono', 'Fira Code', monospace;
+
+  // Couleurs texte
+  --text-primary:    var(--gray-90);   // Titres, labels
+  --text-body:       var(--gray-80);   // Corps de texte principal
+  --text-secondary:  var(--gray-60);   // Descriptions, helper text
+  --text-muted:      var(--gray-50);   // Placeholders, inactif
+  --text-disabled:   var(--gray-40);   // Éléments désactivés
+  --text-on-color:   var(--white);     // Texte sur fond coloré (boutons, badges)
+  --text-link:       var(--blue-60);
+  --text-link-hover: var(--blue-70);
+
+  // Tailles (IBM convention: base 14px pour un backoffice dense)
+  --text-xs:   0.6875rem;   //  11px — labels tableaux, badges
+  --text-sm:   0.75rem;     //  12px — helper text, timestamps
+  --text-base: 0.875rem;    //  14px — corps interface
+  --text-lg:   1rem;        //  16px — sous-titres section
+  --text-xl:   1.125rem;    //  18px — titres cards
+  --text-2xl:  1.25rem;     //  20px — titres pages
+  --text-3xl:  1.5rem;      //  24px — chiffres KPI
+  --text-4xl:  2rem;        //  32px — grands indicateurs dashboard
+
+  // Poids
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  // Hauteur de ligne
+  --leading-tight:   1.25;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.75;
+
+  // ===========================================================================
+  // ESPACEMENT (base 4px)
+  // ===========================================================================
+
+  --space-1:  0.25rem;   //  4px
+  --space-2:  0.5rem;    //  8px
+  --space-3:  0.75rem;   // 12px
+  --space-4:  1rem;      // 16px
+  --space-5:  1.25rem;   // 20px
+  --space-6:  1.5rem;    // 24px
+  --space-8:  2rem;      // 32px
+  --space-10: 2.5rem;    // 40px
+  --space-12: 3rem;      // 48px
+  --space-16: 4rem;      // 64px
+
+  // ===========================================================================
+  // BORDER RADIUS
+  // IBM (faible) + légèrement Raycast pour les surfaces larges
+  // ===========================================================================
+
+  --radius-sm:   2px;     // Tags inline, badges compacts
+  --radius-md:   4px;     // Boutons, inputs, cellules
+  --radius-lg:   6px;     // Cards compactes, dropdowns, items de liste
+  --radius-xl:   8px;     // Cards principales, panels
+  --radius-2xl:  12px;    // Modales, drawers
+  --radius-full: 9999px;  // Pills, avatars, dots de statut
+
+  // ===========================================================================
+  // OMBRES
+  // Froides (pas de teinte colorée), subtiles — lues avec la bordure
+  // ===========================================================================
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
+
+  // Anneau de focus — IBM Blue
+  --shadow-focus: 0 0 0 2px var(--blue-20), 0 0 0 4px var(--blue-60);
+
+  // ===========================================================================
+  // ANIMATIONS — Raycast curve
+  // Les transitions existent mais ne se remarquent pas
+  // ===========================================================================
+
+  // Courbes
+  --ease-default: cubic-bezier(0.16, 1, 0.3, 1);  // Springy subtil — usage général
+  --ease-in:      cubic-bezier(0.4, 0, 1, 1);      // Sortie (dismiss)
+  --ease-out:     cubic-bezier(0, 0, 0.2, 1);      // Entrée (appear)
+  --ease-linear:  linear;                           // Spin, shimmer
+
+  // Durées
+  --duration-instant: 100ms;   // États immédiats (checked, focus)
+  --duration-fast:    150ms;   // Hover, apparition dropdown
+  --duration-normal:  200ms;   // Transitions de vue, slides
+  --duration-slow:    300ms;   // Modales, drawers
+
+  // ===========================================================================
+  // Z-INDEX
+  // ===========================================================================
+
+  --z-dropdown:       1000;
+  --z-sticky:         1010;
+  --z-fixed:          1020;
+  --z-modal-backdrop: 1030;
+  --z-modal:          1040;
+  --z-popover:        1050;
+  --z-tooltip:        1060;
+  --z-toast:          1070;
+
+  // ===========================================================================
+  // LAYOUT
+  // ===========================================================================
+
+  --sidebar-width:     240px;
+  --header-height:     56px;
+  --content-max-width: 1280px;
+  --content-padding:   var(--space-8);
+}
+
+// ===========================================================================
+// PREFERS REDUCED MOTION
+// ===========================================================================
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 0ms;
+    --duration-fast:    0ms;
+    --duration-normal:  0ms;
+    --duration-slow:    0ms;
+  }
+}

@@ -3,16 +3,11 @@
 
 import { Component, OnInit, inject, signal, viewChild, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Table, TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
-import { RippleModule } from 'primeng/ripple';
-import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { TooltipModule } from 'primeng/tooltip';
-import { TagModule } from 'primeng/tag';
-import { CardModule } from 'primeng/card';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { ButtonComponent, CardComponent, TagComponent } from '../../../../shared/ui';
 import { GamesService } from '../../../../core/services/games.service';
 import { Game } from '../../../../core/models/game.model';
 import { LoaderComponent } from '../../../../shared/components/loader/loader.component';
@@ -24,14 +19,11 @@ import { LoaderComponent } from '../../../../shared/components/loader/loader.com
     CommonModule,
     RouterModule,
     TableModule,
-    ButtonModule,
-    RippleModule,
-    InputTextModule,
     ConfirmDialogModule,
-    TooltipModule,
-    TagModule,
-    CardModule,
-    LoaderComponent
+    LoaderComponent,
+    ButtonComponent,
+    CardComponent,
+    TagComponent,
   ],
   providers: [ConfirmationService],
   template: `
@@ -39,91 +31,90 @@ import { LoaderComponent } from '../../../../shared/components/loader/loader.com
       <div class="page-header">
         <h1><i class="pi pi-play"></i> Gestion des Jeux</h1>
         <div class="page-actions">
-          <p-button 
-            icon="pi pi-plus" 
-            label="Nouveau jeu" 
-            severity="success"
-            routerLink="/games/new">
-          </p-button>
-          
-          <p-button 
-            icon="pi pi-refresh" 
-            label="Actualiser" 
+          <ui-button
+            icon="pi pi-plus"
+            label="Nouveau jeu"
+            variant="primary"
+            (clicked)="router.navigate(['/games/new'])">
+          </ui-button>
+
+          <ui-button
+            icon="pi pi-refresh"
+            label="Actualiser"
+            variant="secondary"
             [loading]="loading()"
-            (click)="refreshGames()"
-            severity="secondary"
-            outlined>
-          </p-button>
+            (clicked)="refreshGames()">
+          </ui-button>
         </div>
       </div>
 
       <!-- Statistiques rapides -->
-      <div class="stats-cards" *ngIf="!loading()">
-        <p-card styleClass="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon">
-              <i class="pi pi-play"></i>
+      @if (!loading()) {
+        <div class="stats-cards">
+          <ui-card>
+            <div class="stat-content">
+              <div class="stat-icon">
+                <i class="pi pi-play"></i>
+              </div>
+              <div class="stat-details">
+                <h3>{{ totalGames() }}</h3>
+                <p>Jeux disponibles</p>
+              </div>
             </div>
-            <div class="stat-details">
-              <h3>{{ totalGames() }}</h3>
-              <p>Jeux disponibles</p>
+          </ui-card>
+
+          <ui-card>
+            <div class="stat-content">
+              <div class="stat-icon single-player">
+                <i class="pi pi-user"></i>
+              </div>
+              <div class="stat-details">
+                <h3>{{ singlePlayerGames() }}</h3>
+                <p>Jeux solo</p>
+              </div>
             </div>
-          </div>
-        </p-card>
-        
-        <p-card styleClass="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon single-player">
-              <i class="pi pi-user"></i>
+          </ui-card>
+
+          <ui-card>
+            <div class="stat-content">
+              <div class="stat-icon multiplayer">
+                <i class="pi pi-users"></i>
+              </div>
+              <div class="stat-details">
+                <h3>{{ multiplayerGames() }}</h3>
+                <p>Jeux multijoueurs</p>
+              </div>
             </div>
-            <div class="stat-details">
-              <h3>{{ singlePlayerGames() }}</h3>
-              <p>Jeux solo</p>
-            </div>
-          </div>
-        </p-card>
-        
-        <p-card styleClass="stat-card">
-          <div class="stat-content">
-            <div class="stat-icon multiplayer">
-              <i class="pi pi-users"></i>
-            </div>
-            <div class="stat-details">
-              <h3>{{ multiplayerGames() }}</h3>
-              <p>Jeux multijoueurs</p>
-            </div>
-          </div>
-        </p-card>
-      </div>
+          </ui-card>
+        </div>
+      }
       
       <div class="page-content">
         @if (loading()) {
           <app-loader size="large">Chargement des jeux...</app-loader>
         } @else {
           <div class="search-container">
-            <span class="p-input-icon-left">
-              <i class="pi pi-search"></i>
-              <input 
-                pInputText 
-                type="text" 
-                placeholder="Rechercher un jeu..." 
+            <div class="search-input-wrapper">
+              <i class="pi pi-search search-icon"></i>
+              <input
+                type="text"
+                class="search-input"
+                placeholder="Rechercher un jeu..."
                 (input)="applyFilterGlobal($event)" />
-            </span>
+            </div>
             <div class="view-toggle">
-              <p-button 
-                icon="pi pi-list" 
-                [severity]="viewMode() === 'table' ? 'primary' : 'secondary'"
-                [outlined]="viewMode() !== 'table'"
-                (click)="setViewMode('table')"
-                pTooltip="Vue tableau">
-              </p-button>
-              <p-button 
-                icon="pi pi-th-large" 
-                [severity]="viewMode() === 'grid' ? 'primary' : 'secondary'"
-                [outlined]="viewMode() !== 'grid'"
-                (click)="setViewMode('grid')"
-                pTooltip="Vue grille">
-              </p-button>
+              <ui-button
+                icon="pi pi-list"
+                [variant]="viewMode() === 'table' ? 'primary' : 'secondary'"
+                tooltip="Vue tableau"
+                (clicked)="setViewMode('table')">
+              </ui-button>
+              <ui-button
+                icon="pi pi-th-large"
+                [variant]="viewMode() === 'grid' ? 'primary' : 'secondary'"
+                tooltip="Vue grille"
+                (clicked)="setViewMode('grid')">
+              </ui-button>
             </div>
           </div>
 
@@ -177,42 +168,38 @@ import { LoaderComponent } from '../../../../shared/components/loader/loader.com
                     </span>
                   </td>
                   <td class="text-center">
-                    <p-tag 
-                      [value]="game.min_players.toString()" 
-                      severity="info"
+                    <ui-tag
+                      [label]="game.min_players.toString()"
+                      variant="info"
                       icon="pi pi-user">
-                    </p-tag>
+                    </ui-tag>
                   </td>
                   <td class="text-center">
-                    <p-tag 
-                      [value]="game.max_players.toString()" 
-                      severity="success"
+                    <ui-tag
+                      [label]="game.max_players.toString()"
+                      variant="success"
                       icon="pi pi-users">
-                    </p-tag>
+                    </ui-tag>
                   </td>
                   <td>
                     <div class="action-buttons">
-                      <p-button 
-                        icon="pi pi-pencil" 
+                      <ui-button
+                        icon="pi pi-pencil"
+                        variant="ghost"
+                        size="sm"
                         [rounded]="true"
-                        text
-                        severity="success"
-                        size="small"
-                        pTooltip="Éditer" 
-                        tooltipPosition="top"
-                        [routerLink]="['/games/edit', game.id]">
-                      </p-button>
-                      
-                      <p-button 
-                        icon="pi pi-trash" 
+                        tooltip="Éditer"
+                        (clicked)="router.navigate(['/games/edit', game.id])">
+                      </ui-button>
+
+                      <ui-button
+                        icon="pi pi-trash"
+                        variant="ghost-danger"
+                        size="sm"
                         [rounded]="true"
-                        text
-                        severity="danger"
-                        size="small"
-                        pTooltip="Supprimer" 
-                        tooltipPosition="top"
-                        (click)="confirmDelete(game)">
-                      </p-button>
+                        tooltip="Supprimer"
+                        (clicked)="confirmDelete(game)">
+                      </ui-button>
                     </div>
                   </td>
                 </tr>
@@ -225,11 +212,12 @@ import { LoaderComponent } from '../../../../shared/components/loader/loader.com
                       <i class="pi pi-play empty-icon"></i>
                       <h3>Aucun jeu trouvé</h3>
                       <p>Aucun jeu ne correspond à vos critères de recherche.</p>
-                      <p-button 
-                        label="Créer un jeu" 
+                      <ui-button
+                        label="Créer un jeu"
                         icon="pi pi-plus"
-                        routerLink="/games/new">
-                      </p-button>
+                        variant="primary"
+                        (clicked)="router.navigate(['/games/new'])">
+                      </ui-button>
                     </div>
                   </td>
                 </tr>
@@ -239,52 +227,46 @@ import { LoaderComponent } from '../../../../shared/components/loader/loader.com
             <!-- Vue grille -->
             <div class="games-grid">
               @for (game of filteredGames(); track game.id) {
-                <p-card styleClass="game-card">
-                  <ng-template pTemplate="header">
-                    <div class="game-card-header">
-                      <h3>{{ game.nom }}</h3>
-                    </div>
-                  </ng-template>
-                  
+                <ui-card styleClass="game-card">
+                  <div card-header class="game-card-header">
+                    <h3>{{ game.nom }}</h3>
+                  </div>
+
                   <p class="game-card-description">
                     {{ game.description || 'Aucune description disponible' }}
                   </p>
-                  
+
                   <div class="game-card-stats">
-                    <div class="stat-item">
+                    <div class="card-stat-item">
                       @if (game.max_players == 1) {
-                        <i class="pi pi-user"></i><span style="font-weight: 700;">&nbsp;Solo ({{ game.min_players }})</span>
+                        <i class="pi pi-user"></i><span>&nbsp;Solo ({{ game.min_players }})</span>
                       } @else {
-                        <i class="pi pi-users"></i><span style="font-weight: 700;">&nbsp;Multijoueurs ({{ game.min_players }}-{{ game.max_players }})</span>
+                        <i class="pi pi-users"></i><span>&nbsp;Multijoueurs ({{ game.min_players }}-{{ game.max_players }})</span>
                       }
                     </div>
-                    <div class="stat-item">
+                    <div class="card-stat-item">
                       <i class="pi pi-ticket"></i>
                       <span>&nbsp;{{ game.ticket_cost }} ticket(s)</span>
                     </div>
                   </div>
-                  
-                  <ng-template pTemplate="footer">
-                    <div class="game-card-actions">
-                      <p-button 
-                        label="Éditer" 
-                        icon="pi pi-pencil"
-                        severity="success"
-                        outlined
-                        size="small"
-                        [routerLink]="['/games/edit', game.id]">
-                      </p-button>
-                      
-                      <p-button 
-                        icon="pi pi-trash"
-                        severity="danger"
-                        outlined
-                        size="small"
-                        (click)="confirmDelete(game)">
-                      </p-button>
-                    </div>
-                  </ng-template>
-                </p-card>
+
+                  <div card-footer class="game-card-actions">
+                    <ui-button
+                      label="Éditer"
+                      icon="pi pi-pencil"
+                      variant="secondary"
+                      size="sm"
+                      (clicked)="router.navigate(['/games/edit', game.id])">
+                    </ui-button>
+
+                    <ui-button
+                      icon="pi pi-trash"
+                      variant="danger"
+                      size="sm"
+                      (clicked)="confirmDelete(game)">
+                    </ui-button>
+                  </div>
+                </ui-card>
               }
             </div>
           }
@@ -298,309 +280,211 @@ import { LoaderComponent } from '../../../../shared/components/loader/loader.com
     </p-confirmDialog>
   `,
   styles: [`
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--space-6);
-      
-      h1 {
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-        margin: 0;
-        font-size: var(--text-2xl);
-        font-weight: 700;
-        color: var(--text-color);
-        
-        i {
-          color: var(--primary-500);
-        }
-      }
-      
-      .page-actions {
-        display: flex;
-        gap: var(--space-3);
-      }
-    }
-
     .stats-cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: var(--space-4);
       margin-bottom: var(--space-6);
-      
-      .stat-card {
-        .stat-content {
+
+      .stat-content {
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+
+        .stat-icon {
+          width: 48px;
+          height: 48px;
+          border-radius: var(--radius-lg);
+          background: var(--blue-60);
           display: flex;
           align-items: center;
-          gap: var(--space-4);
-          
-          .stat-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: var(--radius-lg);
-            background: var(--gradient-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-            
-            &.single-player {
-              background: var(--gradient-success);
-            }
-            
-            &.multiplayer {
-              background: var(--gradient-secondary);
-            }
+          justify-content: center;
+          color: white;
+          font-size: 1.375rem;
+          flex-shrink: 0;
+
+          &.single-player { background: var(--green-50); }
+          &.multiplayer   { background: var(--blue-40); }
+        }
+
+        .stat-details {
+          h3 {
+            margin: 0;
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--gray-80);
+            font-family: var(--font-mono);
           }
-          
-          .stat-details {
-            h3 {
-              margin: 0;
-              font-size: var(--text-2xl);
-              font-weight: 700;
-              color: var(--text-color);
-            }
-            
-            p {
-              margin: 0;
-              color: var(--text-color-secondary);
-              font-size: var(--text-sm);
-            }
+
+          p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
           }
         }
       }
     }
-    
+
     .search-container {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: var(--space-4);
-      
-      .p-input-icon-left {
+
+      .search-input-wrapper {
+        position: relative;
         flex: 1;
         max-width: 400px;
-        
-        input {
+
+        .search-icon {
+          position: absolute;
+          left: var(--space-3);
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--text-secondary);
+          pointer-events: none;
+          font-size: var(--text-sm);
+        }
+
+        .search-input {
           width: 100%;
-          padding-left: var(--space-10);
+          height: 36px;
+          padding: 0 var(--space-3) 0 var(--space-9);
+          border: 1px solid var(--border-default);
+          border-radius: var(--radius-md);
+          background: var(--white);
+          font-size: var(--text-sm);
+          color: var(--gray-80);
+          font-family: var(--font-sans);
+          outline: none;
+          transition: border-color var(--duration-fast) var(--ease-default);
+
+          &:focus {
+            border-color: var(--blue-60);
+            box-shadow: 0 0 0 2px rgba(0, 98, 254, 0.15);
+          }
+
+          &::placeholder { color: var(--text-secondary); }
         }
       }
-      
+
       .view-toggle {
         display: flex;
         gap: var(--space-1);
       }
     }
-    
+
     .game-name-cell {
       display: flex;
       align-items: center;
       gap: var(--space-3);
-      
+
       .game-icon {
         width: 32px;
         height: 32px;
         border-radius: var(--radius-md);
-        background: var(--gradient-primary);
+        background: var(--blue-60);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
         font-size: var(--text-sm);
+        flex-shrink: 0;
       }
-      
+
       .game-name {
         font-weight: 600;
-        color: var(--text-color);
+        color: var(--gray-80);
       }
     }
-    
+
     .game-description {
-      color: var(--text-color-secondary);
+      color: var(--text-secondary);
       font-size: var(--text-sm);
       line-height: 1.4;
     }
-    
+
     .action-buttons {
       display: flex;
       gap: var(--space-1);
     }
-    
+
     .games-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: var(--space-6);
-      
-      .game-card {
-        transition: all var(--transition-normal);
-        
-        &:hover {
-          transform: translateY(-4px);
-          box-shadow: var(--shadow-lg);
-        }
-        
-        .game-card-header {
-          text-align: center;
-          padding: var(--space-4);
-          width: 100%;
-          height: 60px;
-          border-radius: var(--radius-full);
-          background: var(--gradient-primary);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.5rem;
-          margin: 0 auto var(--space-3) auto;
-          
-          h3 {
-            margin: 0;
-            font-size: var(--text-lg);
-            font-weight: 600;
-            color: var(--text-color);
-          }
-        }
-        
-        .game-card-description {
-          color: var(--text-color-secondary);
-          font-size: var(--text-sm);
-          line-height: 1.5;
-          margin-bottom: var(--space-4);
-          min-height: 3rem;
-        }
-        
-        .game-card-stats {
-          display: flex;
-          justify-content: space-around;
-          margin-bottom: var(--space-4);
-          
-          .stat-item {
-            display: flex;
-            align-items: center;
-            gap: var(--space-1);
-            font-size: var(--text-sm);
-            color: var(--text-color-secondary);
-            
-            i {
-              color: var(--primary-500);
-            }
-          }
-        }
-        
-        .game-card-actions {
-          display: flex;
-          gap: var(--space-2);
-          justify-content: space-between;
+
+      .game-card-header {
+        h3 {
+          margin: 0;
+          font-size: var(--text-base);
+          font-weight: 600;
+          color: var(--gray-80);
         }
       }
+
+      .game-card-description {
+        color: var(--text-secondary);
+        font-size: var(--text-sm);
+        line-height: 1.5;
+        margin-bottom: var(--space-4);
+        min-height: 3rem;
+      }
+
+      .game-card-stats {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: var(--space-4);
+
+        .card-stat-item {
+          display: flex;
+          align-items: center;
+          font-size: var(--text-sm);
+          color: var(--text-secondary);
+          font-weight: 600;
+
+          i { color: var(--blue-60); }
+        }
+      }
+
+      .game-card-actions {
+        display: flex;
+        gap: var(--space-2);
+        justify-content: space-between;
+        width: 100%;
+      }
     }
-    
+
     .empty-state {
       text-align: center;
       padding: var(--space-12) var(--space-4);
-      
+
       .empty-icon {
         font-size: 3rem;
-        color: var(--gray-400);
+        color: var(--gray-40);
         margin-bottom: var(--space-4);
       }
-      
+
       h3 {
         margin: 0 0 var(--space-2) 0;
-        color: var(--text-color);
+        color: var(--gray-80);
       }
-      
+
       p {
         margin: 0 0 var(--space-4) 0;
-        color: var(--text-color-secondary);
+        color: var(--text-secondary);
       }
     }
-    
-    .mr-1 { margin-right: 0.25rem; }
-    .mr-2 { margin-right: 0.5rem; }
-    .ml-1 { margin-left: 0.25rem; }
-    
-    .sort-icon {
-      font-size: 0.75rem;
-      color: var(--text-color-secondary);
-    }
-    
-    :host ::ng-deep {
-      .games-table {
-        .p-datatable-thead > tr > th {
-          background: var(--surface-ground);
-          border-bottom: 2px solid var(--surface-border);
-          font-weight: 600;
-          color: var(--text-color);
-        }
-        
-        .p-datatable-tbody > tr {
-          transition: all var(--transition-fast);
-          
-          &:hover {
-            background: var(--surface-hover);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-sm);
-          }
-        }
-      }
-      
-      .stat-card .p-card-body {
-        padding: var(--space-4);
-      }
-      
-      .game-card .p-card-body {
-        padding: var(--space-4);
-      }
-    }
-    
+
     @media (max-width: 768px) {
-      .page-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: var(--space-4);
-      }
-      
-      .stats-cards {
-        grid-template-columns: 1fr;
-      }
-      
+      .stats-cards { grid-template-columns: 1fr; }
+      .games-grid  { grid-template-columns: 1fr; }
+
       .search-container {
         flex-direction: column;
         gap: var(--space-3);
-        
-        .p-input-icon-left {
-          max-width: none;
-        }
-      }
-      
-      .games-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .p-button.p-button-rounded {
-        width: 2rem;
-        height: 2rem;
-        padding: 0;
-        
-        i {
-          font-size: 0.875rem;
-        }
-      }
-      
-      .p-button.p-button-text:not(:disabled):hover {
-        background-color: rgba(0, 0, 0, 0.04);
-      }
-      
-      .p-button.p-button-text.p-button-success:not(:disabled):hover {
-        background-color: rgba(76, 175, 80, 0.04);
-      }
-      
-      .p-button.p-button-text.p-button-danger:not(:disabled):hover {
-        background-color: rgba(244, 67, 54, 0.04);
+
+        .search-input-wrapper { max-width: none; }
       }
     }
   `]
@@ -610,6 +494,7 @@ export class GamesListComponent implements OnInit {
   private readonly gamesService = inject(GamesService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
+  readonly router = inject(Router);
 
   // ViewChild pour la table
   readonly table = viewChild<Table>('dt');

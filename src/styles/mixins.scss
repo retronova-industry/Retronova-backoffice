@@ -1,34 +1,42 @@
+// =============================================================================
+// mixins.scss — Mixins SCSS utilitaires
+// =============================================================================
+
 @use "variables" as *;
 
-// Responsive breakpoint mixins
-@mixin sm {
-  @media (min-width: #{$breakpoint-sm}) {
-    @content;
-  }
-}
+// ===========================================================================
+// BREAKPOINTS
+// ===========================================================================
 
 @mixin md {
-  @media (min-width: #{$breakpoint-md}) {
-    @content;
-  }
+  @media (min-width: #{$bp-md}) { @content; }
 }
 
 @mixin lg {
-  @media (min-width: #{$breakpoint-lg}) {
-    @content;
-  }
+  @media (min-width: #{$bp-lg}) { @content; }
 }
 
 @mixin xl {
-  @media (min-width: #{$breakpoint-xl}) {
-    @content;
-  }
+  @media (min-width: #{$bp-xl}) { @content; }
 }
 
-// Utility mixins
+@mixin xxl {
+  @media (min-width: #{$bp-2xl}) { @content; }
+}
+
+// ===========================================================================
+// LAYOUT
+// ===========================================================================
+
 @mixin flex-center {
   display: flex;
   justify-content: center;
+  align-items: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
 }
 
@@ -38,6 +46,10 @@
   left: 50%;
   transform: translate(-50%, -50%);
 }
+
+// ===========================================================================
+// TYPOGRAPHIE
+// ===========================================================================
 
 @mixin truncate {
   overflow: hidden;
@@ -52,51 +64,67 @@
   overflow: hidden;
 }
 
-// Card mixin
-@mixin card($padding: $spacing-lg) {
-  background-color: $surface-card;
-  border-radius: $border-radius-lg;
+// Label de tableau : xs, uppercase, espacé — IBM convention
+@mixin table-header-label {
+  font-size: 0.6875rem; // --text-xs
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+
+// ===========================================================================
+// COMPOSANTS
+// ===========================================================================
+
+// Card standard
+@mixin card($padding: $space-6) {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
   padding: $padding;
   box-shadow: $shadow-sm;
-  transition: box-shadow $transition-base;
-  
+  transition:
+    border-color $transition-fast,
+    box-shadow $transition-fast;
+}
+
+// Card interactive (hover effect)
+@mixin card-interactive($padding: $space-6) {
+  @include card($padding);
+  cursor: pointer;
+
   &:hover {
+    border-color: var(--border-default);
     box-shadow: $shadow-md;
   }
 }
 
-// Button mixin
-@mixin button-variant($bg-color, $text-color: white) {
-  background-color: $bg-color;
-  color: $text-color;
-  border: none;
-  
-  &:hover:not(:disabled) {
-    background-color: darken($bg-color, 10%);
-  }
-  
-  &:active:not(:disabled) {
-    background-color: darken($bg-color, 15%);
-  }
-  
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
+// Anneau de focus IBM Blue
+@mixin focus-ring {
+  outline: none;
+  box-shadow: 0 0 0 2px $blue-20, 0 0 0 4px $blue-60;
 }
 
-// Glass effect mixin
-@mixin glass-effect($blur: 10px, $opacity: 0.1) {
-  background: rgba(255, 255, 255, $opacity);
-  backdrop-filter: blur($blur);
-  -webkit-backdrop-filter: blur($blur);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+// Badge de statut pill
+@mixin status-badge($bg, $color) {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.6875rem; // --text-xs
+  font-weight: 500;
+  background: $bg;
+  color: $color;
+  line-height: 1.4;
 }
 
-// Gradient text mixin
-@mixin gradient-text($gradient) {
-  background: $gradient;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
+// ===========================================================================
+// DEPRECATED — Supprimés dans la nouvelle direction visuelle
+// Ces mixins ne doivent plus être utilisés dans les nouveaux composants
+// ===========================================================================
+
+// @mixin glass-effect   → supprimé (backdrop-filter non utilisé hors modales)
+// @mixin gradient-text  → supprimé (dégradés de texte hors direction visuelle)
+// @mixin button-variant → remplacé par les overrides PrimeNG dans global.scss
+// @mixin sm             → supprimé (640px trop proche de md pour ce backoffice)

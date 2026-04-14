@@ -1,0 +1,9 @@
+<div [class]="'ui-card ' + styleClass()">
+  <ng-content select="[card-header]" />
+
+  <div class="ui-card__body">
+    <ng-content />
+  </div>
+
+  <ng-content select="[card-footer]" />
+</div>

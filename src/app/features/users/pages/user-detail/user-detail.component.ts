@@ -1,16 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { TagModule } from 'primeng/tag';
-import { TabViewModule } from 'primeng/tabview';
 import { TableModule } from 'primeng/table';
-import { RippleModule } from 'primeng/ripple';
-import { DividerModule } from 'primeng/divider';
-import { ChipModule } from 'primeng/chip';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ButtonComponent, CardComponent, TagComponent } from '../../../../shared/ui';
 import { UsersService } from '../../../../core/services/users.service';
 import { PartiesService } from '../../../../core/services/parties.service';
 import { User } from '../../../../core/models/user.model';
@@ -32,16 +26,12 @@ interface UserStats {
   imports: [
     CommonModule,
     RouterModule,
-    CardModule,
-    ButtonModule,
-    TagModule,
-    TabViewModule,
     TableModule,
-    RippleModule,
-    DividerModule,
-    ChipModule,
     ConfirmDialogModule,
-    LoaderComponent
+    LoaderComponent,
+    ButtonComponent,
+    CardComponent,
+    TagComponent,
   ],
   providers: [ConfirmationService],
   template: `
@@ -49,289 +39,329 @@ interface UserStats {
       <div class="page-header">
         <h1>Détails de l'utilisateur</h1>
         <div class="page-actions">
-          <button pButton pRipple type="button" icon="pi pi-arrow-left" 
-                  label="Retour" class="p-button-text" routerLink="/users"></button>
+          <ui-button
+            icon="pi pi-arrow-left"
+            label="Retour"
+            variant="ghost"
+            (clicked)="router.navigate(['/users'])">
+          </ui-button>
         </div>
       </div>
-      
-      <app-loader *ngIf="loading" size="large" [fullScreen]="true"></app-loader>
-      
-      <div class="user-detail-content" *ngIf="!loading && user">
-        <!-- Informations principales -->
-        <p-card styleClass="user-info-card">
-          <div class="user-header">
-            <div class="user-avatar">
-              <i class="pi pi-user"></i>
-            </div>
-            <div class="user-identity">
-              <h2>{{ user.nom || 'Prénom non défini' }} {{ user.prenom || 'Nom non défini' }}</h2>
-              <p class="user-id">ID Public: <strong>{{ user.firebase_uid }}</strong></p>
-            </div>
-            <div class="user-actions">
-              <button pButton pRipple type="button" icon="pi pi-pencil" 
-                      label="Modifier" class="p-button-success"
-                      [routerLink]="['/users/edit', user.id]"></button>
-              <button pButton pRipple type="button" icon="pi pi-trash" 
-                      label="Supprimer" class="p-button-danger p-button-outlined"
-                      (click)="confirmDelete()"></button>
-            </div>
-          </div>
-          
-          <p-divider></p-divider>
-          
-          <div class="user-details-grid">
-            <div class="detail-item">
-              <label>Firebase ID</label>
-              <p>{{ user.firebase_uid }}</p>
-            </div>
-            <div class="detail-item">
-              <label>Tickets disponibles</label>
-              <p-chip [label]="user.tickets_balance.toString()" styleClass="custom-chip-primary"></p-chip>
-            </div>
-            <!-- <div class="detail-item">
-              <label>Accès bar</label>
-              <p-tag [severity]="user.bar ? 'success' : 'danger'" 
-                     [value]="user.bar ? 'Autorisé' : 'Non autorisé'"></p-tag>
-            </div> -->
-            <div class="detail-item">
-              <label>Date de création</label>
-              <p>{{ formatDate(user.created_at) }}</p>
-            </div>
-          </div>
-        </p-card>
-        
-        <!-- Statistiques -->
-        <p-card styleClass="stats-card" header="Statistiques">
-          <div class="stats-grid">
-            <div class="stat-item">
-              <i class="pi pi-ticket stat-icon"></i>
-              <div class="stat-content">
-                <h3>{{ stats.totalParties }}</h3>
-                <p>Parties jouées</p>
+
+      @if (loading) {
+        <app-loader size="large" [fullScreen]="true"></app-loader>
+      } @else if (user) {
+        <div class="user-detail-content">
+          <!-- Informations principales -->
+          <ui-card>
+            <div class="user-header">
+              <div class="user-avatar">
+                <i class="pi pi-user"></i>
+              </div>
+              <div class="user-identity">
+                <h2>{{ user.nom || 'Prénom non défini' }} {{ user.prenom || 'Nom non défini' }}</h2>
+                <p class="user-id">ID Public: <strong>{{ user.firebase_uid }}</strong></p>
+              </div>
+              <div class="user-actions">
+                <ui-button
+                  icon="pi pi-pencil"
+                  label="Modifier"
+                  variant="primary"
+                  (clicked)="router.navigate(['/users/edit', user.id])">
+                </ui-button>
+                <ui-button
+                  icon="pi pi-trash"
+                  label="Supprimer"
+                  variant="danger"
+                  (clicked)="confirmDelete()">
+                </ui-button>
               </div>
             </div>
-            <div class="stat-item">
-              <i class="pi pi-trophy stat-icon text-green-500"></i>
-              <div class="stat-content">
-                <h3>{{ stats.victories }}</h3>
-                <p>Victoires</p>
+
+            <hr class="divider" />
+
+            <div class="user-details-grid">
+              <div class="detail-item">
+                <label>Firebase ID</label>
+                <p class="mono">{{ user.firebase_uid }}</p>
+              </div>
+              <div class="detail-item">
+                <label>Tickets disponibles</label>
+                <span class="ticket-badge">{{ user.tickets_balance }}</span>
+              </div>
+              <div class="detail-item">
+                <label>Date de création</label>
+                <p>{{ formatDate(user.created_at) }}</p>
               </div>
             </div>
-            <div class="stat-item">
-              <i class="pi pi-times-circle stat-icon text-red-500"></i>
-              <div class="stat-content">
-                <h3>{{ stats.defeats }}</h3>
-                <p>Défaites</p>
+          </ui-card>
+
+          <!-- Statistiques -->
+          <ui-card>
+            <div card-header>
+              <h3>Statistiques</h3>
+            </div>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <i class="pi pi-ticket stat-icon"></i>
+                <div class="stat-content">
+                  <h3>{{ stats.totalParties }}</h3>
+                  <p>Parties jouées</p>
+                </div>
+              </div>
+              <div class="stat-item">
+                <i class="pi pi-trophy stat-icon color-success"></i>
+                <div class="stat-content">
+                  <h3>{{ stats.victories }}</h3>
+                  <p>Victoires</p>
+                </div>
+              </div>
+              <div class="stat-item">
+                <i class="pi pi-times-circle stat-icon color-danger"></i>
+                <div class="stat-content">
+                  <h3>{{ stats.defeats }}</h3>
+                  <p>Défaites</p>
+                </div>
+              </div>
+              <div class="stat-item">
+                <i class="pi pi-percentage stat-icon color-primary"></i>
+                <div class="stat-content">
+                  <h3>{{ stats.winRate }}%</h3>
+                  <p>Taux de victoire</p>
+                </div>
               </div>
             </div>
-            <div class="stat-item">
-              <i class="pi pi-percentage stat-icon text-blue-500"></i>
-              <div class="stat-content">
-                <h3>{{ stats.winRate }}%</h3>
-                <p>Taux de victoire</p>
-              </div>
-            </div>
-          </div>
-        </p-card>
-        
-        <!-- Historique des parties -->
-        <p-card styleClass="history-card">
-          <ng-template pTemplate="header">
-            <div class="card-header-custom">
+          </ui-card>
+
+          <!-- Historique des parties -->
+          <ui-card>
+            <div card-header class="card-header-custom">
               <h3>Historique des parties</h3>
-              <p-tag [value]="userParties.length + ' parties'" severity="info"></p-tag>
+              <ui-tag [label]="userParties.length + ' parties'" variant="info"></ui-tag>
             </div>
-          </ng-template>
-          
-          <p-table [value]="userParties" [rows]="10" [paginator]="true"
-                   [rowHover]="true" [tableStyle]="{'min-width': '50rem'}"
-                   [showCurrentPageReport]="true"
-                   currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} parties">
-            <ng-template pTemplate="header">
-              <tr>
-                <th>Date</th>
-                <th>Jeu</th>
-                <th>Adversaire</th>
-                <th>Score</th>
-                <th>Résultat</th>
-                <th>Statut</th>
-              </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-party>
-              <tr>
-                <td>{{ formatDate(party.created_at) }}</td>
-                <td>{{ getGameName(party.game_id) }}</td>
-                <td>{{ getOpponentName(party) }}</td>
-                <td>
-                  <span class="score">
-                    {{ getUserScore(party) }} - {{ getOpponentScore(party) }}
-                  </span>
-                </td>
-                <td>
-                  <p-tag [severity]="getResultSeverity(party)" 
-                         [value]="getResultLabel(party)"></p-tag>
-                </td>
-                <td>
-                  <p-tag [severity]="party.done ? 'success' : 'warning'" 
-                         [value]="party.done ? 'Terminée' : 'En cours'"></p-tag>
-                </td>
-              </tr>
-            </ng-template>
-            <ng-template pTemplate="emptymessage">
-              <tr>
-                <td colspan="6" class="text-center p-4">
-                  Aucune partie trouvée
-                </td>
-              </tr>
-            </ng-template>
-          </p-table>
-        </p-card>
-      </div>
+
+            <p-table [value]="userParties" [rows]="10" [paginator]="true"
+                     [rowHover]="true" [tableStyle]="{'min-width': '50rem'}"
+                     [showCurrentPageReport]="true"
+                     currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} parties">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>Date</th>
+                  <th>Jeu</th>
+                  <th>Adversaire</th>
+                  <th>Score</th>
+                  <th>Résultat</th>
+                  <th>Statut</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-party>
+                <tr>
+                  <td>{{ formatDate(party.created_at) }}</td>
+                  <td>{{ getGameName(party.game_id) }}</td>
+                  <td>{{ getOpponentName(party) }}</td>
+                  <td>
+                    <span class="score">
+                      {{ getUserScore(party) }} - {{ getOpponentScore(party) }}
+                    </span>
+                  </td>
+                  <td>
+                    <ui-tag [variant]="getResultSeverity(party)"
+                            [label]="getResultLabel(party)"></ui-tag>
+                  </td>
+                  <td>
+                    <ui-tag [variant]="party.done ? 'success' : 'warning'"
+                            [label]="party.done ? 'Terminée' : 'En cours'"></ui-tag>
+                  </td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="6" class="empty-message">
+                    Aucune partie trouvée
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </ui-card>
+        </div>
+      }
     </div>
-    
+
     <p-confirmDialog></p-confirmDialog>
   `,
   styles: [`
     .user-detail-content {
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: var(--space-6);
     }
-    
+
     .user-header {
       display: flex;
       align-items: center;
-      gap: 1.5rem;
-      margin-bottom: 1rem;
+      gap: var(--space-6);
+      margin-bottom: var(--space-4);
     }
-    
+
     .user-avatar {
-      width: 80px;
-      height: 80px;
-      background-color: var(--primary-color);
+      width: 72px;
+      height: 72px;
+      background-color: var(--blue-60);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      
+      flex-shrink: 0;
+
       i {
-        font-size: 2.5rem;
+        font-size: 2rem;
         color: white;
       }
     }
-    
+
     .user-identity {
       flex: 1;
-      
+
       h2 {
-        margin: 0 0 0.5rem 0;
+        margin: 0 0 var(--space-1) 0;
+        font-size: var(--text-xl);
+        font-weight: 600;
+        color: var(--gray-80);
       }
-      
+
       .user-id {
-        color: var(--text-color-secondary);
+        color: var(--text-secondary);
         margin: 0;
+        font-size: var(--text-sm);
       }
     }
-    
+
     .user-actions {
       display: flex;
-      gap: 0.75rem;
+      gap: var(--space-3);
     }
-    
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border-default);
+      margin: var(--space-4) 0;
+    }
+
     .user-details-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 2rem;
-      margin-top: 1rem;
+      gap: var(--space-6);
     }
-    
+
     .detail-item {
       label {
         display: block;
-        color: var(--text-color-secondary);
-        font-size: 0.875rem;
-        margin-bottom: 0.5rem;
+        color: var(--text-secondary);
+        font-size: var(--text-xs);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: var(--space-1);
       }
-      
+
       p {
         margin: 0;
         font-weight: 500;
+        color: var(--gray-80);
+      }
+
+      .mono {
+        font-family: var(--font-mono);
+        font-size: var(--text-sm);
+        word-break: break-all;
       }
     }
-    
+
+    .ticket-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--blue-60);
+      color: white;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      font-size: var(--text-lg);
+      padding: var(--space-1) var(--space-4);
+      border-radius: var(--radius-full);
+      min-width: 48px;
+    }
+
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 1.5rem;
+      gap: var(--space-4);
     }
-    
+
     .stat-item {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      padding: 1rem;
-      background-color: var(--surface-ground);
-      border-radius: 8px;
-      
+      gap: var(--space-4);
+      padding: var(--space-4);
+      background: var(--gray-10);
+      border-radius: var(--radius-md);
+
       .stat-icon {
-        font-size: 2rem;
-        color: var(--primary-color);
+        font-size: 1.75rem;
+        color: var(--blue-60);
+
+        &.color-success { color: var(--green-50); }
+        &.color-danger  { color: var(--red-50); }
+        &.color-primary { color: var(--blue-60); }
       }
-      
+
       .stat-content {
         h3 {
           margin: 0;
-          font-size: 1.5rem;
+          font-size: var(--text-2xl);
+          font-weight: 700;
+          color: var(--gray-80);
+          font-family: var(--font-mono);
         }
-        
+
         p {
-          margin: 0.25rem 0 0 0;
-          color: var(--text-color-secondary);
-          font-size: 0.875rem;
+          margin: 0;
+          color: var(--text-secondary);
+          font-size: var(--text-sm);
         }
       }
     }
-    
+
     .card-header-custom {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 1.5rem;
-      
+      width: 100%;
+
       h3 {
         margin: 0;
+        font-size: var(--text-base);
+        font-weight: 600;
+        color: var(--gray-80);
       }
     }
-    
+
     .score {
       font-weight: 600;
+      font-family: var(--font-mono);
     }
-    
-    .text-green-500 { color: var(--green-500); }
-    .text-red-500 { color: var(--red-500); }
-    .text-blue-500 { color: var(--blue-500); }
-    
-    :host ::ng-deep {
-      .custom-chip-primary {
-        background-color: var(--primary-color);
-        color: white;
-        font-weight: 600;
-        font-size: 1.125rem;
-      }
-      
-      .user-info-card,
-      .stats-card,
-      .history-card {
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-      }
+
+    .empty-message {
+      text-align: center;
+      padding: var(--space-8);
+      color: var(--text-secondary);
     }
-    
+
     @media (max-width: 768px) {
       .user-header {
         flex-direction: column;
         text-align: center;
       }
-      
+
       .user-actions {
         width: 100%;
         justify-content: center;
@@ -354,7 +384,7 @@ export class UserDetailComponent implements OnInit {
   
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
+    protected router: Router,
     private usersService: UsersService,
     private partiesService: PartiesService,
     private confirmationService: ConfirmationService,
@@ -523,7 +553,7 @@ export class UserDetailComponent implements OnInit {
     return 'Égalité';
   }
   
-  getResultSeverity(party: Party): string {
+  getResultSeverity(party: Party): 'success' | 'danger' | 'warning' | 'info' | 'default' {
     const result = this.getResultLabel(party);
     switch (result) {
       case 'Victoire': return 'success';

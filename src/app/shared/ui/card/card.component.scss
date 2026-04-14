@@ -1,0 +1,58 @@
+// =============================================================================
+// ui-card — Surface élevée RetroNova
+// Slots via content projection : [card-header], default, [card-footer]
+// =============================================================================
+
+:host {
+  display: block;
+}
+
+.ui-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+
+  // =========================================================================
+  // HEADER — projeté via [card-header]
+  // =========================================================================
+
+  // Pas de styles par défaut : chaque feature définit son header.
+  // Utiliser card-header__bordered pour ajouter un séparateur.
+
+  // =========================================================================
+  // BODY — contenu principal par défaut
+  // =========================================================================
+
+  &__body {
+    padding: var(--space-6);
+  }
+
+  // =========================================================================
+  // FOOTER — projeté via [card-footer]
+  // =========================================================================
+
+  // Pas de styles par défaut : chaque feature définit son footer.
+  // Utiliser card-footer__bordered pour ajouter un séparateur.
+}
+
+// =========================================================================
+// MODIFICATEURS UTILITAIRES
+// À appliquer via styleClass depuis le parent
+// =========================================================================
+
+// Supprime le padding du body (utile pour les tables pleine largeur)
+.ui-card--flush > .ui-card__body {
+  padding: 0;
+}
+
+// Ajoute un séparateur sous le header
+.ui-card--divided [card-header] {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+// Ajoute un séparateur au-dessus du footer
+.ui-card--divided [card-footer] {
+  border-top: 1px solid var(--border-subtle);
+}

@@ -3,15 +3,14 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { RippleModule } from 'primeng/ripple';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ButtonComponent } from '../../ui';
 import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, ButtonModule, RippleModule, RouterLink],
+  imports: [CommonModule, RouterLink, ButtonComponent],
   template: `
     <div class="header-container">
       <div class="logo">
@@ -21,12 +20,15 @@ import { NotificationService } from '../../../core/services/notification.service
       </div>
       <div class="user-info">
         <span>{{ userName() }}</span>
-        <button pButton pRipple type="button" 
-                class="p-button-rounded p-button-text logout-button" 
-                (click)="logout()"
-                [loading]="isLoggingOut()">
-          <i class="fas fa-sign-out-alt"></i>
-        </button>
+        <ui-button
+          icon="pi pi-sign-out"
+          variant="ghost-danger"
+          size="sm"
+          [rounded]="true"
+          [loading]="isLoggingOut()"
+          tooltip="Se déconnecter"
+          (clicked)="logout()">
+        </ui-button>
       </div>
     </div>
   `,
@@ -66,22 +68,6 @@ import { NotificationService } from '../../../core/services/notification.service
       font-size: 0.875rem;
     }
     
-    .logout-button {
-      color: var(--text-color-secondary);
-      transition: color 0.2s;
-      
-      i {
-        font-size: 1.125rem;
-      }
-    }
-    
-    .logout-button:hover {
-      color: var(--danger-color);
-    }
-    
-    :host ::ng-deep .logout-button .p-button-label {
-      display: none;
-    }
   `]
 })
 export class HeaderComponent implements OnInit {
