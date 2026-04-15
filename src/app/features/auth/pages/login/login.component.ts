@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonComponent } from '../../../../shared/ui';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -94,10 +94,12 @@ import { NotificationService } from '../../../../core/services/notification.serv
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   isLoading = false;
+  private returnUrl = '/';
   
   constructor(
     private formBuilder: FormBuilder,
     private authService: AuthService,
+    private route: ActivatedRoute,
     private router: Router,
     private notificationService: NotificationService
   ) {
@@ -108,9 +110,13 @@ export class LoginComponent implements OnInit {
   }
   
   ngOnInit(): void {
+    this.returnUrl = this.getSafeReturnUrl(
+      this.route.snapshot.queryParamMap.get('returnUrl')
+    );
+
     this.authService.isAuthenticated().subscribe(isAuthenticated => {
       if (isAuthenticated) {
-        this.router.navigate(['/']);
+        this.router.navigateByUrl(this.returnUrl);
       }
     });
   }
@@ -126,7 +132,7 @@ export class LoginComponent implements OnInit {
     this.authService.login(email, password).subscribe({
       next: () => {
         this.notificationService.showSuccess('Connexion réussie');
-        this.router.navigate(['/']);
+        this.router.navigateByUrl(this.returnUrl);
       },
       error: (error) => {
         console.error('Login error:', error);
@@ -134,5 +140,13 @@ export class LoginComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  private getSafeReturnUrl(returnUrl: string | null): string {
+    if (!returnUrl || !returnUrl.startsWith('/') || returnUrl.startsWith('//')) {
+      return '/';
+    }
+
+    return returnUrl;
   }
 }

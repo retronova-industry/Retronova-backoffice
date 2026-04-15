@@ -1,16 +1,14 @@
-import { Routes } from '@angular/router';
+import { Routes, UrlMatcher } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 
+const homeMatcher: UrlMatcher = segments => (
+  segments.length === 0 ? { consumed: [] } : null
+);
 
 export const routes: Routes = [
   {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES)
-  },
-  {
-    path: '',
-    canActivate: [authGuard],
-    loadChildren: () => import('./features/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES)
   },
   {
     path: 'arcade-machines',
@@ -49,5 +47,15 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadChildren: () => import('./features/reservations/reservations.routes').then(m => m.RESERVATIONS_ROUTES)
   },
-  { path: '**', redirectTo: '' }
+  {
+    matcher: homeMatcher,
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/dashboard/layout/layout.component').then(m => m.LayoutComponent),
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./features/dashboard/pages/home/home.component').then(m => m.HomeComponent)
+      }
+    ]
+  }
 ];
