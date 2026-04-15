@@ -71,7 +71,7 @@ export class ReservationsListComponent implements OnInit {
 
   loadReservations(): void {
     this.loading.set(true);
-    this.reservationsService.getMyReservations().subscribe({
+    this.reservationsService.getAllReservations().subscribe({
       next: (data) => { this.reservations.set(data); this.loading.set(false); },
       error: () => { this.notificationService.showError('Impossible de charger les données'); this.loading.set(false); }
     });

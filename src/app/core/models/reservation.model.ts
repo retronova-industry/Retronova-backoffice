@@ -36,4 +36,5 @@ export interface ReservationResponse {
   player2_pseudo?: string;
   tickets_used: number;
   position_in_queue?: number;
+  created_at?: string;
 }
