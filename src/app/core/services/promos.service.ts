@@ -2,7 +2,7 @@
 
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap, catchError, throwError, map } from 'rxjs';
+import { Observable, BehaviorSubject, of, tap, catchError, throwError, map } from 'rxjs';
 import { ApiService } from './api.service';
 import { environment } from '../../../environments/environment.development';
 import { 
@@ -108,8 +108,7 @@ export class PromosService {
   getAllPromos(): Observable<PromoCode[]> {
     const cached = this.cacheManager.get<PromoCode[]>('all_promos');
     if (cached) {
-      this.promosSubject.next(cached);
-      return this.promos$;
+      return of(cached);
     }
 
     return this.listPromoCodes().pipe(

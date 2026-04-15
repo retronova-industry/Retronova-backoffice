@@ -8,7 +8,6 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { UsersService } from '../../../../core/services/users.service';
 import { User } from '../../../../core/models/user.model';
-import { LoaderComponent } from '../../../../shared/components/loader/loader.component';
 import { ButtonComponent, TagComponent } from '../../../../shared/ui';
 
 @Component({
@@ -19,162 +18,12 @@ import { ButtonComponent, TagComponent } from '../../../../shared/ui';
     RouterModule,
     TableModule,
     ConfirmDialogModule,
-    LoaderComponent,
     ButtonComponent,
     TagComponent,
   ],
   providers: [ConfirmationService],
-  template: `
-    <div class="page-container">
-      <div class="page-header">
-        <div>
-          <h1><i class="pi pi-users"></i> Liste des Utilisateurs supprimés</h1>
-          <i>Permet la restauration d'un compte utilisateur supprimé</i>
-        </div>
-        <div class="page-actions">
-          <ui-button
-            icon="pi pi-refresh"
-            label="Actualiser"
-            variant="secondary"
-            [loading]="loading()"
-            (clicked)="refreshUsers()">
-          </ui-button>
-        </div>
-      </div>
-      
-      <div class="page-content">
-        @if (loading()) {
-          <app-loader size="large">Chargement des utilisateurs...</app-loader>
-        } @else {
-          <div class="search-container">
-            <div class="search-input-wrapper">
-              <i class="pi pi-search search-icon"></i>
-              <input
-                type="text"
-                class="search-input"
-                placeholder="Rechercher par nom, prénom ou pseudo..."
-                (input)="applyFilterGlobal($event)" />
-            </div>
-            <div class="search-stats">
-              {{ filteredUsers().length }} utilisateur(s) trouvé(s)
-            </div>
-          </div>
-          
-          <p-table 
-            #dt 
-            [value]="filteredUsers()" 
-            [rows]="itemsPerPage()" 
-            [paginator]="true" 
-            [globalFilterFields]="globalFilterFields"
-            [tableStyle]="{'min-width': '75rem'}"
-            [rowHover]="true" 
-            dataKey="id"
-            [showCurrentPageReport]="true" 
-            currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} utilisateurs"
-            [rowsPerPageOptions]="[10, 25, 50]"
-            styleClass="users-table">
-            
-            <ng-template pTemplate="header">
-              <tr>
-                <th pSortableColumn="nom" style="width: 20%">
-                  Nom <p-sortIcon field="nom"></p-sortIcon>
-                </th>
-                <th pSortableColumn="prenom" style="width: 20%">
-                  Prénom <p-sortIcon field="prenom"></p-sortIcon>
-                </th>
-                <th pSortableColumn="pseudo" style="width: 20%">
-                  Pseudo <p-sortIcon field="pseudo"></p-sortIcon>
-                </th>
-                <th pSortableColumn="tickets_balance" style="width: 15%">
-                  Tickets <p-sortIcon field="tickets_balance"></p-sortIcon>
-                </th>
-                <th pSortableColumn="created_at" style="width: 15%">
-                  Inscription <p-sortIcon field="created_at"></p-sortIcon>
-                </th>
-                <th style="width: 10%">Actions</th>
-              </tr>
-            </ng-template>
-            
-            <ng-template pTemplate="body" let-user>
-              <tr>
-                <td>
-                  <div class="user-cell">
-                    <div class="user-avatar">
-                      {{ getUserInitials(user) }}
-                    </div>
-                    <span class="user-name">{{ user.nom || 'Non défini' }}</span>
-                  </div>
-                </td>
-                <td>{{ user.prenom || 'Non défini' }}</td>
-                <td>
-                  <span class="user-pseudo">{{ user.pseudo }}</span>
-                </td>
-                <td>
-                  <ui-tag
-                    [label]="user.tickets_balance.toString()"
-                    [variant]="getTicketsSeverity(user.tickets_balance)"
-                    icon="pi pi-ticket">
-                  </ui-tag>
-                </td>
-                <td>
-                  <span class="date-cell">{{ formatDate(user.created_at) }}</span>
-                </td>
-                <td>
-                  <div class="action-buttons">
-                    <ui-button
-                      icon="pi pi-eye"
-                      variant="ghost"
-                      size="sm"
-                      [rounded]="true"
-                      tooltip="Voir le profil"
-                      (clicked)="router.navigate(['/users', user.id])">
-                    </ui-button>
-
-                    <ui-button
-                      icon="pi pi-pencil"
-                      variant="ghost"
-                      size="sm"
-                      [rounded]="true"
-                      tooltip="Éditer"
-                      (clicked)="router.navigate(['/users/edit', user.id])">
-                    </ui-button>
-
-                    <ui-button
-                      icon="pi pi-trash"
-                      variant="ghost-danger"
-                      size="sm"
-                      [rounded]="true"
-                      tooltip="Supprimer"
-                      (clicked)="confirmDelete(user)">
-                    </ui-button>
-                  </div>
-                </td>
-              </tr>
-            </ng-template>
-            
-            <ng-template pTemplate="emptymessage">
-              <tr>
-                <td colspan="6" class="empty-message">
-                  <div class="empty-state">
-                    <i class="pi pi-users empty-icon"></i>
-                    <h3>Aucun utilisateur trouvé</h3>
-                    <p>Aucun utilisateur ne correspond à vos critères de recherche.</p>
-                  </div>
-                </td>
-              </tr>
-            </ng-template>
-          </p-table>
-        }
-      </div>
-    </div>
-    
-    <p-confirmDialog 
-      header="Confirmation de suppression"
-      icon="pi pi-exclamation-triangle"
-      [blockScroll]="true">
-    </p-confirmDialog>
-  `,
-  styleUrls: ['./users-list.component.scss']
+  templateUrl: './users-list.component.html',
+  styleUrl: './users-list.component.scss'
 })
 export class UsersListComponent implements OnInit {
   // Services injectés

@@ -1,28 +1,53 @@
-<div class="login-container">
+<div class="login-page">
   <div class="login-card">
-    <h2>Retro Nova - Back Office</h2>
-    <h3>Connexion</h3>
-    
+    <div class="login-brand">
+      <h1 class="login-title">RetroNova</h1>
+      <p class="login-subtitle">Back Office</p>
+    </div>
+
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      <div class="field">
-        <label for="email">Email</label>
-        <input id="email" type="email" pInputText formControlName="email" [ngClass]="{'ng-dirty': loginForm.get('email')?.touched && loginForm.get('email')?.invalid}" />
-        @if (loginForm.get('email')?.touched && loginForm.get('email')?.invalid) {
-          <small class="p-error">Email requis.</small>
+      <div class="form-group">
+        <label for="email" class="form-label">Email</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="form-input"
+          [class.is-invalid]="loginForm.get('email')?.touched && loginForm.get('email')?.invalid"
+          placeholder="admin@retronova.com"
+          autocomplete="email" />
+        @if (loginForm.get('email')?.touched && loginForm.get('email')?.hasError('required')) {
+          <small class="field-error">Email requis.</small>
         }
-        <small *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.hasError('required')" class="p-error">Email requis.</small>
-        <small *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.hasError('email')" class="p-error">Email invalide.</small>
+        @if (loginForm.get('email')?.touched && loginForm.get('email')?.hasError('email')) {
+          <small class="field-error">Email invalide.</small>
+        }
       </div>
-      
-      <div class="field">
-        <label for="password">Mot de passe</label>
-        <input id="password" type="password" pInputText formControlName="password" [ngClass]="{'ng-dirty': loginForm.get('password')?.touched && loginForm.get('password')?.invalid}" />
-        <small *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.hasError('required')" class="p-error">Mot de passe requis.</small>
-        <small *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.hasError('minlength')" class="p-error">Le mot de passe doit contenir au moins 6 caractères.</small>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Mot de passe</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          class="form-input"
+          [class.is-invalid]="loginForm.get('password')?.touched && loginForm.get('password')?.invalid"
+          placeholder="••••••••"
+          autocomplete="current-password" />
+        @if (loginForm.get('password')?.touched && loginForm.get('password')?.hasError('required')) {
+          <small class="field-error">Mot de passe requis.</small>
+        }
+        @if (loginForm.get('password')?.touched && loginForm.get('password')?.hasError('minlength')) {
+          <small class="field-error">Le mot de passe doit contenir au moins 6 caractères.</small>
+        }
       </div>
-      
-      <div class="field">
-        <button pButton pRipple type="submit" label="Se connecter" [disabled]="loginForm.invalid || isLoading" [loading]="isLoading"></button>
+
+      <div class="form-submit">
+        <ui-button
+          type="submit"
+          label="Se connecter"
+          [disabled]="loginForm.invalid || isLoading"
+          [loading]="isLoading" />
       </div>
     </form>
   </div>

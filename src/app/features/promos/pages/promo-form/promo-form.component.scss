@@ -1,640 +1,182 @@
-// src/app/features/promos/pages/promo-form/promo-form.component.scss
-
 /* === PAGE LAYOUT === */
 .page-container {
   padding: var(--space-6);
-  max-width: 1000px;
+  max-width: var(--content-max-width);
   margin: 0 auto;
   background: var(--surface-page);
 }
 
 .page-header {
-  margin-bottom: var(--space-8);
-  padding: var(--space-6);
-  background: var(--white);
-  border-radius: var(--radius-2xl);
-  border: 1px solid var(--border-default);
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: var(--blue-60);
-  }
-
-  .header-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-3);
-
-    .back-button {
-      position: absolute;
-      left: var(--space-6);
-    }
-
-    .page-title {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-3);
-      margin: 0 0 var(--space-2) 0;
-      padding: 0 var(--space-12);
-      font-size: var(--text-2xl);
-      font-weight: var(--weight-bold);
-      color: var(--text-primary);
-
-      i {
-        color: var(--blue-60);
-        font-size: var(--text-2xl);
-      }
-    }
-
-    .page-subtitle {
-      margin: 0;
-      color: var(--text-secondary);
-      font-size: var(--text-lg);
-      font-weight: 500;
-      line-height: 1.5;
-    }
-  }
-}
-
-/* === LOADING STATE === */
-.loading-content {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-12);
-
-  .loading-icon {
-    font-size: 3rem;
-    color: var(--blue-60);
-    animation: spin 1s linear infinite;
-  }
-
-  span {
-    font-size: var(--text-lg);
-    color: var(--text-secondary);
-    font-weight: 500;
-  }
+  justify-content: space-between;
+  gap: var(--space-6);
+  margin-bottom: var(--space-6);
+  padding: var(--space-4) 0;
 }
 
-/* === CARD HEADER === */
-.form-header {
-  padding: var(--space-5) var(--space-6);
-  border-bottom: 1px solid var(--border-subtle);
-
-  .form-title {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    margin: 0 0 var(--space-1) 0;
-    font-size: var(--text-xl);
-    font-weight: 700;
-    color: var(--text-body);
-
-    i {
-      color: var(--blue-60);
-    }
-  }
-
-  .form-subtitle {
-    margin: 0;
-    font-size: var(--text-sm);
-    color: var(--text-secondary);
-  }
-}
-
-/* === INPUT WRAPPER === */
-.input-wrapper {
+.page-title-section {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: var(--space-3);
 }
 
-/* === FORM CONTAINER === */
+.page-title {
+  margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  color: var(--text-primary);
+}
+
+/* === FORM LAYOUT === */
 .form-container {
-  max-width: 800px;
-  margin: 0 auto;
+  max-width: 680px;
+}
+
+.loading-state {
+  padding: var(--space-16);
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
 }
 
 .promo-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
 }
 
-/* === FORM SECTIONS === */
-.form-section {
-  background: var(--white);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-2xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  transition: border-color var(--duration-normal) var(--ease-default),
-              box-shadow var(--duration-normal) var(--ease-default);
-  padding: var(--space-6);
+.form-body {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-
-  &:hover {
-    box-shadow: var(--shadow-md);
-    border-color: var(--border-default);
-  }
-
-  .section-title {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-weight: var(--weight-semibold);
-    font-size: var(--text-base);
-    color: var(--text-primary);
-    margin: 0 0 var(--space-2) 0;
-
-    i {
-      color: var(--blue-60);
-      font-size: var(--text-lg);
-    }
-  }
-
-  .section-header {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    font-weight: var(--weight-semibold);
-    font-size: var(--text-base);
-    color: var(--text-primary);
-
-    i {
-      color: var(--blue-60);
-      font-size: var(--text-lg);
-    }
-  }
+  padding: 0 var(--space-5) var(--space-4);
 }
 
-/* === FORM GRID === */
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: var(--space-6);
-  padding: var(--space-6);
-}
-
+/* === FORM GROUPS === */
 .form-group {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
 
-  &.col-12 { grid-column: span 12; }
-  &.col-6  { grid-column: span 6; }
-
   label {
+    font-size: var(--text-sm);
     font-weight: var(--weight-medium);
     color: var(--text-primary);
-    font-size: var(--text-sm);
 
     &.required::after {
       content: ' *';
       color: var(--red-40);
-      font-weight: var(--weight-bold);
-    }
-  }
-
-  .field-help {
-    font-size: var(--text-xs);
-    color: var(--text-muted);
-    font-style: italic;
-    margin-top: var(--space-1);
-    line-height: 1.4;
-  }
-
-  small.p-error {
-    color: var(--red-40);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
-
-    &::before {
-      content: '⚠';
-      font-size: var(--text-base);
     }
   }
 }
 
-/* === CODE INPUT STYLING === */
-.code-input-container {
-  display: flex;
-  gap: var(--space-2);
-  align-items: stretch;
+/* === INPUTS === */
+.form-input {
+  width: 100%;
+  height: 36px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-3);
+  background: var(--white);
+  font-size: var(--text-sm);
+  color: var(--gray-80);
+  font-family: var(--font-sans);
+  outline: none;
+  transition: border-color 100ms, box-shadow 100ms;
+  box-sizing: border-box;
 
-  .code-input {
-    flex: 1;
-    font-family: var(--font-mono);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: var(--text-lg);
-    padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--border-default);
-    border-radius: var(--radius-lg);
-    background: var(--blue-10);
-    color: var(--blue-70);
-    transition: border-color var(--duration-normal) var(--ease-default),
-                box-shadow var(--duration-normal) var(--ease-default);
+  &:hover:not(:disabled) { border-color: var(--gray-50); }
 
-    &:focus {
-      box-shadow: var(--shadow-md);
-      border-color: var(--blue-60);
-      background: var(--white);
-    }
-
-    &::placeholder {
-      font-family: var(--font-mono);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-muted);
-    }
-
-    &.ng-invalid.ng-touched {
-      border-color: var(--red-40);
-      box-shadow: 0 0 0 0.2rem rgba(250, 77, 86, 0.2);
-    }
+  &:focus {
+    border-color: var(--blue-60);
+    box-shadow: 0 0 0 2px rgba(0, 98, 254, 0.12);
   }
 
-  .code-actions {
-    display: flex;
-    gap: var(--space-1);
-
-    .generate-btn, .copy-btn {
-      transition: box-shadow var(--duration-normal) var(--ease-default);
-
-      &:hover {
-        box-shadow: var(--shadow-md);
-      }
-    }
-  }
+  &::placeholder { color: var(--text-muted); }
+  &.is-invalid { border-color: var(--red-40); }
 }
 
+.code-input {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* === CODE PREVIEW === */
 .code-preview {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-3);
-  background: var(--gray-10);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-subtle);
-  transition: border-color var(--duration-normal) var(--ease-default),
-              opacity var(--duration-normal) var(--ease-default);
-  opacity: 0.7;
-
-  &.active {
-    opacity: 1;
-    border-color: var(--blue-30);
-    background: var(--blue-10);
-  }
 
   .preview-label {
-    font-size: var(--text-sm);
-    color: var(--text-secondary);
-    font-weight: 600;
-  }
-
-  .preview-code {
-    font-family: var(--font-mono);
-    font-weight: 700;
-    font-size: var(--text-lg);
-    color: var(--blue-70);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding: var(--space-1) var(--space-2);
-    background: var(--blue-10);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--blue-30);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
   }
 }
 
-/* === REWARD PREVIEW === */
-.reward-preview {
-  display: flex;
-  gap: var(--space-4);
-  margin-top: var(--space-3);
-
-  .preview-item {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-3);
-    background: var(--green-10);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-subtle);
-    flex: 1;
-
-    .preview-icon {
-      color: var(--green-60);
-      font-size: var(--text-lg);
-    }
-
-    .preview-text {
-      font-weight: 600;
-      color: var(--text-body);
-      font-size: var(--text-sm);
-    }
-  }
+/* === FIELD HELPERS === */
+.field-error {
+  font-size: var(--text-xs);
+  color: var(--red-50);
 }
 
-/* === TICKETS PREVIEW === */
-.tickets-preview {
+.field-hint {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.optional {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-weight: var(--weight-normal);
+}
+
+/* === CHECKBOXES === */
+.checkbox-row {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  margin-top: var(--space-2);
-  background: var(--green-10);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-subtle);
-  width: fit-content;
-
-  i {
-    color: var(--green-60);
-    font-size: var(--text-base);
-  }
-
-  .tickets-value {
-    font-weight: 700;
-    font-size: var(--text-lg);
-    color: var(--green-60);
-    font-family: var(--font-mono);
-  }
-
-  .tickets-label {
-    font-weight: 500;
-    font-size: var(--text-sm);
-    color: var(--text-secondary);
-  }
-}
-
-/* === CHECKBOX STYLING === */
-.checkbox-container {
-  display: flex;
   gap: var(--space-3);
+}
+
+.checkbox-label {
+  font-size: var(--text-sm);
+  color: var(--text-body);
+  cursor: pointer;
+  font-weight: var(--weight-medium);
+}
+
+/* === SECTION LABEL === */
+.section-label {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: var(--space-4) var(--space-5) var(--space-3);
+}
+
+/* === CONFIG ROWS === */
+.config-rows {
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--space-5) var(--space-2);
+}
+
+.config-row {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: var(--space-4);
-  background: var(--gray-10);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-subtle);
-  transition: border-color var(--duration-normal) var(--ease-default),
-              background-color var(--duration-normal) var(--ease-default);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-subtle);
 
-  &:hover {
-    background: var(--white);
-    border-color: var(--blue-60);
-  }
-
-  .checkbox-label {
-    flex: 1;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: var(--space-2);
-    cursor: pointer;
-    font-weight: 600;
-    color: var(--text-body);
-    font-size: var(--text-sm);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0;
-
-    .help-icon {
-      color: var(--text-secondary);
-      font-size: var(--text-base);
-      cursor: help;
-      flex-shrink: 0;
-    }
-
-    .label-text {
-      font-weight: 600;
-      color: var(--text-body);
-      font-size: var(--text-base);
-    }
-
-    .label-help {
-      font-size: var(--text-xs);
-      color: var(--text-muted);
-      font-style: italic;
-      line-height: 1.4;
-    }
-  }
+  &--last { border-bottom: none; }
 }
 
-/* === CONFIG SUMMARY === */
-.config-summary {
-  background: var(--white);
-  border: 1px solid var(--blue-30);
-  border-radius: var(--radius-2xl);
-  padding: var(--space-5);
-
-  .summary-title {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-weight: 700;
-    font-size: var(--text-base);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--blue-70);
-    margin: 0 0 var(--space-3) 0;
-  }
-
-  .summary-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-
-  .summary-item {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    font-size: var(--text-sm);
-    color: var(--text-body);
-
-    i {
-      color: var(--blue-60);
-      font-size: var(--text-base);
-      flex-shrink: 0;
-    }
-  }
-}
-
-/* === SUMMARY SECTION === */
-.summary-section {
-  border: 1px solid var(--blue-30);
-  background: var(--blue-10);
-
-  .summary-content {
-    padding: var(--space-6);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-
-    .summary-item {
-      display: flex;
-      align-items: center;
-      gap: var(--space-4);
-      padding: var(--space-3) var(--space-4);
-      background: var(--white);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-subtle);
-      transition: background-color var(--duration-normal) var(--ease-default);
-
-      &:hover {
-        background: var(--gray-10);
-      }
-
-      .summary-icon {
-        color: var(--blue-60);
-        font-size: var(--text-xl);
-        width: 24px;
-        text-align: center;
-      }
-
-      .summary-details {
-        flex: 1;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        .summary-label {
-          font-weight: 600;
-          color: var(--text-secondary);
-          font-size: var(--text-sm);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-
-        .summary-value {
-          font-weight: 700;
-          color: var(--text-body);
-          font-size: var(--text-base);
-
-          &.code-value {
-            font-family: var(--font-mono);
-            background: var(--blue-10);
-            padding: var(--space-1) var(--space-2);
-            border-radius: var(--radius-sm);
-            color: var(--blue-70);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            border: 1px solid var(--blue-30);
-          }
-        }
-      }
-    }
-  }
-}
-
-/* === INPUT NUMBER STYLING === */
-:host ::ng-deep {
-  .gaming-input-number {
-    .p-inputnumber-input {
-      border: 1px solid var(--border-default);
-      border-radius: var(--radius-lg);
-      padding: var(--space-3) var(--space-4);
-      font-weight: 600;
-      background: var(--white);
-      transition: border-color var(--duration-normal) var(--ease-default),
-                  box-shadow var(--duration-normal) var(--ease-default);
-
-      &:focus {
-        box-shadow: var(--shadow-md);
-        border-color: var(--blue-60);
-        background: var(--white);
-      }
-    }
-
-    .p-inputnumber-button {
-      border: 1px solid var(--border-default);
-      background: var(--gray-10);
-      color: var(--text-body);
-      transition: background-color var(--duration-normal) var(--ease-default);
-
-      &:hover {
-        background: var(--blue-60);
-        color: white;
-        border-color: var(--blue-60);
-      }
-    }
-  }
-
-  .gaming-checkbox {
-    .p-checkbox-box {
-      border: 1px solid var(--border-default);
-      background: var(--white);
-      transition: border-color var(--duration-normal) var(--ease-default);
-
-      &:hover {
-        border-color: var(--blue-60);
-      }
-
-      &.p-highlight {
-        background: var(--blue-60);
-        border-color: var(--blue-60);
-
-        .p-checkbox-icon {
-          color: white;
-        }
-      }
-    }
-  }
-}
-
-/* === VALIDATION ERRORS === */
-.validation-errors-card {
-  background: var(--red-10, rgba(250, 77, 86, 0.05));
-  border: 1px solid var(--red-40);
-
-  .validation-errors {
-    padding: var(--space-4);
-
-    h4 {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      margin: 0 0 var(--space-3) 0;
-      color: var(--red-40);
-      font-size: var(--text-lg);
-
-      i {
-        font-size: var(--text-xl);
-      }
-    }
-
-    ul {
-      margin: 0;
-      padding-left: var(--space-6);
-
-      li {
-        color: var(--red-40);
-        font-size: var(--text-sm);
-        font-weight: 500;
-        margin-bottom: var(--space-1);
-      }
-    }
-  }
+.config-val {
+  font-size: var(--text-sm);
+  color: var(--text-body);
 }
 
 /* === FORM ACTIONS === */
@@ -642,133 +184,38 @@
   display: flex;
   justify-content: flex-end;
   gap: var(--space-3);
-  padding: var(--space-6);
-  background: var(--white);
-  border-radius: var(--radius-2xl);
-  border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-sm);
-
-  .action-btn {
-    transition: background-color var(--duration-normal) var(--ease-default),
-                box-shadow var(--duration-normal) var(--ease-default);
-
-    &:hover {
-      box-shadow: var(--shadow-md);
-    }
-  }
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  border-top: 1px solid var(--border-subtle);
+  margin-top: var(--space-2);
 }
 
-/* === GAMING BUTTON — redirection vers le système de boutons global === */
-.gaming-button {
-  background: var(--blue-60) !important; // PrimeNG override — migration
-  border: none !important; // PrimeNG override
-  border-radius: var(--radius-md) !important; // PrimeNG override
-  color: var(--white) !important;
-  transition: background-color var(--duration-instant) var(--ease-default),
-              box-shadow var(--duration-instant) var(--ease-default) !important;
-
-  &:hover:not(:disabled) {
-    background: var(--blue-70) !important;
-  }
-
-  &:disabled {
-    opacity: 0.4 !important;
-    box-shadow: none !important;
-  }
-}
-
-/* === MESSAGES === */
+/* === PRIMENG INPUT NUMBER OVERRIDES === */
 :host ::ng-deep {
-  .usage-limit-info {
-    margin-top: var(--space-2);
+  .p-inputnumber {
+    width: 100%;
+    max-width: 240px;
+  }
 
-    .p-message-wrapper {
-      background: var(--blue-10);
-      border: 1px solid var(--blue-30);
-      border-radius: var(--radius-lg);
+  .p-inputnumber-input {
+    height: 36px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 0 var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--gray-80);
+    font-family: var(--font-sans);
 
-      .p-message-icon {
-        color: var(--blue-60);
-      }
-
-      .p-message-text {
-        color: var(--blue-70);
-        font-weight: 500;
-      }
+    &:focus {
+      border-color: var(--blue-60);
+      box-shadow: 0 0 0 2px rgba(0, 98, 254, 0.12);
+      outline: none;
     }
   }
 }
 
-/* === RESPONSIVE DESIGN === */
+/* === RESPONSIVE === */
 @media (max-width: 768px) {
-  .page-container {
-    padding: var(--space-4);
-  }
+  .page-container { padding: var(--space-4); }
 
-  .form-grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-4);
-    padding: var(--space-4);
-
-    .form-group {
-      &.col-6 {
-        grid-column: span 1;
-      }
-    }
-  }
-
-  .code-input-container {
-    flex-direction: column;
-
-    .code-actions {
-      align-self: flex-start;
-    }
-  }
-
-  .reward-preview {
-    flex-direction: column;
-  }
-
-  .form-actions {
-    flex-direction: column-reverse;
-
-    .action-btn {
-      width: 100%;
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .page-header {
-    padding: var(--space-4);
-
-    .page-title {
-      font-size: var(--text-2xl);
-      flex-direction: column;
-      gap: var(--space-2);
-    }
-
-    .page-subtitle {
-      font-size: var(--text-base);
-    }
-  }
-
-  .summary-content .summary-item .summary-details {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-1);
-  }
-}
-
-/* === THEME OVERRIDES === */
-:host ::ng-deep {
-  .gaming-confirm-dialog {
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-
-    .p-dialog-header {
-      background: var(--gray-20);
-      color: var(--text-body);
-    }
-  }
+  .form-actions { flex-direction: column-reverse; }
 }
