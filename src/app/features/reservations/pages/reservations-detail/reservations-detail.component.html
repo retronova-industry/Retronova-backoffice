@@ -1,88 +1,108 @@
 <div class="page-container">
+
+  <!-- === HEADER === -->
   <div class="page-header">
-    <div>
-      <p-button
+    <div class="page-title-section">
+      <ui-button
         icon="pi pi-arrow-left"
-        label="Retour"
-        routerLink="/reservations"
-        severity="secondary"
-        outlined>
-      </p-button>
-      <h1><i class="pi pi-calendar"></i> Détail de la réservation</h1>
-    </div>
-  </div>
-
-  <div class="page-content">
-    @if (loading()) {
-      <app-loader size="large">Chargement...</app-loader>
-    } @else if (reservation()) {
-      <div class="detail-grid">
-
-        <p-card header="Informations générales">
-          <div class="detail-row">
-            <label>Référence</label>
-            <span class="font-bold">#{{ reservation()!.id }}</span>
-          </div>
-          <p-divider />
-          <div class="detail-row">
-            <label>Statut</label>
-            <p-tag
-              [value]="getStatusLabel(reservation()!.status)"
-              [severity]="getStatusSeverity(reservation()!.status)">
-            </p-tag>
-          </div>
-          <p-divider />
-          <div class="detail-row">
-            <label>Code de déverrouillage</label>
-            <span class="unlock-code">{{ reservation()!.unlock_code }}</span>
-          </div>
-          @if (reservation()!.position_in_queue) {
-            <p-divider />
-            <div class="detail-row">
-              <label>Position dans la file</label>
-              <span>{{ reservation()!.position_in_queue }}</span>
-            </div>
-          }
-        </p-card>
-
-        <p-card header="Partie">
-          <div class="detail-row">
-            <label>Borne</label>
-            <span><i class="pi pi-desktop mr-2"></i>{{ reservation()!.arcade_name }}</span>
-          </div>
-          <p-divider />
-          <div class="detail-row">
-            <label>Jeu</label>
-            <span><i class="pi pi-play mr-2"></i>{{ reservation()!.game_name }}</span>
-          </div>
-          <p-divider />
-          <div class="detail-row">
-            <label>Tickets utilisés</label>
-            <span><i class="pi pi-ticket mr-2"></i>{{ reservation()!.tickets_used }}</span>
-          </div>
-        </p-card>
-
-        <p-card header="Joueurs">
-          <div class="detail-row">
-            <label>Joueur 1</label>
-            <span><i class="pi pi-user mr-2"></i>{{ reservation()!.player_pseudo }}</span>
-          </div>
-          @if (reservation()!.player2_pseudo) {
-            <p-divider />
-            <div class="detail-row">
-              <label>Joueur 2</label>
-              <span><i class="pi pi-user mr-2"></i>{{ reservation()!.player2_pseudo }}</span>
-            </div>
-          }
-        </p-card>
-
+        variant="ghost"
+        size="sm"
+        [rounded]="true"
+        tooltip="Retour à la liste"
+        routerLink="/reservations" />
+      <div>
+        <h1 class="page-title">Réservation</h1>
+        @if (reservation()) {
+          <p class="page-subtitle">#{{ reservation()!.id }} · {{ reservation()!.arcade_name }}</p>
+        }
       </div>
-    } @else {
-      <div class="empty-state">
-        <i class="pi pi-calendar-times"></i>
-        <h3>Réservation introuvable</h3>
-        <p-button label="Retour à la liste" routerLink="/reservations" severity="secondary" outlined />
+    </div>
+
+    @if (!loading() && reservation()) {
+      <div class="page-actions">
+        <ui-tag
+          [label]="getStatusLabel(reservation()!.status)"
+          [variant]="getStatusVariant(reservation()!.status)" />
       </div>
     }
   </div>
+
+  @if (loading()) {
+    <div class="loading-state"><span>Chargement...</span></div>
+  } @else if (reservation()) {
+    <div class="details-content">
+
+      <!-- Statut + code -->
+      <ui-card>
+        <div class="status-stripe"
+          [class.status-stripe--waiting]="reservation()!.status === ReservationStatus.WAITING"
+          [class.status-stripe--playing]="reservation()!.status === ReservationStatus.PLAYING"
+          [class.status-stripe--completed]="reservation()!.status === ReservationStatus.COMPLETED"
+          [class.status-stripe--cancelled]="reservation()!.status === ReservationStatus.CANCELLED">
+        </div>
+        <div class="reservation-identity">
+          <span class="reservation-ref">#{{ reservation()!.id }}</span>
+          @if (reservation()!.unlock_code) {
+            <span class="unlock-code">{{ reservation()!.unlock_code }}</span>
+          }
+        </div>
+      </ui-card>
+
+      <!-- Métriques -->
+      <div class="metrics-strip">
+        <div class="metric">
+          <span class="metric-value">{{ reservation()!.tickets_used }}</span>
+          <span class="metric-label">Tickets</span>
+        </div>
+        @if (reservation()!.position_in_queue) {
+          <div class="metric-divider"></div>
+          <div class="metric">
+            <span class="metric-value">{{ reservation()!.position_in_queue }}</span>
+            <span class="metric-label">Position file</span>
+          </div>
+        }
+      </div>
+
+      <!-- Partie -->
+      <ui-card>
+        <div class="section-label">Partie</div>
+        <div class="config-rows">
+          <div class="config-row">
+            <span class="config-key">Borne</span>
+            <span class="config-val">{{ reservation()!.arcade_name }}</span>
+          </div>
+          <div class="config-row config-row--last">
+            <span class="config-key">Jeu</span>
+            <span class="config-val">{{ reservation()!.game_name }}</span>
+          </div>
+        </div>
+      </ui-card>
+
+      <!-- Joueurs -->
+      <ui-card>
+        <div class="section-label">Joueurs</div>
+        <div class="config-rows">
+          <div class="config-row" [class.config-row--last]="!reservation()!.player2_pseudo">
+            <span class="config-key">Joueur 1</span>
+            <span class="config-val">{{ reservation()!.player_pseudo }}</span>
+          </div>
+          @if (reservation()!.player2_pseudo) {
+            <div class="config-row config-row--last">
+              <span class="config-key">Joueur 2</span>
+              <span class="config-val">{{ reservation()!.player2_pseudo }}</span>
+            </div>
+          }
+        </div>
+      </ui-card>
+
+    </div>
+  } @else {
+    <div class="empty-state">
+      <i class="pi pi-calendar-times empty-icon"></i>
+      <h3>Réservation introuvable</h3>
+      <p>Cette réservation n'existe pas ou a été supprimée.</p>
+      <ui-button label="Retour à la liste" variant="ghost" routerLink="/reservations" />
+    </div>
+  }
+
 </div>
