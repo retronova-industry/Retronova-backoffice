@@ -188,22 +188,112 @@ label {
 // OVERRIDES PRIMENG — Toast
 // ===========================================================================
 
-.p-toast .p-toast-message {
-  border-radius: var(--radius-lg); // PrimeNG override
-  border: 1px solid var(--border-subtle);
-  background: var(--white);
-  box-shadow: var(--shadow-md);
-  font-family: var(--font-primary);
-  font-size: var(--text-base);
+.p-toast {
+  width: min(380px, calc(100vw - 2rem));
 
-  .p-toast-message-text   { color: var(--text-body); }
-  .p-toast-message-detail { color: var(--text-secondary); font-size: var(--text-sm); }
+  .p-toast-message {
+    border-radius: 18px; // PrimeNG override
+    border: 2px solid var(--border-subtle);
+    box-shadow: none;
+    font-family: var(--font-primary);
+    margin-bottom: var(--space-3);
 
-  // Barre latérale colorée — fond blanc uniforme
-  &.p-toast-message-success { border-left: 3px solid var(--green-40); }
-  &.p-toast-message-error   { border-left: 3px solid var(--red-40);   }
-  &.p-toast-message-warn    { border-left: 3px solid var(--yellow-30); }
-  &.p-toast-message-info    { border-left: 3px solid var(--cyan-40);  }
+    .p-toast-message-content {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+    }
+
+    .p-toast-message-icon {
+      width: 2.15rem;
+      height: 2.15rem;
+      min-width: 2.15rem;
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: var(--weight-bold);
+      margin-top: 0;
+    }
+
+    .p-toast-message-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+      margin: 0;
+      color: var(--text-body);
+    }
+
+    .p-toast-summary {
+      color: var(--text-primary);
+      font-size: var(--text-lg);
+      line-height: var(--leading-tight);
+      font-weight: var(--weight-bold);
+    }
+
+    .p-toast-detail {
+      color: var(--text-secondary);
+      font-size: var(--text-base);
+      line-height: 1.35;
+      margin: 0;
+    }
+
+    .p-toast-icon-close {
+      width: 2rem;
+      height: 2rem;
+      border-radius: var(--radius-full);
+      color: var(--gray-70);
+      margin-left: var(--space-2);
+      transition: background var(--duration-fast) var(--ease-default), color var(--duration-fast) var(--ease-default);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.7);
+        color: var(--gray-90);
+      }
+    }
+
+    &.p-toast-message-success {
+      border-color: color-mix(in srgb, var(--green-40) 35%, white);
+      background: color-mix(in srgb, var(--green-10) 55%, white);
+
+      .p-toast-message-icon {
+        background: var(--green-40);
+        color: var(--white);
+      }
+    }
+
+    &.p-toast-message-info {
+      border-color: color-mix(in srgb, var(--blue-40) 35%, white);
+      background: color-mix(in srgb, var(--blue-10) 70%, white);
+
+      .p-toast-message-icon {
+        background: var(--blue-60);
+        color: var(--white);
+      }
+    }
+
+    &.p-toast-message-warn {
+      border-color: color-mix(in srgb, var(--yellow-30) 50%, white);
+      background: color-mix(in srgb, var(--yellow-10) 82%, white);
+
+      .p-toast-message-icon {
+        background: var(--yellow-30);
+        color: var(--white);
+      }
+    }
+
+    &.p-toast-message-error {
+      border-color: color-mix(in srgb, var(--red-40) 35%, white);
+      background: color-mix(in srgb, var(--red-10) 65%, white);
+
+      .p-toast-message-icon {
+        background: var(--red-40);
+        color: var(--white);
+      }
+    }
+  }
 }
 
 // ===========================================================================
