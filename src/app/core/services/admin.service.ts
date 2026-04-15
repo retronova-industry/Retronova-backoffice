@@ -9,6 +9,31 @@ export interface AdminStats {
   total_games: number;
   active_promo_codes: number;
   total_tickets_in_circulation: number;
+  ticket_revenue: {
+    current_month: number;
+    previous_month: number;
+    currency: string;
+  };
+  top_games: Array<{
+    game_id: number;
+    name: string;
+    play_count: number;
+  }>;
+  arcade_occupancy: {
+    total_arcades: number;
+    occupied_arcades: number;
+    occupancy_rate: number;
+    arcades: Array<{
+      arcade_id: number;
+      name: string;
+      active_reservations: number;
+      occupancy_rate: number;
+    }>;
+  };
+  reservations_evolution: Array<{
+    date: string;
+    reservations: number;
+  }>;
   timestamp: string;
 }
 

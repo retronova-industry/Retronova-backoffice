@@ -45,12 +45,20 @@
       <!-- Graphiques -->
       <div class="charts-grid">
         <ui-card>
-          <div class="section-label">Évolution des parties — 30 jours</div>
-          <p-chart type="line" [data]="partiesEvolutionData" [options]="lineChartOptions"></p-chart>
+          <div class="section-label">Évolution des réservations — 30 jours</div>
+          <p-chart type="line" [data]="reservationsEvolutionData" [options]="lineChartOptions"></p-chart>
         </ui-card>
         <ui-card>
           <div class="section-label">Jeux les plus joués</div>
           <p-chart type="doughnut" [data]="gamesDistributionData" [options]="doughnutChartOptions"></p-chart>
+        </ui-card>
+        <ui-card>
+          <div class="section-label">Revenus tickets (mois courant vs précédent)</div>
+          <p-chart type="bar" [data]="ticketRevenueData" [options]="barChartOptions"></p-chart>
+        </ui-card>
+        <ui-card>
+          <div class="section-label">Taux d'occupation des arcades</div>
+          <p-chart type="doughnut" [data]="arcadeOccupancyData" [options]="doughnutChartOptions"></p-chart>
         </ui-card>
       </div>
 

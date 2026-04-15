@@ -3,14 +3,10 @@ import { CommonModule } from '@angular/common';
 import { ChartModule } from 'primeng/chart';
 import { CalendarModule } from 'primeng/calendar';
 import { TableModule } from 'primeng/table';
-import { forkJoin } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { FormsModule } from '@angular/forms';
 import { CardComponent, TagComponent, TagVariant } from '../../../../shared/ui';
-import { UsersService } from '../../../../core/services/users.service';
-import { PartiesService } from '../../../../core/services/parties.service';
-import { GamesService } from '../../../../core/services/games.service';
-import { ArcadesService } from '../../../../core/services/arcades.service';
+import { AdminService, AdminStats } from '../../../../core/services/admin.service';
 
 interface ChartData {
   labels: string[];
@@ -48,19 +44,19 @@ interface TopPlayer {
   styleUrl: './statistics-dashboard.component.scss',
 })
 export class StatisticsDashboardComponent implements OnInit {
-  private readonly usersService    = inject(UsersService);
-  private readonly partiesService  = inject(PartiesService);
-  private readonly gamesService    = inject(GamesService);
-  private readonly arcadesService  = inject(ArcadesService);
+  private readonly adminService    = inject(AdminService);
   private readonly messageService  = inject(MessageService);
 
   loading = true;
   dateRange: Date[] = [];
 
   statCards: StatCard[] = [];
-  partiesEvolutionData: ChartData = { labels: [], datasets: [] };
+  reservationsEvolutionData: ChartData = { labels: [], datasets: [] };
   gamesDistributionData: ChartData = { labels: [], datasets: [] };
+  ticketRevenueData: ChartData = { labels: [], datasets: [] };
+  arcadeOccupancyData: ChartData = { labels: [], datasets: [] };
   lineChartOptions: any;
+  barChartOptions: any;
   doughnutChartOptions: any;
   topPlayers: TopPlayer[] = [];
   machineUsage: any[] = [];
@@ -97,6 +93,16 @@ export class StatisticsDashboardComponent implements OnInit {
       aspectRatio: 1.5,
       plugins: { legend: { labels: { color: textColor }, position: 'bottom' } }
     };
+
+    this.barChartOptions = {
+      maintainAspectRatio: false,
+      aspectRatio: 2,
+      plugins: { legend: { labels: { color: textColor } } },
+      scales: {
+        x: { ticks: { color: textColorSecondary }, grid: { color: surfaceBorder } },
+        y: { ticks: { color: textColorSecondary }, grid: { color: surfaceBorder } }
+      }
+    };
   }
 
   private initializeDateRange(): void {
@@ -108,12 +114,7 @@ export class StatisticsDashboardComponent implements OnInit {
 
   private loadStatistics(): void {
     this.loading = true;
-    forkJoin({
-      users:    this.usersService.getAllUsers(),
-      parties:  this.partiesService.getAllParties(),
-      games:    this.gamesService.getAllGames(),
-      machines: this.arcadesService.getAllArcades()
-    }).subscribe({
+    this.adminService.getStats().subscribe({
       next: (data) => { this.processStatistics(data); this.loading = false; },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de charger les statistiques' });
@@ -122,103 +123,138 @@ export class StatisticsDashboardComponent implements OnInit {
     });
   }
 
-  private processStatistics(data: any): void {
-    const { users, parties, games, machines } = data;
+  private processStatistics(data: AdminStats): void {
+    const previousRevenue = data.ticket_revenue.previous_month || 0;
+    const currentRevenue = data.ticket_revenue.current_month || 0;
+    const revenueTrend = previousRevenue > 0
+      ? Math.round(((currentRevenue - previousRevenue) / previousRevenue) * 100)
+      : (currentRevenue > 0 ? 100 : 0);
+
+    const occupiedArcades = data.arcade_occupancy.occupied_arcades || 0;
+    const totalArcades = data.arcade_occupancy.total_arcades || 0;
+
+    const totalReservations30d = data.reservations_evolution.reduce(
+      (acc, item) => acc + item.reservations,
+      0,
+    );
+
+    const middleIndex = Math.floor(data.reservations_evolution.length / 2);
+    const firstHalf = data.reservations_evolution
+      .slice(0, middleIndex)
+      .reduce((acc, item) => acc + item.reservations, 0);
+    const secondHalf = data.reservations_evolution
+      .slice(middleIndex)
+      .reduce((acc, item) => acc + item.reservations, 0);
+    const reservationsTrend = firstHalf > 0
+      ? Math.round(((secondHalf - firstHalf) / firstHalf) * 100)
+      : (secondHalf > 0 ? 100 : 0);
 
     this.statCards = [
-      { title: 'Utilisateurs',     value: users.length,                                                icon: 'pi-users',   color: 'primary', trend: { value: 12, direction: 'up' } },
-      { title: 'Parties aujourd\'hui', value: this.getTodayParties(parties),                          icon: 'pi-play',    color: 'success', trend: { value: 8, direction: 'up' } },
-      { title: 'Tickets vendus',   value: this.calculateTicketsSold(parties),                        icon: 'pi-ticket',  color: 'warning', trend: { value: 15, direction: 'up' } },
-      { title: 'Bornes actives',   value: `${this.getActiveMachines(machines, parties)}/${machines.length}`, icon: 'pi-desktop', color: 'danger' },
+      { title: 'Utilisateurs', value: data.active_users, icon: 'pi-users', color: 'primary' },
+      {
+        title: 'Revenu tickets (mois)',
+        value: `${currentRevenue.toFixed(2)} ${data.ticket_revenue.currency}`,
+        icon: 'pi-ticket',
+        color: 'warning',
+        trend: {
+          value: Math.abs(revenueTrend),
+          direction: revenueTrend >= 0 ? 'up' : 'down',
+        },
+      },
+      {
+        title: 'Arcades occupées',
+        value: `${occupiedArcades}/${totalArcades}`,
+        icon: 'pi-desktop',
+        color: 'danger',
+      },
+      {
+        title: 'Réservations (30 jours)',
+        value: totalReservations30d,
+        icon: 'pi-calendar',
+        color: 'success',
+        trend: {
+          value: Math.abs(reservationsTrend),
+          direction: reservationsTrend >= 0 ? 'up' : 'down',
+        },
+      },
     ];
 
-    this.generatePartiesEvolutionData(parties);
-    this.generateGamesDistributionData(parties, games);
-    this.calculateTopPlayers(parties, users);
-    this.calculateMachineUsage(machines, parties);
-    this.calculateDetailedStats(parties);
+    this.generateReservationsEvolutionData(data.reservations_evolution);
+    this.generateGamesDistributionData(data.top_games);
+    this.generateTicketRevenueData(data.ticket_revenue.current_month, data.ticket_revenue.previous_month);
+    this.generateArcadeOccupancyData(data.arcade_occupancy.occupied_arcades, data.arcade_occupancy.total_arcades);
+    this.calculateMachineUsage(data.arcade_occupancy.arcades);
+    this.calculateDetailedStats(data);
   }
 
-  private getTodayParties(parties: any[]): number {
-    const today = new Date().toDateString();
-    return parties.filter(p => new Date(p.created_at).toDateString() === today).length;
-  }
-
-  private calculateTicketsSold(parties: any[]): number {
-    return parties.filter(p => p.done).length;
-  }
-
-  private getActiveMachines(machines: any[], parties: any[]): number {
-    const active = parties.filter(p => !p.done && !p.cancel);
-    return new Set(active.map(p => p.machine_id)).size;
-  }
-
-  private generatePartiesEvolutionData(parties: any[]): void {
-    const labels: string[] = [];
-    const data: number[] = [];
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      labels.push(date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }));
-      const dayCount = parties.filter(p => new Date(p.created_at).toDateString() === date.toDateString()).length;
-      data.push(dayCount || Math.floor(Math.random() * 50) + 10);
-    }
-    this.partiesEvolutionData = {
-      labels,
-      datasets: [{ label: 'Parties jouées', data, borderColor: '#0062fe', backgroundColor: 'rgba(0,98,254,0.07)', tension: 0.4 }]
+  private generateReservationsEvolutionData(evolution: Array<{ date: string; reservations: number }>): void {
+    this.reservationsEvolutionData = {
+      labels: evolution.map(item => {
+        const date = new Date(item.date);
+        return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+      }),
+      datasets: [{
+        label: 'Réservations',
+        data: evolution.map(item => item.reservations),
+        borderColor: '#0062fe',
+        backgroundColor: 'rgba(0,98,254,0.07)',
+        tension: 0.4,
+      }],
     };
   }
 
-  private generateGamesDistributionData(parties: any[], games: any[]): void {
-    const gameCount: { [key: string]: number } = {};
-    parties.forEach(p => { gameCount[p.game_id] = (gameCount[p.game_id] || 0) + 1; });
-    const sorted = Object.entries(gameCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  private generateGamesDistributionData(topGames: Array<{ name: string; play_count: number }>): void {
     this.gamesDistributionData = {
-      labels: sorted.map(([id]) => games.find((g: any) => g.id === id)?.nom || `Jeu ${String(id).substring(0, 8)}`),
-      datasets: [{ data: sorted.map(([, c]) => c), backgroundColor: ['#0062fe', '#33b1ff', '#42be65', '#f1c21b', '#878d96'] }]
+      labels: topGames.map(game => game.name),
+      datasets: [{ data: topGames.map(game => game.play_count), backgroundColor: ['#0062fe', '#33b1ff', '#42be65', '#f1c21b', '#878d96'] }]
     };
   }
 
-  private calculateTopPlayers(parties: any[], users: any[]): void {
-    const stats: { [key: string]: any } = {};
-    parties.filter(p => p.done).forEach(party => {
-      [party.player1_id, party.player2_id].forEach((id, idx) => {
-        if (!stats[id]) stats[id] = { victories: 0, parties: 0 };
-        stats[id].parties++;
-        const won = idx === 0 ? party.p1_score > party.p2_score : party.p2_score > party.p1_score;
-        if (won) stats[id].victories++;
-      });
-    });
-    this.topPlayers = Object.entries(stats)
-      .map(([id, s]) => {
-        const user = users.find((u: any) => u.id === id);
-        return {
-          name: user ? `${user.prenom || ''} ${user.nom || ''}`.trim() || user.pseudo : `Joueur ${String(id).substring(0, 8)}`,
-          victories: s.victories,
-          parties:   s.parties,
-          winRate:   Math.round((s.victories / s.parties) * 100)
-        };
-      })
-      .sort((a, b) => b.victories - a.victories)
-      .slice(0, 10);
+  private generateTicketRevenueData(currentMonth: number, previousMonth: number): void {
+    this.ticketRevenueData = {
+      labels: ['Mois précédent', 'Mois courant'],
+      datasets: [{
+        label: 'Revenus tickets (EUR)',
+        data: [previousMonth, currentMonth],
+        backgroundColor: ['#8d8d8d', '#0062fe'],
+        borderRadius: 8,
+      }],
+    };
   }
 
-  private calculateMachineUsage(machines: any[], parties: any[]): void {
-    const active = parties.filter(p => !p.done && !p.cancel);
-    const total  = active.length || 1;
-    this.machineUsage = machines
-      .map(m => {
-        const count = active.filter(p => p.machine_id === m.id).length;
-        return { name: m.nom || `Borne ${m.id}`, activeParties: count, usagePercentage: Math.round((count / total) * 100) };
+  private generateArcadeOccupancyData(occupiedArcades: number, totalArcades: number): void {
+    const freeArcades = Math.max(totalArcades - occupiedArcades, 0);
+    this.arcadeOccupancyData = {
+      labels: ['Arcades occupées', 'Arcades libres'],
+      datasets: [{
+        data: [occupiedArcades, freeArcades],
+        backgroundColor: ['#42be65', '#8d8d8d'],
+      }],
+    };
+  }
+
+  private calculateMachineUsage(arcades: Array<{ name: string; active_reservations: number }>): void {
+    const totalActive = arcades.reduce((acc, arcade) => acc + arcade.active_reservations, 0);
+    this.machineUsage = arcades
+      .map(arcade => {
+        const usagePercentage = totalActive > 0
+          ? Math.round((arcade.active_reservations / totalActive) * 100)
+          : 0;
+        return {
+          name: arcade.name,
+          activeParties: arcade.active_reservations,
+          usagePercentage,
+        };
       })
       .sort((a, b) => b.activeParties - a.activeParties);
   }
 
-  private calculateDetailedStats(parties: any[]): void {
+  private calculateDetailedStats(data: AdminStats): void {
     this.avgGameDuration = 15;
-    this.todayTickets = this.getTodayParties(parties);
-    const month = new Date().getMonth();
-    this.monthlyRevenue = parties.filter(p => new Date(p.created_at).getMonth() === month && p.done).length * 5;
+    this.todayTickets = data.reservations_evolution.length > 0
+      ? data.reservations_evolution[data.reservations_evolution.length - 1].reservations
+      : 0;
+    this.monthlyRevenue = data.ticket_revenue.current_month;
     this.peakHour = '14h–16h';
   }
 
