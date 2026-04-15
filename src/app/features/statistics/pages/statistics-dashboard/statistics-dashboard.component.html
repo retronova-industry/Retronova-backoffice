@@ -1,0 +1,138 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1>Statistiques</h1>
+        <div class="page-actions">
+            <p-calendar [(ngModel)]="dateRange" selectionMode="range"
+                        dateFormat="dd/mm/yy"
+                        [readonlyInput]="true" placeholder="Sélectionner une période">
+            </p-calendar>
+            <ui-button
+            icon="pi pi-refresh"
+            label="Actualiser"
+            variant="secondary"
+            (clicked)="refreshData()">
+            </ui-button>
+        </div>
+    </div>
+
+    @if (loading) {
+        <app-loader size="large"></app-loader>
+    } @else {
+    <div class="statistics-content">
+
+        <!-- Metrics strip -->
+        <div class="metrics-strip">
+        @for (stat of statCards; track stat.title) {
+            <div class="metric-item">
+            <span class="metric-value">{{ stat.value }}</span>
+            <span class="metric-label">{{ stat.title }}</span>
+            @if (stat.trend) {
+                <span class="metric-trend"
+                [class.metric-trend--up]="stat.trend.direction === 'up'"
+                [class.metric-trend--down]="stat.trend.direction === 'down'">
+                {{ stat.trend.direction === 'up' ? '↑' : '↓' }} {{ stat.trend.value }}%
+                </span>
+            }
+            </div>
+        }
+        </div>
+
+        <!-- Graphiques -->
+        <div class="charts-grid">
+        <ui-card>
+            <div card-header class="card-header-text">Évolution des parties (30 derniers jours)</div>
+            <p-chart type="line" [data]="partiesEvolutionData" [options]="lineChartOptions"></p-chart>
+        </ui-card>
+
+        <ui-card>
+            <div card-header class="card-header-text">Jeux les plus joués</div>
+            <p-chart type="doughnut" [data]="gamesDistributionData" [options]="doughnutChartOptions"></p-chart>
+        </ui-card>
+        </div>
+
+        <!-- Tableaux -->
+        <div class="tables-grid">
+        <!-- Top joueurs -->
+        <ui-card>
+            <div card-header class="card-header-text">Top 10 des joueurs</div>
+            <p-table [value]="topPlayers" [rows]="10">
+            <ng-template pTemplate="header">
+                <tr>
+                <th style="width: 3rem">#</th>
+                <th>Joueur</th>
+                <th>Victoires</th>
+                <th>Parties</th>
+                <th>Taux</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-player let-i="rowIndex">
+                <tr>
+                <td class="text-center">
+                    @if (i < 3) {
+                    <i class="pi pi-trophy" [style.color]="getTrophyColor(i)"></i>
+                    } @else {
+                    <span>{{ i + 1 }}</span>
+                    }
+                </td>
+                <td>{{ player.name }}</td>
+                <td class="text-center">{{ player.victories }}</td>
+                <td class="text-center">{{ player.parties }}</td>
+                <td class="text-center">
+                    <ui-tag
+                    [label]="player.winRate + '%'"
+                    [variant]="getWinRateSeverity(player.winRate)">
+                    </ui-tag>
+                </td>
+                </tr>
+            </ng-template>
+            </p-table>
+        </ui-card>
+
+        <!-- Utilisation des bornes -->
+        <ui-card>
+            <div card-header class="card-header-text">Utilisation des bornes</div>
+            <div class="machine-usage">
+            @for (machine of machineUsage; track machine.name) {
+                <div class="machine-item">
+                <div class="machine-info">
+                    <span class="machine-name">{{ machine.name }}</span>
+                    <span class="machine-count">{{ machine.activeParties }} parties actives</span>
+                </div>
+                <div class="machine-bar">
+                    <div class="machine-bar-fill"
+                        [style.width.%]="machine.usagePercentage"
+                        [class]="getMachineBarClass(machine.usagePercentage)">
+                    </div>
+                </div>
+                </div>
+            }
+            </div>
+        </ui-card>
+        </div>
+
+        <!-- Statistiques détaillées -->
+        <ui-card>
+        <div card-header class="card-header-text">Statistiques détaillées</div>
+        <div class="detailed-stats-grid">
+            <div class="stat-detail">
+            <label>Temps moyen par partie</label>
+            <p>{{ avgGameDuration }} min</p>
+            </div>
+            <div class="stat-detail">
+            <label>Tickets consommés aujourd'hui</label>
+            <p>{{ todayTickets }}</p>
+            </div>
+            <div class="stat-detail">
+            <label>Revenus estimés (mois)</label>
+            <p>{{ monthlyRevenue }}€</p>
+            </div>
+            <div class="stat-detail">
+            <label>Heure de pointe</label>
+            <p>{{ peakHour }}</p>
+            </div>
+        </div>
+        </ui-card>
+
+    </div>
+    }
+</div>
