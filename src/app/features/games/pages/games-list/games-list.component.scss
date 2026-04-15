@@ -1,4 +1,4 @@
-// src/app/features/reservations/pages/reservations-list/reservations-list.component.scss
+// src/app/features/games/pages/games-list/games-list.component.scss
 // Design system: IBM Carbon × Raycast — light mode only
 
 /* === PAGE LAYOUT === */
@@ -25,20 +25,27 @@
       font-weight: var(--weight-bold);
       color: var(--text-primary);
     }
+
     .page-subtitle {
       margin: 0;
       color: var(--text-secondary);
       font-size: var(--text-sm);
     }
   }
+
+  .page-actions {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+  }
 }
 
-/* === LOADING === */
-.loading-state {
-  padding: var(--space-16);
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
+/* === FAB === */
+.fab-container {
+  position: fixed;
+  bottom: var(--space-8);
+  right: var(--space-8);
+  z-index: 100;
 }
 
 /* === METRICS STRIP === */
@@ -59,8 +66,10 @@
   gap: var(--space-1);
   padding: var(--space-5) var(--space-6);
   cursor: default;
+  transition: color var(--duration-fast) var(--ease-default);
 
   &:hover .metric-value { color: var(--blue-60); }
+  &:hover .metric-label { color: var(--text-secondary); }
 }
 
 .metric-value {
@@ -77,6 +86,7 @@
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  transition: color var(--duration-fast) var(--ease-default);
 }
 
 .metric-divider {
@@ -85,18 +95,18 @@
   flex-shrink: 0;
 }
 
-/* === FILTER BAR === */
-.filter-bar {
+/* === SEARCH BAR === */
+.search-bar {
   display: flex;
   align-items: center;
   gap: var(--space-4);
   margin-bottom: var(--space-5);
-  flex-wrap: wrap;
 }
 
 .search-wrapper {
   position: relative;
-  min-width: 280px;
+  flex: 1;
+  max-width: 480px;
 
   .search-icon {
     position: absolute;
@@ -106,6 +116,7 @@
     color: var(--text-muted);
     font-size: var(--text-sm);
     pointer-events: none;
+    z-index: 2;
   }
 
   .search-input {
@@ -125,39 +136,8 @@
       box-shadow: 0 0 0 2px var(--blue-20);
       outline: none;
     }
+
     &::placeholder { color: var(--text-muted); }
-  }
-}
-
-.status-filters {
-  display: flex;
-  gap: 0;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.status-btn {
-  padding: 0 var(--space-4);
-  height: 36px;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
-  color: var(--text-secondary);
-  background: var(--white);
-  border: none;
-  border-right: 1px solid var(--border-default);
-  cursor: pointer;
-  transition: background var(--duration-fast) var(--ease-default),
-              color var(--duration-fast) var(--ease-default);
-
-  &:last-child { border-right: none; }
-
-  &:hover { background: var(--gray-10); color: var(--text-body); }
-
-  &--active {
-    background: var(--blue-60);
-    color: var(--white);
-    font-weight: var(--weight-semibold);
   }
 }
 
@@ -165,49 +145,77 @@
   font-size: var(--text-sm);
   color: var(--text-secondary);
   white-space: nowrap;
-  margin-left: auto;
+}
+
+/* === LOADING === */
+.loading-state {
+  padding: var(--space-16);
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
 }
 
 /* === TABLE CELLS === */
-.id-cell {
-  font-family: var(--font-mono);
-  font-weight: var(--weight-bold);
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-}
-
-.players-cell {
+.game-cell {
   display: flex;
   flex-direction: column;
   gap: 2px;
+
+  .game-name {
+    font-weight: var(--weight-semibold);
+    color: var(--text-body);
+    font-size: var(--text-sm);
+  }
+
+  .game-desc {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 320px;
+  }
 }
 
-.player-name {
+.mode-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 20px;
+}
+
+.slot-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+
+  &--solo  { background: var(--gray-50); }
+  &--multi { background: var(--blue-40); }
+}
+
+.slot-text {
   font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
   color: var(--text-body);
 }
 
-.player-vs {
+.slot-num {
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
   color: var(--text-muted);
+  letter-spacing: 0.04em;
 }
 
-.tickets-cell {
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  color: var(--text-body);
-  font-weight: var(--weight-bold);
-}
-
-.queue-pos {
+.cost-value {
   font-family: var(--font-mono);
   font-weight: var(--weight-bold);
   font-size: var(--text-sm);
   color: var(--text-body);
 }
 
-.queue-empty {
+.cost-unit {
+  font-size: var(--text-xs);
   color: var(--text-muted);
 }
 
@@ -234,17 +242,29 @@
     font-size: var(--text-xl);
   }
 
-  p { margin: 0; color: var(--text-secondary); }
+  p {
+    margin: 0 0 var(--space-6) 0;
+    color: var(--text-secondary);
+  }
 }
 
 /* === RESPONSIVE === */
 @media (max-width: 768px) {
   .page-container { padding: var(--space-4); }
-  .page-header { padding: var(--space-3) 0; }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+  }
+
+  .fab-container {
+    bottom: var(--space-6);
+    right: var(--space-6);
+  }
+
   .metrics-strip { flex-wrap: wrap; }
-  .metric { min-width: 50%; }
+  .metric        { min-width: 50%; }
   .metric-divider { display: none; }
-  .filter-bar { flex-direction: column; align-items: flex-start; }
-  .search-wrapper { width: 100%; min-width: unset; }
-  .status-filters { flex-wrap: wrap; }
 }

@@ -1,20 +1,14 @@
 // src/app/features/promos/pages/promo-form/promo-form.component.ts
 
-import { Component, OnInit, inject, signal, computed, effect, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { CheckboxModule } from 'primeng/checkbox';
-import { MessageModule } from 'primeng/message';
-import { MessagesModule } from 'primeng/messages';
-import { TooltipModule } from 'primeng/tooltip';
-import { DividerModule } from 'primeng/divider';
 import { MessageService } from 'primeng/api';
 import { PromosService } from '../../../../core/services/promos.service';
 import { PromoCode, CreatePromoCodeRequest } from '../../../../core/models/promo.model';
-import { LoaderComponent } from '../../../../shared/components/loader/loader.component';
 import { ButtonComponent, TagComponent, CardComponent } from '../../../../shared/ui';
 
 type FormMode = 'create' | 'edit';
@@ -45,21 +39,14 @@ class PromoCodeValidators {
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
-    InputTextModule,
     InputNumberModule,
     CheckboxModule,
-    MessageModule,
-    MessagesModule,
-    TooltipModule,
-    DividerModule,
-    LoaderComponent,
     ButtonComponent,
     TagComponent,
     CardComponent,
   ],
   templateUrl: './promo-form.component.html',
-  styleUrls: ['./promo-form.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  styleUrl: './promo-form.component.scss',
 })
 export class PromoFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);

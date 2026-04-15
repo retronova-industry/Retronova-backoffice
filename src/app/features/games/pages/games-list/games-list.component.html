@@ -1,0 +1,160 @@
+<div class="page-container">
+
+  <!-- === HEADER === -->
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Jeux</h1>
+      <p class="page-subtitle">Catalogue des jeux disponibles sur les bornes</p>
+    </div>
+    <div class="page-actions">
+      <ui-button
+        icon="pi pi-refresh"
+        variant="ghost"
+        [rounded]="true"
+        tooltip="Actualiser"
+        [loading]="loading()"
+        (clicked)="refreshGames()" />
+    </div>
+  </div>
+
+  <!-- === CONTENT === -->
+  <div class="page-content">
+    @if (loading()) {
+      <div class="loading-state">
+        <span>Chargement...</span>
+      </div>
+    } @else {
+
+      <!-- Métriques -->
+      <div class="metrics-strip">
+        <div class="metric">
+          <span class="metric-value">{{ totalGames() }}</span>
+          <span class="metric-label">Jeux total</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric">
+          <span class="metric-value">{{ singlePlayerGames() }}</span>
+          <span class="metric-label">Solo</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric">
+          <span class="metric-value">{{ multiplayerGames() }}</span>
+          <span class="metric-label">Multijoueurs</span>
+        </div>
+      </div>
+
+      <!-- Barre de recherche -->
+      <div class="search-bar">
+        <div class="search-wrapper">
+          <i class="pi pi-search search-icon"></i>
+          <input
+            type="text"
+            placeholder="Rechercher un jeu..."
+            (input)="applyFilterGlobal($event)"
+            class="search-input" />
+        </div>
+        <span class="search-count">{{ filteredGames().length }} jeu(x)</span>
+      </div>
+
+      <!-- Tableau -->
+      @if (filteredGames().length > 0) {
+        <p-table
+          #dt
+          [value]="filteredGames()"
+          [rows]="15"
+          [paginator]="true"
+          [rowHover]="true"
+          dataKey="id"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="{first}–{last} sur {totalRecords}"
+          styleClass="games-table">
+
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="nom">Nom <p-sortIcon field="nom" /></th>
+              <th>Mode</th>
+              <th pSortableColumn="ticket_cost">Coût <p-sortIcon field="ticket_cost" /></th>
+              <th>Actions</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-game>
+            <tr>
+              <td>
+                <div class="game-cell">
+                  <span class="game-name">{{ game.nom }}</span>
+                  @if (game.description) {
+                    <span class="game-desc">{{ game.description }}</span>
+                  }
+                </div>
+              </td>
+              <td>
+                <div class="mode-row">
+                  <span [class]="game.max_players === 1 ? 'slot-dot slot-dot--solo' : 'slot-dot slot-dot--multi'"></span>
+                  <span class="slot-text">{{ game.max_players === 1 ? 'Solo' : 'Multijoueurs' }}</span>
+                  <span class="slot-num">{{ game.min_players }}-{{ game.max_players }}j</span>
+                </div>
+              </td>
+              <td>
+                <span class="cost-value">{{ game.ticket_cost }}</span>
+                <span class="cost-unit"> tkt</span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <ui-button
+                    icon="pi pi-pencil"
+                    variant="ghost"
+                    size="sm"
+                    [rounded]="true"
+                    tooltip="Modifier"
+                    (clicked)="router.navigate(['/games/edit', game.id])" />
+                  <ui-button
+                    icon="pi pi-trash"
+                    variant="ghost"
+                    size="sm"
+                    [rounded]="true"
+                    tooltip="Supprimer"
+                    (clicked)="confirmDelete(game)" />
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="4">
+                <div class="empty-state">
+                  <i class="pi pi-play empty-icon"></i>
+                  <h3>Aucun jeu trouvé</h3>
+                  <p>Aucun jeu ne correspond à vos critères.</p>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      } @else {
+        <div class="empty-state">
+          <i class="pi pi-play empty-icon"></i>
+          <h3>Aucun jeu</h3>
+          <p>Commencez par ajouter votre premier jeu au catalogue.</p>
+          <ui-button
+            label="Ajouter un jeu"
+            icon="pi pi-plus"
+            (clicked)="router.navigate(['/games/new'])" />
+        </div>
+      }
+
+    }
+  </div>
+
+</div>
+
+<p-confirmDialog></p-confirmDialog>
+
+<!-- FAB -->
+<div class="fab-container">
+  <ui-button
+    icon="pi pi-plus"
+    label="Nouveau jeu"
+    (clicked)="router.navigate(['/games/new'])" />
+</div>

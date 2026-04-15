@@ -1,0 +1,236 @@
+<div class="page-container">
+
+  <!-- === HEADER === -->
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Parties</h1>
+      <p class="page-subtitle">Historique et suivi des parties en cours et terminées</p>
+    </div>
+    <div class="page-actions">
+      <ui-button
+        icon="pi pi-refresh"
+        variant="ghost"
+        [rounded]="true"
+        tooltip="Actualiser"
+        [loading]="loading"
+        (clicked)="loadData()" />
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading-state"><span>Chargement...</span></div>
+  } @else {
+
+    <!-- === MÉTRIQUES === -->
+    <div class="metrics-strip">
+      <div class="metric">
+        <span class="metric-value">{{ allParties.length }}</span>
+        <span class="metric-label">Total</span>
+      </div>
+      <div class="metric-divider"></div>
+      <div class="metric">
+        <span class="metric-value">{{ activeParties.length }}</span>
+        <span class="metric-label">En cours</span>
+      </div>
+      <div class="metric-divider"></div>
+      <div class="metric">
+        <span class="metric-value">{{ completedParties.length }}</span>
+        <span class="metric-label">Terminées</span>
+      </div>
+      <div class="metric-divider"></div>
+      <div class="metric">
+        <span class="metric-value">{{ cancelledCount }}</span>
+        <span class="metric-label">Annulées</span>
+      </div>
+    </div>
+
+    <!-- === ONGLETS === -->
+    <div class="tab-bar">
+      <button
+        class="tab"
+        [class.tab--active]="activeTab === 'active'"
+        (click)="activeTab = 'active'">
+        En cours
+        <span class="tab-count">{{ activeParties.length }}</span>
+      </button>
+      <button
+        class="tab"
+        [class.tab--active]="activeTab === 'completed'"
+        (click)="activeTab = 'completed'">
+        Terminées
+        <span class="tab-count">{{ completedParties.length }}</span>
+      </button>
+    </div>
+
+    <!-- === EN COURS === -->
+    @if (activeTab === 'active') {
+      <div class="tab-content">
+        <div class="search-bar">
+          <div class="search-wrapper">
+            <i class="pi pi-search search-icon"></i>
+            <input
+              type="text"
+              placeholder="Rechercher..."
+              (input)="applyFilterGlobal($event, 'active')"
+              class="search-input" />
+          </div>
+        </div>
+
+        <p-table
+          #dtActive
+          [value]="activeParties"
+          [rows]="10"
+          [paginator]="true"
+          [rowHover]="true"
+          [tableStyle]="{'min-width': '60rem'}"
+          [globalFilterFields]="['player1_name', 'player2_name', 'game_name', 'machine_name']">
+
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Joueur 1</th>
+              <th>Joueur 2</th>
+              <th>Jeu</th>
+              <th>Borne</th>
+              <th>Code</th>
+              <th>Bar</th>
+              <th>Début</th>
+              <th>Actions</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-party>
+            <tr>
+              <td>
+                <span class="player-name">{{ party.player1_name || ('J-' + shortId(party.player1_id)) }}</span>
+              </td>
+              <td>
+                <span class="player-name">{{ party.player2_name || ('J-' + shortId(party.player2_id)) }}</span>
+              </td>
+              <td>{{ party.game_name || ('Jeu ' + shortId(party.game_id)) }}</td>
+              <td>{{ party.machine_name || ('Borne ' + shortId(party.machine_id)) }}</td>
+              <td>
+                <ui-tag
+                  [label]="party.password?.toString() || 'N/A'"
+                  variant="info" />
+              </td>
+              <td>
+                <div class="bar-indicator">
+                  <span [class]="party.bar ? 'slot-dot slot-dot--active' : 'slot-dot slot-dot--empty'"></span>
+                  <span class="bar-label">{{ party.bar ? 'Oui' : 'Non' }}</span>
+                </div>
+              </td>
+              <td class="date-cell">{{ formatDate(party.created_at) }}</td>
+              <td>
+                <ui-button
+                  icon="pi pi-eye"
+                  variant="ghost"
+                  size="sm"
+                  [rounded]="true"
+                  tooltip="Détails"
+                  (clicked)="viewPartyDetails(party)" />
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="8">
+                <div class="empty-state">
+                  <i class="pi pi-play-circle empty-icon"></i>
+                  <h3>Aucune partie en cours</h3>
+                  <p>Les parties actives apparaîtront ici.</p>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    }
+
+    <!-- === TERMINÉES === -->
+    @if (activeTab === 'completed') {
+      <div class="tab-content">
+        <div class="search-bar">
+          <div class="search-wrapper">
+            <i class="pi pi-search search-icon"></i>
+            <input
+              type="text"
+              placeholder="Rechercher..."
+              (input)="applyFilterGlobal($event, 'completed')"
+              class="search-input" />
+          </div>
+        </div>
+
+        <p-table
+          #dtCompleted
+          [value]="completedParties"
+          [rows]="10"
+          [paginator]="true"
+          [rowHover]="true"
+          [tableStyle]="{'min-width': '70rem'}"
+          [globalFilterFields]="['player1_name', 'player2_name', 'game_name', 'machine_name']">
+
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Joueur 1</th>
+              <th>Score J1</th>
+              <th>Joueur 2</th>
+              <th>Score J2</th>
+              <th>Jeu</th>
+              <th>Borne</th>
+              <th>Score total</th>
+              <th>Date</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-party>
+            <tr>
+              <td>
+                <div class="player-cell">
+                  @if (isWinner(party, 1)) {
+                    <span class="slot-dot slot-dot--winner"></span>
+                  }
+                  <span class="player-name">{{ party.player1_name || ('J-' + shortId(party.player1_id)) }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="score-value">{{ party.p1_score || 0 }}</span>
+              </td>
+              <td>
+                <div class="player-cell">
+                  @if (isWinner(party, 2)) {
+                    <span class="slot-dot slot-dot--winner"></span>
+                  }
+                  <span class="player-name">{{ party.player2_name || ('J-' + shortId(party.player2_id)) }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="score-value">{{ party.p2_score || 0 }}</span>
+              </td>
+              <td>{{ party.game_name || ('Jeu ' + shortId(party.game_id)) }}</td>
+              <td>{{ party.machine_name || ('Borne ' + shortId(party.machine_id)) }}</td>
+              <td>
+                <span class="score-total">{{ party.total_score || 0 }}</span>
+              </td>
+              <td class="date-cell">{{ formatDate(party.updated_at) }}</td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="8">
+                <div class="empty-state">
+                  <i class="pi pi-check-circle empty-icon"></i>
+                  <h3>Aucune partie terminée</h3>
+                  <p>Les parties terminées apparaîtront ici.</p>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    }
+
+  }
+
+</div>

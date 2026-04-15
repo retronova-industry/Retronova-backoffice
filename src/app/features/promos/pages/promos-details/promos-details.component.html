@@ -138,22 +138,23 @@
       <!-- Configuration -->
       <ui-card>
         <div class="section-label">Configuration</div>
+        <p class="config-summary">{{ usageSummary() }}</p>
         <div class="config-rows">
           <div class="config-row">
-            <span class="config-key">Par utilisateur</span>
-            <span class="config-val">{{ promo()!.is_single_use_per_user ? 'Usage unique' : 'Illimité' }}</span>
+            <span class="config-key">Par personne</span>
+            <span class="config-val">{{ promo()!.is_single_use_per_user ? '1 fois maximum' : 'Illimitées' }}</span>
           </div>
           <div class="config-row">
-            <span class="config-key">Global</span>
-            <span class="config-val">{{ promo()!.is_single_use_global ? 'Usage unique' : 'Illimité' }}</span>
+            <span class="config-key">Accès</span>
+            <span class="config-val">{{ promo()!.is_single_use_global ? 'Premier arrivé, premier servi' : 'Ouvert à tous' }}</span>
           </div>
           <div class="config-row">
-            <span class="config-key">Limite globale</span>
-            <span class="config-val">{{ promo()!.usage_limit || 'Aucune' }}</span>
+            <span class="config-key">Quota total</span>
+            <span class="config-val">{{ promo()!.usage_limit ? promo()!.usage_limit + ' utilisations max' : 'Aucune limite' }}</span>
           </div>
           <div class="config-row config-row--last">
             <span class="config-key">Récompense</span>
-            <span class="config-val">{{ promo()!.tickets_reward }} tickets</span>
+            <span class="config-val">{{ promo()!.tickets_reward }} tickets par utilisation</span>
           </div>
         </div>
       </ui-card>

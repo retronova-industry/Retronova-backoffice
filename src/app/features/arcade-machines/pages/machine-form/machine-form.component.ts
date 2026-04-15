@@ -13,7 +13,6 @@ import { ArcadesService } from '../../../../core/services/arcades.service';
 import { GamesService } from '../../../../core/services/games.service';
 import { Arcade, ArcadeCreate, ArcadeUpdate, ArcadeGameAssignment } from '../../../../core/models/arcade.model';
 import { Game } from '../../../../core/models/game.model';
-import { LoaderComponent } from '../../../../shared/components/loader/loader.component';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 interface GameOption {
@@ -99,7 +98,6 @@ class GameOptionsFactory {
     RouterModule,
     DropdownModule,
     ConfirmDialogModule,
-    LoaderComponent,
     ButtonComponent,
     CardComponent,
   ],
@@ -107,17 +105,25 @@ class GameOptionsFactory {
   template: `
     <div class="page-container">
       <div class="page-header">
-        <div>
-          <h1>{{ pageTitle() }}</h1>
-          <p class="page-subtitle">{{ pageSubtitle() }}</p>
+        <div class="page-title-section">
+          <ui-button
+            icon="pi pi-arrow-left"
+            variant="ghost"
+            size="sm"
+            [rounded]="true"
+            tooltip="Retour à la liste"
+            (clicked)="router.navigate(['/arcade-machines'])">
+          </ui-button>
+          <div>
+            <h1 class="page-title">{{ pageTitle() }}</h1>
+            <p class="page-subtitle">{{ pageSubtitle() }}</p>
+          </div>
         </div>
       </div>
 
       <div class="form-container">
         @if (loading()) {
-          <app-loader size="large">
-            <span>{{ isEditMode() ? 'Chargement de la borne...' : 'Chargement du formulaire...' }}</span>
-          </app-loader>
+          <div class="loading-state"><span>Chargement...</span></div>
         } @else {
           <form [formGroup]="machineForm" (ngSubmit)="handleSubmit()" class="machine-form">
 

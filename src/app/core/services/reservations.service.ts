@@ -31,8 +31,8 @@ export class ReservationsService {
   /**
    * Récupère les réservations de l'utilisateur connecté
    */
-  getMyReservations(): Observable<ReservationResponse[]> {
-    return this.apiService.get<ReservationResponse[]>('/reservations').pipe(
+  getAllReservations(): Observable<ReservationResponse[]> {
+    return this.apiService.get<ReservationResponse[]>('/admin/reservations/').pipe(
       tap(reservations => this.reservationsSignal.set(reservations))
     );
   }

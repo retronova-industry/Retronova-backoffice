@@ -1,0 +1,141 @@
+<div class="page-container">
+
+  <!-- === HEADER === -->
+  <div class="page-header">
+    <div class="page-title-section">
+      <ui-button
+        icon="pi pi-arrow-left"
+        variant="ghost"
+        size="sm"
+        [rounded]="true"
+        tooltip="Retour à la liste"
+        (clicked)="router.navigate(['/users'])" />
+      <div>
+        <h1 class="page-title">Profil utilisateur</h1>
+        @if (user) {
+          <p class="page-subtitle">{{ user.pseudo || user.firebase_uid }}</p>
+        }
+      </div>
+    </div>
+
+    @if (user) {
+      <div class="page-actions">
+        <ui-button
+          icon="pi pi-pencil"
+          label="Modifier"
+          variant="primary"
+          (clicked)="router.navigate(['/users/edit', user.id])" />
+        <ui-button
+          icon="pi pi-trash"
+          variant="ghost"
+          [rounded]="true"
+          tooltip="Supprimer"
+          (clicked)="confirmDelete()" />
+      </div>
+    }
+  </div>
+
+  @if (loading) {
+    <div class="loading-state"><span>Chargement...</span></div>
+  } @else if (user) {
+    <div class="details-content">
+
+      <!-- Identité -->
+      <ui-card>
+        <div class="user-identity">
+          <div class="user-avatar">{{ getUserInitials(user) }}</div>
+          <div class="user-identity-text">
+            <span class="user-fullname">{{ user.prenom || '' }} {{ user.nom || '' }}</span>
+            <span class="user-firebase">{{ user.firebase_uid }}</span>
+          </div>
+        </div>
+      </ui-card>
+
+      <!-- Métriques -->
+      <div class="metrics-strip">
+        <div class="metric">
+          <span class="metric-value">{{ user.tickets_balance }}</span>
+          <span class="metric-label">Tickets</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric">
+          <span class="metric-value">{{ stats.totalParties }}</span>
+          <span class="metric-label">Parties</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric">
+          <span class="metric-value">{{ stats.victories }}</span>
+          <span class="metric-label">Victoires</span>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric">
+          <span class="metric-value">{{ stats.winRate }}%</span>
+          <span class="metric-label">Taux de victoire</span>
+        </div>
+      </div>
+
+      <!-- Infos -->
+      <ui-card>
+        <div class="section-label">Informations</div>
+        <div class="config-rows">
+          <div class="config-row">
+            <span class="config-key">Inscription</span>
+            <span class="config-val">{{ formatDate(user.created_at) }}</span>
+          </div>
+          <div class="config-row config-row--last">
+            <span class="config-key">Firebase ID</span>
+            <span class="config-val mono">{{ user.firebase_uid }}</span>
+          </div>
+        </div>
+      </ui-card>
+
+      <!-- Historique des parties -->
+      <ui-card>
+        <div class="section-label">
+          Historique des parties
+          <span class="section-count">{{ userParties.length }}</span>
+        </div>
+
+        @if (userParties.length > 0) {
+          <p-table
+            [value]="userParties"
+            [rows]="10"
+            [paginator]="true"
+            [rowHover]="true"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="{first}–{last} sur {totalRecords}">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Date</th>
+                <th>Jeu</th>
+                <th>Adversaire</th>
+                <th>Score</th>
+                <th>Résultat</th>
+                <th>Statut</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-party>
+              <tr>
+                <td class="date-cell">{{ formatDate(party.created_at) }}</td>
+                <td>{{ getGameName(party.game_id) }}</td>
+                <td>{{ getOpponentName(party) }}</td>
+                <td><span class="score-cell">{{ getUserScore(party) }} – {{ getOpponentScore(party) }}</span></td>
+                <td><ui-tag [variant]="getResultSeverity(party)" [label]="getResultLabel(party)" /></td>
+                <td><ui-tag [variant]="party.done ? 'success' : 'warning'" [label]="party.done ? 'Terminée' : 'En cours'" /></td>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+              <tr><td colspan="6" class="empty-msg">Aucune partie</td></tr>
+            </ng-template>
+          </p-table>
+        } @else {
+          <p class="empty-msg">Aucune partie enregistrée pour cet utilisateur.</p>
+        }
+      </ui-card>
+
+    </div>
+  }
+
+</div>
+
+<p-confirmDialog />

@@ -200,6 +200,17 @@
 }
 
 /* === CONFIGURATION CARD === */
+.config-summary {
+  margin: 0 0 var(--space-4) 0;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  background: var(--gray-10);
+  border-left: 3px solid var(--blue-60);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  line-height: 1.6;
+}
+
 .section-label {
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);

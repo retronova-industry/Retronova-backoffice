@@ -1,1 +1,257 @@
-<p>machine-detail works!</p>
+<div class="page-container">
+
+  @if (loading()) {
+    <div class="loading-state"><span>Chargement...</span></div>
+
+  } @else if (machine()) {
+
+    <!-- === HEADER === -->
+    <div class="page-header">
+      <div class="page-title-section">
+        <ui-button
+          icon="pi pi-arrow-left"
+          variant="ghost"
+          size="sm"
+          [rounded]="true"
+          tooltip="Retour à la liste"
+          (clicked)="router.navigate(['/arcade-machines'])">
+        </ui-button>
+        <div>
+          <h1 class="page-title">{{ machine()!.nom }}</h1>
+          <p class="page-subtitle">
+            {{ machine()!.description || machine()!.localisation }}
+          </p>
+        </div>
+      </div>
+      <div class="page-actions">
+        <ui-tag [label]="getStatusLabel()" [variant]="getStatusSeverity()"></ui-tag>
+        <ui-button
+          icon="pi pi-gamepad"
+          label="Configurer"
+          variant="secondary"
+          (clicked)="configureGames()">
+        </ui-button>
+        <ui-button
+          icon="pi pi-pencil"
+          label="Modifier"
+          variant="primary"
+          (clicked)="router.navigate(['/arcade-machines/edit', machine()!.id])">
+        </ui-button>
+      </div>
+    </div>
+
+    <!-- === METRICS STRIP === -->
+    <div class="metrics-strip">
+      <div class="metric">
+        <span class="metric-value">{{ gamesCount() }}</span>
+        <span class="metric-label">Jeux configurés</span>
+      </div>
+      <div class="metric-divider"></div>
+      <div class="metric">
+        <span class="metric-value">{{ queueItems().length }}</span>
+        <span class="metric-label">File d'attente</span>
+      </div>
+      <div class="metric-divider"></div>
+      <div class="metric">
+        <span class="metric-value">{{ enrichedMachine().utilization_rate || 0 }}%</span>
+        <span class="metric-label">Taux d'utilisation</span>
+      </div>
+      <div class="metric-divider"></div>
+      <div class="metric">
+        <span class="metric-value">{{ enrichedMachine().revenue_generated || 0 }}</span>
+        <span class="metric-label">Tickets générés</span>
+      </div>
+    </div>
+
+    <!-- === TAB BAR === -->
+    <div class="tab-bar">
+      <button class="tab" [class.tab--active]="activeTab() === 'overview'"
+        (click)="activeTab.set('overview')">Vue d'ensemble</button>
+      <button class="tab" [class.tab--active]="activeTab() === 'stats'"
+        (click)="activeTab.set('stats')">Statistiques</button>
+      <button class="tab" [class.tab--active]="activeTab() === 'activity'"
+        (click)="activeTab.set('activity')">
+        Journal d'activité
+      </button>
+    </div>
+
+    <!-- === TAB: OVERVIEW === -->
+    @if (activeTab() === 'overview') {
+      <div class="overview-grid">
+
+        <!-- Machine info -->
+        <ui-card>
+          <div class="section-label">Informations générales</div>
+          <div class="config-rows">
+            <div class="config-row">
+              <span class="config-key">Localisation</span>
+              <span class="config-val">{{ machine()!.localisation }}</span>
+            </div>
+            @if (machine()!.latitude && machine()!.longitude) {
+              <div class="config-row">
+                <span class="config-key">Coordonnées GPS</span>
+                <span class="config-val config-val--mono">{{ machine()!.latitude | number:'1.4-4' }}, {{ machine()!.longitude | number:'1.4-4' }}</span>
+              </div>
+            }
+            <div class="config-row">
+              <span class="config-key">Clé API</span>
+              <span class="config-val config-val--mono">{{ formatApiKey(machine()!.api_key) }}</span>
+            </div>
+            <div class="config-row">
+              <span class="config-key">Créée le</span>
+              <span class="config-val">{{ formatDate(machine()!.created_at) }}</span>
+            </div>
+            <div class="config-row config-row--last">
+              <span class="config-key">Modifiée le</span>
+              <span class="config-val">{{ formatDateTime(machine()!.updated_at) }}</span>
+            </div>
+          </div>
+        </ui-card>
+
+        <!-- Games config -->
+        <ui-card>
+          <div class="section-label">Configuration des jeux</div>
+          <div class="slots-display">
+            @for (slot of [1, 2]; track slot) {
+              <div class="slot-item">
+                <div class="slot-item-header">
+                  <span class="slot-dot"
+                    [class.slot-dot--active]="!!getGameForSlot(slot)"
+                    [class.slot-dot--cancelled]="!getGameForSlot(slot)">
+                  </span>
+                  <span class="slot-num">Slot {{ slot }}</span>
+                  <span class="slot-status">{{ getGameForSlot(slot) ? 'Occupé' : 'Libre' }}</span>
+                </div>
+                @if (getGameForSlot(slot); as game) {
+                  <div class="slot-game-info">
+                    <span class="slot-game-name">{{ game.nom }}</span>
+                    <span class="slot-game-meta">{{ game.min_players }}–{{ game.max_players }} j · {{ game.ticket_cost }} tickets</span>
+                  </div>
+                } @else {
+                  <div class="slot-empty">
+                    <ui-button label="Configurer" variant="ghost" size="sm"
+                      (clicked)="configureSlot(slot)">
+                    </ui-button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </ui-card>
+
+        <!-- Queue -->
+        <ui-card>
+          <div class="section-label">
+            File d'attente
+            @if (queueItems().length > 0) {
+              <span class="section-count">{{ queueItems().length }}</span>
+            }
+          </div>
+          @if (queueItems().length > 0) {
+            <div class="config-rows">
+              @for (item of queueItems(); track item.id; let last = $last) {
+                <div class="config-row" [class.config-row--last]="last">
+                  <div class="queue-player-info">
+                    <span class="queue-pos">{{ item.position }}</span>
+                    <div>
+                      <span class="config-val">{{ item.player_pseudo }}</span>
+                      @if (item.player2_pseudo) {
+                        <span class="queue-p2"> & {{ item.player2_pseudo }}</span>
+                      }
+                      <span class="queue-game">{{ item.game_name }}</span>
+                    </div>
+                  </div>
+                  <span class="config-val config-val--mono">{{ item.unlock_code }}</span>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="empty-state">
+              <span>Aucun joueur en attente</span>
+            </div>
+          }
+        </ui-card>
+
+      </div>
+    }
+
+    <!-- === TAB: STATISTICS === -->
+    @if (activeTab() === 'stats') {
+      <div class="stats-grid">
+
+        <ui-card>
+          <div class="section-label">Utilisation hebdomadaire</div>
+          <div class="chart-wrap">
+            <p-chart type="line" [data]="chartData()" [options]="chartOptions()"
+              width="100%" height="280px">
+            </p-chart>
+          </div>
+        </ui-card>
+
+        <ui-card>
+          <div class="section-label">Métriques de performance</div>
+          <div class="config-rows">
+            <div class="config-row">
+              <span class="config-key">Parties jouées</span>
+              <span class="config-val">{{ enrichedMachine().total_games_played || 0 }}</span>
+            </div>
+            <div class="config-row">
+              <span class="config-key">Temps moyen par session</span>
+              <span class="config-val">{{ enrichedMachine().average_session_time || 0 }} min</span>
+            </div>
+            <div class="config-row">
+              <span class="config-key">Taux d'utilisation</span>
+              <span class="config-val">{{ enrichedMachine().utilization_rate || 0 }}%</span>
+            </div>
+            <div class="config-row config-row--last">
+              <span class="config-key">Tickets générés</span>
+              <span class="config-val">{{ enrichedMachine().revenue_generated || 0 }}</span>
+            </div>
+          </div>
+        </ui-card>
+
+      </div>
+    }
+
+    <!-- === TAB: ACTIVITY === -->
+    @if (activeTab() === 'activity') {
+      <div class="activity-container">
+        @if (activityLog().length === 0) {
+          <div class="empty-state">
+            <span>Aucun événement disponible — le journal d'activité n'est pas encore disponible via l'API.</span>
+          </div>
+        } @else {
+          <p-timeline [value]="activityLog()">
+            <ng-template pTemplate="marker" let-event>
+              <div class="timeline-marker" [class]="getEventMarkerClass(event.event_type)">
+                <i [class]="'pi ' + getEventIcon(event.event_type)"></i>
+              </div>
+            </ng-template>
+            <ng-template pTemplate="content" let-event>
+              <div class="timeline-content">
+                <span class="event-title">{{ event.description }}</span>
+                <span class="event-meta">{{ formatRelativeTime(event.timestamp) }} · {{ formatDateTime(event.timestamp) }}</span>
+              </div>
+            </ng-template>
+          </p-timeline>
+        }
+      </div>
+    }
+
+  } @else {
+
+    <!-- === ERROR STATE === -->
+    <div class="error-state">
+      <h2 class="page-title">Borne introuvable</h2>
+      <p class="page-subtitle">La borne demandée n'existe pas ou a été supprimée.</p>
+      <ui-button
+        label="Retour à la liste"
+        icon="pi pi-arrow-left"
+        variant="primary"
+        (clicked)="router.navigate(['/arcade-machines'])">
+      </ui-button>
+    </div>
+
+  }
+
+</div>

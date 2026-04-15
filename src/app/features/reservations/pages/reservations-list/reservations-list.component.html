@@ -1,145 +1,151 @@
 <div class="page-container">
+
+  <!-- === HEADER === -->
   <div class="page-header">
-    <div>
-      <h1><i class="pi pi-calendar"></i> Réservations</h1>
-    </div>
-    <div class="page-actions">
-      <p-button
-        icon="pi pi-refresh"
-        label="Actualiser"
-        [loading]="loading()"
-        (click)="loadReservations()"
-        severity="secondary"
-        outlined>
-      </p-button>
+    <div class="page-title-section">
+      <h1 class="page-title">Réservations</h1>
+      <p class="page-subtitle">File d'attente et historique des réservations de bornes</p>
     </div>
   </div>
 
-  <div class="page-content">
-    @if (loading()) {
-      <app-loader size="large">Chargement des réservations...</app-loader>
-    } @else {
-      <div class="filters-container">
-        <span class="p-input-icon-left">
-          <i class="pi pi-search"></i>
-          <input
-            pInputText
-            type="text"
-            placeholder="Rechercher par borne, jeu ou joueur..."
-            [ngModel]="searchQuery()"
-            (ngModelChange)="searchQuery.set($event)" />
-        </span>
-        <p-selectButton
-          [options]="statusOptions"
-          [ngModel]="selectedStatus()"
-          (ngModelChange)="selectedStatus.set($event)"
-          optionLabel="label"
-          optionValue="value">
-        </p-selectButton>
-        <div class="search-stats">
-          {{ filteredReservations().length }} réservation(s)
-        </div>
+  @if (loading()) {
+    <div class="loading-state"><span>Chargement...</span></div>
+  } @else {
+
+    <!-- === MÉTRIQUES === -->
+    <div class="metrics-strip">
+      <div class="metric">
+        <span class="metric-value">{{ reservations().length }}</span>
+        <span class="metric-label">Total</span>
+      </div>
+      <div class="metric-divider"></div>
+      <div class="metric">
+        <span class="metric-value">{{ countByStatus(ReservationStatus.WAITING) }}</span>
+        <span class="metric-label">En attente</span>
+      </div>
+      <div class="metric-divider"></div>
+      <div class="metric">
+        <span class="metric-value">{{ countByStatus(ReservationStatus.PLAYING) }}</span>
+        <span class="metric-label">En cours</span>
+      </div>
+      <div class="metric-divider"></div>
+      <div class="metric">
+        <span class="metric-value">{{ countByStatus(ReservationStatus.COMPLETED) }}</span>
+        <span class="metric-label">Terminées</span>
+      </div>
+    </div>
+
+    <!-- === FILTRES === -->
+    <div class="filter-bar">
+      <div class="search-wrapper">
+        <i class="pi pi-search search-icon"></i>
+        <input
+          type="text"
+          placeholder="Rechercher par borne, jeu ou joueur..."
+          [value]="searchQuery()"
+          (input)="searchQuery.set(getInputValue($event))"
+          class="search-input" />
       </div>
 
-      @if (filteredReservations().length === 0) {
-        <div class="empty-state">
-          <i class="pi pi-calendar-times"></i>
-          <h3>Aucune réservation</h3>
-          <p>Aucune réservation ne correspond à vos critères.</p>
-        </div>
-      } @else {
-        <p-table
-          [value]="filteredReservations()"
-          [rows]="10"
-          [paginator]="true"
-          [rowHover]="true"
-          [showCurrentPageReport]="true"
-          currentPageReportTemplate="{first} - {last} sur {totalRecords}"
-          dataKey="id"
-          styleClass="p-datatable-sm">
-          <ng-template pTemplate="header">
-            <tr>
-              <th pSortableColumn="id" style="width: 5rem">
-                #<p-sortIcon field="id" />
-              </th>
-              <th pSortableColumn="arcade_name">
-                Borne<p-sortIcon field="arcade_name" />
-              </th>
-              <th pSortableColumn="game_name">
-                Jeu<p-sortIcon field="game_name" />
-              </th>
-              <th>Joueurs</th>
-              <th pSortableColumn="status">
-                Statut<p-sortIcon field="status" />
-              </th>
-              <th>Tickets</th>
-              <th>File</th>
-              <th style="width: 8rem">Actions</th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-reservation>
-            <tr>
-              <td class="text-center font-bold">{{ reservation.id }}</td>
-              <td>
-                <i class="pi pi-desktop mr-2"></i>{{ reservation.arcade_name }}
-              </td>
-              <td>
-                <i class="pi pi-play mr-2"></i>{{ reservation.game_name }}
-              </td>
-              <td>
-                <div class="players-cell">
-                  <span>{{ reservation.player_pseudo }}</span>
-                  @if (reservation.player2_pseudo) {
-                    <span class="player2">vs {{ reservation.player2_pseudo }}</span>
-                  }
-                </div>
-              </td>
-              <td>
-                <p-tag
-                  [value]="getStatusLabel(reservation.status)"
-                  [severity]="getStatusSeverity(reservation.status)">
-                </p-tag>
-              </td>
-              <td class="text-center">
-                <i class="pi pi-ticket mr-1"></i>{{ reservation.tickets_used }}
-              </td>
-              <td class="text-center">
-                @if (reservation.position_in_queue) {
-                  <p-tag value="Position {{ reservation.position_in_queue }}" severity="secondary" />
-                } @else {
-                  <span class="text-color-secondary">—</span>
+      <div class="status-filters">
+        @for (opt of statusOptions; track opt.value) {
+          <button
+            class="status-btn"
+            [class.status-btn--active]="selectedStatus() === opt.value"
+            (click)="selectedStatus.set(opt.value)">
+            {{ opt.label }}
+          </button>
+        }
+      </div>
+
+      <span class="search-count">{{ filteredReservations().length }} résultat(s)</span>
+    </div>
+
+    <!-- === TABLEAU === -->
+    @if (filteredReservations().length === 0) {
+      <div class="empty-state">
+        <i class="pi pi-calendar-times empty-icon"></i>
+        <h3>Aucune réservation</h3>
+        <p>Aucune réservation ne correspond à vos critères.</p>
+      </div>
+    } @else {
+      <p-table
+        [value]="filteredReservations()"
+        [rows]="10"
+        [paginator]="true"
+        [rowHover]="true"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="{first}–{last} sur {totalRecords}"
+        dataKey="id">
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="id"># <p-sortIcon field="id" /></th>
+            <th pSortableColumn="arcade_name">Borne <p-sortIcon field="arcade_name" /></th>
+            <th pSortableColumn="game_name">Jeu <p-sortIcon field="game_name" /></th>
+            <th>Joueurs</th>
+            <th pSortableColumn="status">Statut <p-sortIcon field="status" /></th>
+            <th>Tickets</th>
+            <th>File</th>
+            <th>Actions</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-reservation>
+          <tr>
+            <td><span class="id-cell">{{ reservation.id }}</span></td>
+            <td>{{ reservation.arcade_name }}</td>
+            <td>{{ reservation.game_name }}</td>
+            <td>
+              <div class="players-cell">
+                <span class="player-name">{{ reservation.player_pseudo }}</span>
+                @if (reservation.player2_pseudo) {
+                  <span class="player-vs">vs {{ reservation.player2_pseudo }}</span>
                 }
-              </td>
-              <td>
-                <div class="action-buttons">
-                  <p-button
-                    icon="pi pi-eye"
-                    [routerLink]="['/reservations', reservation.id]"
-                    pTooltip="Voir le détail"
-                    tooltipPosition="top"
-                    severity="secondary"
-                    size="small"
-                    outlined>
-                  </p-button>
-                  @if (reservation.status === ReservationStatus.WAITING) {
-                    <p-button
-                      icon="pi pi-times"
-                      (click)="cancelReservation(reservation)"
-                      pTooltip="Annuler"
-                      tooltipPosition="top"
-                      severity="danger"
-                      size="small"
-                      outlined>
-                    </p-button>
-                  }
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-      }
+              </div>
+            </td>
+            <td>
+              <ui-tag
+                [label]="getStatusLabel(reservation.status)"
+                [variant]="getStatusVariant(reservation.status)" />
+            </td>
+            <td>
+              <span class="tickets-cell">{{ reservation.tickets_used }} tkt</span>
+            </td>
+            <td>
+              @if (reservation.position_in_queue) {
+                <span class="queue-pos">{{ reservation.position_in_queue }}</span>
+              } @else {
+                <span class="queue-empty">—</span>
+              }
+            </td>
+            <td>
+              <div class="action-buttons">
+                <ui-button
+                  icon="pi pi-eye"
+                  variant="ghost"
+                  size="sm"
+                  [rounded]="true"
+                  tooltip="Détails"
+                  (clicked)="navigate(['/reservations', reservation.id])" />
+                @if (reservation.status === ReservationStatus.WAITING) {
+                  <ui-button
+                    icon="pi pi-times"
+                    variant="ghost"
+                    size="sm"
+                    [rounded]="true"
+                    tooltip="Annuler"
+                    (clicked)="cancelReservation(reservation)" />
+                }
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
     }
-  </div>
+
+  }
+
 </div>
 
 <p-confirmDialog />

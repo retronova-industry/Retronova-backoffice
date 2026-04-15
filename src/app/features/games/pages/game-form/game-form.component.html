@@ -1,0 +1,140 @@
+<div class="page-container">
+
+  <!-- === HEADER === -->
+  <div class="page-header">
+    <div class="page-title-section">
+      <ui-button
+        icon="pi pi-arrow-left"
+        variant="ghost"
+        size="sm"
+        [rounded]="true"
+        tooltip="Retour à la liste"
+        (clicked)="router.navigate(['/games'])" />
+      <div>
+        <h1 class="page-title">{{ isEditMode ? 'Modifier le jeu' : 'Nouveau jeu' }}</h1>
+        <p class="page-subtitle">{{ isEditMode ? 'Modifiez les informations du jeu' : 'Ajoutez un jeu au catalogue' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- === FORM === -->
+  <div class="form-container">
+    <ui-card>
+      @if (loading) {
+        <div class="loading-state"><span>Chargement...</span></div>
+      } @else {
+
+        <div class="section-label">Informations</div>
+
+        <form [formGroup]="gameForm" (ngSubmit)="onSubmit()" class="form-body">
+
+          <div class="form-grid">
+
+            <!-- Nom -->
+            <div class="form-group col-12">
+              <label for="nom" class="required">Nom du jeu</label>
+              <input
+                id="nom"
+                type="text"
+                formControlName="nom"
+                class="form-input"
+                [class.is-invalid]="isFieldInvalid('nom')"
+                placeholder="Ex: Street Fighter II" />
+              @if (isFieldInvalid('nom')) {
+                <small class="field-error">Le nom du jeu est requis</small>
+              }
+            </div>
+
+            <!-- Description -->
+            <div class="form-group col-12">
+              <label for="description">Description</label>
+              <textarea
+                id="description"
+                formControlName="description"
+                class="form-textarea"
+                rows="3"
+                placeholder="Description du jeu (optionnel)">
+              </textarea>
+            </div>
+
+            <!-- Min joueurs -->
+            <div class="form-group col-6">
+              <label for="min_players" class="required">Joueurs minimum</label>
+              <p-inputNumber
+                id="min_players"
+                formControlName="min_players"
+                [min]="1"
+                [max]="10"
+                [showButtons]="true"
+                [class.ng-invalid]="isFieldInvalid('min_players')">
+              </p-inputNumber>
+              @if (isFieldInvalid('min_players')) {
+                <small class="field-error">
+                  @if (gameForm.get('min_players')?.hasError('required')) { Ce champ est requis }
+                  @if (gameForm.get('min_players')?.hasError('min')) { La valeur minimale est 1 }
+                </small>
+              }
+            </div>
+
+            <!-- Max joueurs -->
+            <div class="form-group col-6">
+              <label for="max_players" class="required">Joueurs maximum</label>
+              <p-inputNumber
+                id="max_players"
+                formControlName="max_players"
+                [min]="1"
+                [max]="10"
+                [showButtons]="true"
+                [class.ng-invalid]="isFieldInvalid('max_players')">
+              </p-inputNumber>
+              @if (isFieldInvalid('max_players')) {
+                <small class="field-error">
+                  @if (gameForm.get('max_players')?.hasError('required')) { Ce champ est requis }
+                  @if (gameForm.get('max_players')?.hasError('min')) { La valeur minimale est 1 }
+                  @if (gameForm.get('max_players')?.hasError('minPlayers')) { Le nombre max doit être ≥ au nombre min }
+                </small>
+              }
+            </div>
+
+            <!-- Coût tickets -->
+            <div class="form-group col-6">
+              <label for="ticket_cost" class="required">Coût en tickets</label>
+              <p-inputNumber
+                id="ticket_cost"
+                formControlName="ticket_cost"
+                [min]="0"
+                [max]="100"
+                [showButtons]="true"
+                [class.ng-invalid]="isFieldInvalid('ticket_cost')">
+              </p-inputNumber>
+              @if (isFieldInvalid('ticket_cost')) {
+                <small class="field-error">
+                  @if (gameForm.get('ticket_cost')?.hasError('required')) { Ce champ est requis }
+                  @if (gameForm.get('ticket_cost')?.hasError('min')) { La valeur minimale est 0 }
+                </small>
+              }
+            </div>
+
+          </div>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <ui-button
+              label="Annuler"
+              variant="ghost"
+              type="button"
+              (clicked)="router.navigate(['/games'])" />
+            <ui-button
+              label="Enregistrer"
+              variant="primary"
+              type="submit"
+              [loading]="submitting"
+              [disabled]="gameForm.invalid" />
+          </div>
+
+        </form>
+      }
+    </ui-card>
+  </div>
+
+</div>

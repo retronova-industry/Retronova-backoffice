@@ -1,0 +1,118 @@
+<div class="page-container">
+
+  <!-- === HEADER === -->
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Utilisateurs</h1>
+      <p class="page-subtitle">Comptes enregistrés — restauration disponible en cas de suppression</p>
+    </div>
+  </div>
+
+  <!-- === CONTENT === -->
+  <div class="page-content">
+    @if (loading()) {
+      <div class="loading-state"><span>Chargement...</span></div>
+    } @else {
+
+      <!-- Barre de recherche -->
+      <div class="search-bar">
+        <div class="search-wrapper">
+          <i class="pi pi-search search-icon"></i>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Rechercher par nom, prénom ou pseudo..."
+            (input)="applyFilterGlobal($event)" />
+        </div>
+        <span class="search-count">{{ filteredUsers().length }} utilisateur(s)</span>
+      </div>
+
+      <!-- Tableau -->
+      <p-table
+        #dt
+        [value]="filteredUsers()"
+        [rows]="itemsPerPage()"
+        [paginator]="true"
+        [globalFilterFields]="globalFilterFields"
+        [tableStyle]="{'min-width': '75rem'}"
+        [rowHover]="true"
+        dataKey="id"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="{first}–{last} sur {totalRecords}"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        styleClass="users-table">
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="nom">Nom <p-sortIcon field="nom" /></th>
+            <th pSortableColumn="prenom">Prénom <p-sortIcon field="prenom" /></th>
+            <th pSortableColumn="pseudo">Pseudo <p-sortIcon field="pseudo" /></th>
+            <th pSortableColumn="tickets_balance">Tickets <p-sortIcon field="tickets_balance" /></th>
+            <th pSortableColumn="created_at">Inscription <p-sortIcon field="created_at" /></th>
+            <th>Actions</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-user>
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="user-avatar">{{ getUserInitials(user) }}</div>
+                <span class="user-name">{{ user.nom || 'Non défini' }}</span>
+              </div>
+            </td>
+            <td>{{ user.prenom || 'Non défini' }}</td>
+            <td><span class="user-pseudo">{{ user.pseudo }}</span></td>
+            <td>
+              <ui-tag
+                [label]="user.tickets_balance.toString()"
+                [variant]="getTicketsSeverity(user.tickets_balance)" />
+            </td>
+            <td><span class="date-cell">{{ formatDate(user.created_at) }}</span></td>
+            <td>
+              <div class="action-buttons">
+                <ui-button
+                  icon="pi pi-eye"
+                  variant="ghost"
+                  size="sm"
+                  [rounded]="true"
+                  tooltip="Voir le profil"
+                  (clicked)="router.navigate(['/users', user.id])" />
+                <ui-button
+                  icon="pi pi-pencil"
+                  variant="ghost"
+                  size="sm"
+                  [rounded]="true"
+                  tooltip="Éditer"
+                  (clicked)="router.navigate(['/users/edit', user.id])" />
+                <ui-button
+                  icon="pi pi-trash"
+                  variant="ghost"
+                  size="sm"
+                  [rounded]="true"
+                  tooltip="Supprimer"
+                  (clicked)="confirmDelete(user)" />
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <i class="pi pi-users empty-icon"></i>
+                <h3>Aucun utilisateur trouvé</h3>
+                <p>Aucun utilisateur ne correspond à vos critères.</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+    }
+  </div>
+
+</div>
+
+<p-confirmDialog [blockScroll]="true" />
