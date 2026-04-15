@@ -88,31 +88,29 @@
                   </div>
 
                   <div class="slots-section">
-                    <div class="slots-label">Configuration</div>
+                    <div class="slots-label">Règles d'accès</div>
 
-                    @if (promo.is_single_use_per_user) {
-                      <div class="slot-row">
-                        <span class="slot-dot slot-dot--occupied"></span>
-                        <span class="slot-text">Usage unique / utilisateur</span>
-                      </div>
-                    }
                     @if (promo.is_single_use_global) {
                       <div class="slot-row">
                         <span class="slot-dot slot-dot--occupied"></span>
-                        <span class="slot-text">Usage unique global</span>
+                        <span class="slot-text">Premier arrivé, premier servi</span>
+                      </div>
+                    } @else if (promo.is_single_use_per_user) {
+                      <div class="slot-row">
+                        <span class="slot-dot slot-dot--occupied"></span>
+                        <span class="slot-text">1 fois par personne</span>
+                      </div>
+                    } @else {
+                      <div class="slot-row">
+                        <span class="slot-dot slot-dot--empty"></span>
+                        <span class="slot-text slot-text--muted">Ouvert à tous, sans limite par personne</span>
                       </div>
                     }
                     @if (promo.usage_limit) {
                       <div class="slot-row">
                         <span class="slot-dot slot-dot--occupied"></span>
                         <span class="slot-num">{{ promo.usage_limit }}</span>
-                        <span class="slot-text">utilisations max</span>
-                      </div>
-                    }
-                    @if (!promo.is_single_use_per_user && !promo.is_single_use_global && !promo.usage_limit) {
-                      <div class="slot-row">
-                        <span class="slot-dot slot-dot--empty"></span>
-                        <span class="slot-text slot-text--muted">Aucune restriction</span>
+                        <span class="slot-text">utilisateurs max au total</span>
                       </div>
                     }
                   </div>

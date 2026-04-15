@@ -88,6 +88,29 @@ export class PromosDetailsComponent implements OnInit {
     const p = this.promo();
     return p && !p.is_active;
   });
+
+  protected readonly usageSummary = computed(() => {
+    const p = this.promo();
+    if (!p) return '';
+
+    if (p.is_single_use_global) {
+      return 'Un seul utilisateur peut utiliser ce code dans le monde entier — premier arrivé, premier servi.';
+    }
+
+    const perUser = p.is_single_use_per_user
+      ? 'une seule fois chacun'
+      : 'autant de fois qu\'ils veulent';
+
+    if (p.usage_limit) {
+      return `Les ${p.usage_limit} premiers utilisateurs différents peuvent l'utiliser ${perUser}.`;
+    }
+
+    if (p.is_single_use_per_user) {
+      return 'Chaque utilisateur peut l\'utiliser une seule fois, sans limite de volume.';
+    }
+
+    return 'Tous les utilisateurs peuvent l\'utiliser autant de fois qu\'ils veulent.';
+  });
   
   ngOnInit(): void {
     this.buildShareMenu();
