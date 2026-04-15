@@ -1,8 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { HttpClient } from '@angular/common/http';
-import { Observable, from, of, throwError } from 'rxjs';
-import { catchError, map, switchMap, tap } from 'rxjs/operators';
+import { Observable, from, of, throwError, switchMap, map, catchError, tap } from 'rxjs';
 import { User } from '../models/user.model';
 import { environment } from '../../../environments/environment.development';
 
@@ -10,12 +9,18 @@ import { environment } from '../../../environments/environment.development';
   providedIn: 'root'
 })
 export class AuthService {
-  private currentUser: User | null = null;
-  
-  constructor(
-    private firebaseAuth: AngularFireAuth,
-    private http: HttpClient
-  ) {
+  private readonly firebaseAuth = inject(AngularFireAuth);
+  private readonly http = inject(HttpClient);
+
+  readonly currentUser = signal<User | null>(null);
+  readonly isAuthenticatedSignal = computed(() => !!this.currentUser());
+  readonly isLoading = signal(false);
+
+  constructor() {
+    this.initializeAuth();
+  }
+
+  private initializeAuth(): void {
     this.firebaseAuth.authState.pipe(
       switchMap(firebaseUser => {
         if (firebaseUser) {
@@ -26,11 +31,13 @@ export class AuthService {
         return of(null);
       })
     ).subscribe(user => {
-      this.currentUser = user;
+      this.setCurrentUser(user);
     });
   }
 
   login(email: string, password: string): Observable<User | null> {
+    this.isLoading.set(true);
+
     return from(this.firebaseAuth.signInWithEmailAndPassword(email, password)).pipe(
       switchMap(credential => {
         if (!credential.user) {
@@ -48,10 +55,16 @@ export class AuthService {
       tap(user => {
         if (user) {
           const { password: _, ...safeUser } = user as any;
-          this.currentUser = safeUser as User;
+          this.setCurrentUser(safeUser as User);
         } else {
-          this.currentUser = null;
+          this.setCurrentUser(null);
         }
+
+        this.isLoading.set(false);
+      }),
+      catchError(error => {
+        this.isLoading.set(false);
+        throw error;
       })
     );
   }
@@ -59,13 +72,13 @@ export class AuthService {
   logout(): Observable<void> {
     return from(this.firebaseAuth.signOut()).pipe(
       tap(() => {
-        this.currentUser = null;
+        this.setCurrentUser(null);
       })
     );
   }
   
   getCurrentUser(): User | null {
-    return this.currentUser;
+    return this.currentUser();
   }
   
   isAuthenticated(): Observable<boolean> {
@@ -76,5 +89,9 @@ export class AuthService {
   
   getFirebaseToken(): Observable<string | null> {
     return this.firebaseAuth.idToken;
+  }
+
+  private setCurrentUser(user: User | null): void {
+    this.currentUser.set(user);
   }
 }
