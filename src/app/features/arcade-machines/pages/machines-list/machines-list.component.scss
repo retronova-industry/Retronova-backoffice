@@ -9,19 +9,15 @@
   background: var(--surface-page);
 }
 
+/* === PAGE HEADER (title + search regroupés) === */
 .page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: var(--space-8);
-  padding: var(--space-6);
+  margin-bottom: var(--space-6);
   background: var(--white);
   border-radius: var(--radius-2xl);
   border: 1px solid var(--border-default);
-  position: relative;
   overflow: hidden;
+  position: relative;
 
-  // Barre d'accent supérieure — indicateur visuel de section
   &::before {
     content: '';
     position: absolute;
@@ -32,43 +28,84 @@
     background: var(--blue-60);
   }
 
-  .page-title-section {
-    .page-title {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      margin: 0 0 var(--space-2) 0;
-      font-size: var(--text-2xl);
-      font-weight: var(--weight-bold);
-      color: var(--text-primary);
-
-      i {
-        color: var(--blue-60);
-        font-size: var(--text-xl);
-      }
-    }
-
-    .page-subtitle {
-      margin: 0;
-      color: var(--text-secondary);
-      font-size: var(--text-base);
-      font-weight: var(--weight-regular);
-    }
+  &__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-5) var(--space-6);
   }
 
-  .page-actions {
+  &__search {
     display: flex;
-    gap: var(--space-3);
     align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-6);
+    border-top: 1px solid var(--border-subtle);
+    background: var(--gray-10);
   }
 }
 
-/* === STATS SECTION === */
-.stats-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--space-6);
-  margin-bottom: var(--space-8);
+.page-title-section {
+  .page-title {
+    margin: 0 0 var(--space-1) 0;
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-bold);
+    color: var(--text-primary);
+  }
+
+  .page-subtitle {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+  }
+}
+
+/* === SEARCH === */
+.search-wrapper {
+  position: relative;
+  flex: 1;
+  max-width: 480px;
+
+  .search-icon {
+    position: absolute;
+    left: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .search-input {
+    width: 100%;
+    padding-left: 2.25rem;
+    padding-right: var(--space-3);
+    height: 36px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    background: var(--white);
+    transition: border-color var(--duration-instant) var(--ease-default),
+                box-shadow var(--duration-instant) var(--ease-default);
+
+    &:focus {
+      border-color: var(--blue-60);
+      box-shadow: 0 0 0 2px var(--blue-20);
+      outline: none;
+    }
+
+    &::placeholder {
+      color: var(--text-muted);
+    }
+  }
+}
+
+.search-count {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  white-space: nowrap;
+  font-weight: var(--weight-medium);
 }
 
 /* === LOADING STATE === */
@@ -82,7 +119,6 @@
   .loading-icon {
     font-size: 3rem;
     color: var(--blue-60);
-    animation: spin 1s linear infinite;
   }
 
   span {
@@ -92,238 +128,122 @@
   }
 }
 
-/* === CONTROLS BAR === */
-.controls-bar {
+/* === GRID === */
+.machines-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: var(--space-4);
+}
+
+/* === MACHINE CARD === */
+.machine-card {
+  transition: box-shadow var(--duration-fast) var(--ease-default),
+              border-color var(--duration-fast) var(--ease-default);
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-default);
+  }
+}
+
+/* --- Header --- */
+.card-header {
+  padding: 0;
+}
+
+.status-stripe {
+  height: 3px;
+
+  &--active      { background: var(--green-40); }
+  &--partial     { background: var(--blue-40); }
+  &--inactive    { background: var(--gray-30); }
+  &--maintenance { background: var(--yellow-40); }
+}
+
+.card-top {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-6);
-  padding: var(--space-4) var(--space-6);
-  background: var(--white);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border-default);
-  box-shadow: var(--shadow-sm);
-
-  .search-container {
-    display: flex;
-    align-items: center;
-    gap: var(--space-4);
-    flex: 1;
-
-    .search-wrapper {
-      position: relative;
-
-      .search-icon {
-        color: var(--text-muted);
-        z-index: 2;
-      }
-
-      .search-input {
-        min-width: 320px;
-        padding-left: 2.5rem;
-        border: 1px solid var(--border-default);
-        border-radius: var(--radius-md);
-        transition: border-color var(--duration-instant) var(--ease-default),
-                    box-shadow var(--duration-instant) var(--ease-default);
-
-        &:focus {
-          border-color: var(--blue-60);
-          box-shadow: 0 0 0 2px var(--blue-20);
-        }
-
-        &::placeholder {
-          color: var(--text-muted);
-        }
-      }
-    }
-
-    .search-results {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      color: var(--text-secondary);
-      font-size: var(--text-sm);
-      font-weight: var(--weight-semibold);
-      padding: var(--space-2) var(--space-3);
-      background: var(--gray-10);
-      border-radius: var(--radius-md);
-
-      i {
-        color: var(--text-muted);
-      }
-    }
-  }
-
-  .view-controls {
-    display: flex;
-    gap: var(--space-2);
-
-    .view-toggle {
-      display: flex;
-      gap: var(--space-1);
-      padding: var(--space-1);
-      background: var(--surface-page);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-default);
-
-      .view-btn {
-        transition: background var(--duration-fast) var(--ease-default),
-                    color var(--duration-fast) var(--ease-default);
-      }
-    }
-  }
-}
-
-/* === TABLE STYLING === */
-.table-container {
-  background: var(--white);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-subtle);
-}
-
-.machine-row {
-  transition: background var(--duration-fast) var(--ease-default);
-}
-
-.machine-name-cell {
-  display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-3);
-
-  .machine-icon {
-    position: relative;
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-lg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: var(--text-base);
-    overflow: hidden;
-    flex-shrink: 0;
-
-    &.status-active {
-      background: var(--green-10);
-      color: var(--green-60);
-    }
-
-    &.status-partial {
-      background: var(--blue-10);
-      color: var(--blue-60);
-    }
-
-    &.status-maintenance {
-      background: var(--red-10);
-      color: var(--red-60);
-    }
-
-    &.status-inactive {
-      background: var(--gray-20);
-      color: var(--gray-50);
-    }
-
-    i {
-      position: relative;
-      z-index: 2;
-    }
-
-    .games-indicator {
-      position: absolute;
-      top: -4px;
-      right: -4px;
-      width: 18px;
-      height: 18px;
-      background: var(--blue-60);
-      color: var(--white);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: var(--text-xs);
-      font-weight: var(--weight-bold);
-      border: 2px solid var(--white);
-    }
-  }
-
-  .machine-info {
-    flex: 1;
-
-    .machine-name {
-      display: block;
-      font-weight: var(--weight-semibold);
-      color: var(--text-body);
-      margin-bottom: var(--space-1);
-      font-size: var(--text-base);
-    }
-
-    .machine-description {
-      display: block;
-      font-size: var(--text-sm);
-      color: var(--text-secondary);
-      margin-bottom: var(--space-1);
-      line-height: 1.4;
-    }
-
-    .machine-meta {
-      display: flex;
-      gap: var(--space-3);
-
-      .meta-item {
-        display: flex;
-        align-items: center;
-        gap: var(--space-1);
-        font-size: var(--text-xs);
-        color: var(--text-muted);
-
-        i {
-          color: var(--text-secondary);
-        }
-      }
-    }
-  }
+  padding: var(--space-4) var(--space-5) var(--space-3);
 }
 
-.location-cell {
-  .location-main {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    margin-bottom: var(--space-1);
-
-    .location-icon {
-      color: var(--text-secondary);
-      font-size: var(--text-base);
-    }
-
-    .location-name {
-      font-weight: var(--weight-semibold);
-      color: var(--text-body);
-    }
-  }
-
-  .coordinates {
-    display: flex;
-    gap: var(--space-2);
-    font-size: var(--text-xs);
-    color: var(--text-muted);
-
-    .coord-label {
-      font-weight: var(--weight-semibold);
-    }
-
-    .coord-value {
-      font-family: var(--font-mono);
-    }
-  }
-}
-
-/* === COMPACT SLOT ROWS (table view) === */
-.games-slots {
+.card-identity {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
+  min-width: 0;
+
+  .machine-name {
+    font-weight: var(--weight-semibold);
+    font-size: var(--text-base);
+    color: var(--text-body);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+  }
+
+  .machine-desc {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* --- Body --- */
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-5) var(--space-4);
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+
+  i {
+    color: var(--text-muted);
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+}
+
+/* --- Slots --- */
+.slots-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.slots-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 2px;
+
+  .slots-count {
+    font-family: var(--font-mono);
+    font-weight: var(--weight-bold);
+    color: var(--text-secondary);
+    letter-spacing: 0;
+    text-transform: none;
+    font-size: var(--text-xs);
+  }
 }
 
 .slot-row {
@@ -339,12 +259,9 @@
   border-radius: var(--radius-full);
   flex-shrink: 0;
 
-  &--occupied {
-    background-color: var(--green-40);
-  }
-
+  &--occupied { background: var(--green-40); }
   &--empty {
-    background-color: transparent;
+    background: transparent;
     border: 1.5px dashed var(--gray-30);
   }
 }
@@ -361,7 +278,6 @@
 
 .slot-game-name {
   font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
   color: var(--text-body);
   flex: 1;
   white-space: nowrap;
@@ -380,260 +296,20 @@
   font-size: var(--text-sm);
   color: var(--text-muted);
   font-style: italic;
+  flex: 1;
 }
 
-.status-cell {
+/* --- Footer --- */
+.card-footer {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  background: var(--gray-10);
 
-  .status-detail {
-    color: var(--text-muted);
-    font-size: var(--text-xs);
-    text-align: center;
-  }
-}
-
-.action-buttons {
-  display: flex;
-  gap: var(--space-1);
-  justify-content: center;
-}
-
-/* === GRID STYLING === */
-.machines-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-  gap: var(--space-6);
-
-  .machine-card-container {
-    position: relative;
-  }
-
-  .machine-card {
-    height: 100%;
-    background: var(--white);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-2xl);
-    overflow: hidden;
-    transition: border-color var(--duration-fast) var(--ease-default),
-                box-shadow var(--duration-fast) var(--ease-default);
-    position: relative;
-    box-shadow: var(--shadow-sm);
-
-    &:hover {
-      box-shadow: var(--shadow-md);
-      border-color: var(--border-default);
-    }
-
-    .machine-card-header {
-      padding: var(--space-6);
-      position: relative;
-      background: var(--gray-10);
-
-      // Barre de statut en bas du header — indicateur sémantique
-      &::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: var(--border-default);
-      }
-
-      &.status-active::after    { background: var(--green-40); }
-      &.status-partial::after   { background: var(--blue-40); }
-      &.status-inactive::after  { background: var(--gray-30); }
-
-      .machine-card-icon {
-        position: relative;
-        width: 64px;
-        height: 64px;
-        border-radius: var(--radius-full);
-        background: var(--blue-10);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--blue-60);
-        font-size: var(--text-2xl);
-        margin: 0 auto var(--space-4) auto;
-        box-shadow: var(--shadow-sm);
-
-        .games-badge {
-          position: absolute;
-          top: -6px;
-          right: -6px;
-          box-shadow: var(--shadow-sm);
-        }
-      }
-
-      .card-title-section {
-        text-align: center;
-
-        .machine-card-title {
-          margin: 0 0 var(--space-3) 0;
-          font-size: var(--text-xl);
-          font-weight: var(--weight-semibold);
-          color: var(--text-body);
-        }
-
-        .status-tag-card {
-          font-weight: var(--weight-medium);
-        }
-      }
-    }
-
-    .machine-card-content {
-      padding: var(--space-4) var(--space-6);
-
-      .machine-card-description {
-        color: var(--text-secondary);
-        font-size: var(--text-sm);
-        line-height: 1.6;
-        margin-bottom: var(--space-4);
-        text-align: center;
-      }
-
-      .machine-card-info {
-        .info-item {
-          display: flex;
-          align-items: center;
-          gap: var(--space-2);
-          margin-bottom: var(--space-3);
-          font-size: var(--text-sm);
-
-          &.coordinates {
-            font-family: var(--font-mono);
-            color: var(--text-muted);
-          }
-
-          .location-icon {
-            color: var(--text-secondary);
-          }
-        }
-
-        .card-slots-section {
-          margin-top: var(--space-4);
-
-          .slots-title {
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-            margin: 0 0 var(--space-3) 0;
-            font-size: var(--text-sm);
-            font-weight: var(--weight-semibold);
-            color: var(--text-body);
-
-            i {
-              color: var(--blue-60);
-            }
-          }
-
-          .card-slots-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: var(--space-3);
-
-            .card-slot-item {
-              padding: var(--space-3);
-              border-radius: var(--radius-lg);
-              border: 1px solid var(--border-subtle);
-              text-align: center;
-              transition: border-color var(--duration-fast) var(--ease-default);
-
-              &.slot-occupied {
-                background: var(--green-10);
-                border-color: var(--green-40);
-              }
-
-              &.slot-empty {
-                background: var(--gray-10);
-                border-style: dashed;
-                color: var(--text-muted);
-              }
-
-              .slot-number {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                width: 22px;
-                height: 22px;
-                background: var(--blue-60);
-                color: var(--white);
-                border-radius: 50%;
-                font-weight: var(--weight-bold);
-                font-size: var(--text-xs);
-                margin-bottom: var(--space-2);
-              }
-
-              .slot-game {
-                .game-name {
-                  display: block;
-                  font-weight: var(--weight-semibold);
-                  color: var(--text-body);
-                  font-size: var(--text-sm);
-                  margin-bottom: 2px;
-                }
-
-                .game-meta {
-                  font-size: var(--text-xs);
-                  color: var(--text-secondary);
-                }
-              }
-
-              .slot-empty {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: var(--space-1);
-
-                i {
-                  color: var(--text-muted);
-                  font-size: var(--text-lg);
-                }
-
-                span {
-                  font-size: var(--text-xs);
-                }
-              }
-            }
-          }
-        }
-
-        .no-games-card {
-          display: flex;
-          align-items: center;
-          gap: var(--space-3);
-          padding: var(--space-4);
-          background: var(--gray-10);
-          border-radius: var(--radius-lg);
-          color: var(--text-muted);
-          font-size: var(--text-sm);
-
-          .warning-icon {
-            color: var(--yellow-60);
-            font-size: var(--text-lg);
-          }
-        }
-      }
-    }
-
-    .machine-card-actions {
-      display: flex;
-      gap: var(--space-2);
-      justify-content: center;
-      padding: var(--space-4) var(--space-6);
-      background: var(--surface-page);
-      border-top: 1px solid var(--border-subtle);
-
-      .card-action-btn {
-        flex: 1;
-        max-width: 120px;
-        transition: border-color var(--duration-fast) var(--ease-default),
-                    box-shadow var(--duration-fast) var(--ease-default);
-      }
-    }
+  // Bouton éditer repoussé à droite
+  ui-button:last-child {
+    margin-left: auto;
   }
 }
 
@@ -646,6 +322,7 @@
     font-size: 3rem;
     color: var(--text-muted);
     margin-bottom: var(--space-6);
+    display: block;
   }
 
   h3 {
@@ -660,128 +337,33 @@
   }
 }
 
-/* === STATUS HELPERS === */
-.status-tag {
-  font-weight: var(--weight-medium);
-  font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-/* === RESPONSIVE DESIGN === */
-@media (max-width: 1200px) {
-  .machines-grid {
-    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  }
-}
-
+/* === RESPONSIVE === */
 @media (max-width: 768px) {
   .page-container {
     padding: var(--space-4);
   }
 
-  .page-header {
+  .page-header__top {
     flex-direction: column;
-    align-items: stretch;
-    gap: var(--space-4);
-    padding: var(--space-4);
-
-    .page-title-section {
-      text-align: center;
-    }
-  }
-
-  .stats-section {
-    grid-template-columns: repeat(2, 1fr);
+    align-items: flex-start;
     gap: var(--space-4);
   }
 
-  .controls-bar {
-    flex-direction: column;
-    gap: var(--space-4);
-
-    .search-container .search-input {
-      min-width: 100%;
+  .page-header__search {
+    .search-wrapper {
+      max-width: 100%;
     }
   }
 
   .machines-grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-6);
-  }
-
-  .machine-card-actions {
-    flex-direction: column;
-
-    .card-action-btn {
-      max-width: none;
-    }
-  }
-
-  .games-configuration .slots-container {
-    .slot-item {
-      padding: var(--space-3);
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .stats-section {
-    grid-template-columns: 1fr;
-  }
-
-  .machine-card .card-slots-grid {
     grid-template-columns: 1fr;
   }
 }
 
 /* === THEME OVERRIDES === */
 :host ::ng-deep {
-  .machines-table {
-    background: var(--white);
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-
-    .p-datatable-thead > tr > th {
-      background: var(--gray-10);
-      border-bottom: 2px solid var(--border-default);
-      font-weight: var(--weight-semibold);
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-size: var(--text-xs);
-      padding: var(--space-3) var(--space-4);
-
-      .header-content {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-
-        i {
-          color: var(--text-secondary);
-        }
-      }
-    }
-
-    .p-datatable-tbody > tr {
-      transition: background var(--duration-fast) var(--ease-default);
-      border-bottom: 1px solid var(--border-subtle);
-
-      &:hover > td {
-        background: var(--gray-10);
-      }
-
-      td {
-        padding: var(--space-4);
-        vertical-align: top;
-      }
-    }
-  }
-
-  .search-input {
-    &:focus {
-      border-color: var(--blue-60) !important;
-      box-shadow: 0 0 0 2px var(--blue-20) !important;
-    }
+  .search-input:focus {
+    border-color: var(--blue-60) !important;
+    box-shadow: 0 0 0 2px var(--blue-20) !important;
   }
 }

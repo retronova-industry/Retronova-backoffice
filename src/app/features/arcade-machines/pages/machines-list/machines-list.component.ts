@@ -1,20 +1,17 @@
 // src/app/features/arcade-machines/pages/machines-list/machines-list.component.ts
 
-import { Component, OnInit, inject, signal, computed, viewChild, effect } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { Table, TableModule } from 'primeng/table';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
-import { BadgeModule } from 'primeng/badge';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ArcadesService } from '../../../../core/services/arcades.service';
 import { GamesService } from '../../../../core/services/games.service';
 import { Arcade, GameOnArcade } from '../../../../core/models/arcade.model';
 import { Game } from '../../../../core/models/game.model';
 import { LoaderComponent } from '../../../../shared/components/loader/loader.component';
-import { StatsCardComponent, StatsData } from '../../../../shared/components/stats-card/stats-card.component';
 import { ButtonComponent, TagComponent, CardComponent } from '../../../../shared/ui';
 import { forkJoin } from 'rxjs';
 
@@ -29,90 +26,7 @@ interface EnrichedArcade extends Arcade {
 }
 
 type MachineStatus = 'active' | 'inactive' | 'maintenance' | 'partial';
-type ViewMode = 'table' | 'grid';
 
-/**
- * Strategy Pattern pour les différents modes d'affichage
- */
-abstract class ViewModeStrategy {
-  abstract render(machines: EnrichedArcade[]): any;
-}
-
-class TableViewStrategy extends ViewModeStrategy {
-  render(machines: EnrichedArcade[]) {
-    return machines;
-  }
-}
-
-class GridViewStrategy extends ViewModeStrategy {
-  render(machines: EnrichedArcade[]) {
-    return machines.map(machine => ({
-      ...machine,
-      displayTitle: machine.nom,
-      displaySubtitle: machine.localisation || 'Localisation non définie'
-    }));
-  }
-}
-
-/**
- * Factory Pattern pour les stratégies de vue
- */
-class ViewStrategyFactory {
-  static create(mode: ViewMode): ViewModeStrategy {
-    switch (mode) {
-      case 'table':
-        return new TableViewStrategy();
-      case 'grid':
-        return new GridViewStrategy();
-      default:
-        return new TableViewStrategy();
-    }
-  }
-}
-
-/**
- * Service Pattern pour les calculs de statistiques
- */
-class MachineStatsCalculator {
-  static calculateStats(machines: EnrichedArcade[]): StatsData[] {
-    const total = machines.length;
-    const active = machines.filter(m => m.status === 'active').length;
-    const configured = machines.filter(m => m.games_count > 0).length;
-    const fullyConfigured = machines.filter(m => m.has_both_slots).length;
-    const locations = new Set(machines.map(m => m.localisation).filter(Boolean)).size;
-
-    return [
-      {
-        title: 'Bornes totales',
-        value: total,
-        icon: 'pi-desktop',
-        color: 'primary',
-        trend: { value: 5, direction: 'up', period: 'ce mois' }
-      },
-      {
-        title: 'Bornes actives',
-        value: active,
-        icon: 'pi-check-circle',
-        color: 'success',
-        trend: { value: 12, direction: 'up', period: 'cette semaine' }
-      },
-      {
-        title: 'Entièrement configurées',
-        value: fullyConfigured,
-        icon: 'pi-cog',
-        color: 'info',
-        subtitle: `${Math.round((fullyConfigured / total) * 100)}% du total`
-      },
-      {
-        title: 'Emplacements',
-        value: locations,
-        icon: 'pi-map-marker',
-        color: 'warning',
-        subtitle: 'Sites uniques'
-      }
-    ];
-  }
-}
 
 @Component({
   selector: 'app-machines-list',
@@ -120,11 +34,9 @@ class MachineStatsCalculator {
   imports: [
     CommonModule,
     RouterModule,
-    TableModule,
     InputTextModule,
     ConfirmDialogModule,
     TooltipModule,
-    BadgeModule,
     LoaderComponent,
     ButtonComponent,
     TagComponent,
@@ -134,39 +46,30 @@ class MachineStatsCalculator {
   template: `
     <div class="page-container">
       <div class="page-header">
-        <div class="page-title-section">
-          <h1 class="page-title">Bornes d'arcade</h1>
-          <p class="page-subtitle">Gestion et monitoring de vos bornes d'arcade</p>
-        </div>
-        <div class="page-actions">
+        <div class="page-header__top">
+          <div class="page-title-section">
+            <h1 class="page-title">Bornes d'arcade</h1>
+            <p class="page-subtitle">Gestion et monitoring de vos bornes d'arcade</p>
+          </div>
           <ui-button
             icon="pi pi-plus"
             label="Nouvelle borne"
             (clicked)="router.navigate(['/arcade-machines/new'])" />
+        </div>
 
-          <ui-button
-            icon="pi pi-refresh"
-            label="Actualiser"
-            variant="secondary"
-            [loading]="loading()"
-            (clicked)="refreshMachines()" />
+        <div class="page-header__search">
+          <div class="search-wrapper">
+            <i class="pi pi-search search-icon"></i>
+            <input
+              pInputText
+              type="text"
+              placeholder="Rechercher une borne..."
+              (input)="handleGlobalFilter($event)"
+              class="search-input" />
+          </div>
+          <span class="search-count">{{ filteredCount() }} borne(s)</span>
         </div>
       </div>
-
-      <!-- Cartes de statistiques -->
-      <!-- @if (!loading()) {
-        <div class="stats-section stagger-fade-in">
-          @for (stat of machineStats(); track stat.title) {
-            <app-stats-card
-              [data]="stat"
-              [clickable]="true"
-              [animated]="true"
-              [gamingStyle]="true"
-              (cardClick)="handleStatClick($event)">
-            </app-stats-card>
-          }
-        </div>
-      } -->
 
       <div class="page-content">
         @if (loading()) {
@@ -177,291 +80,99 @@ class MachineStatsCalculator {
             </div>
           </app-loader>
         } @else {
-          <div class="controls-bar">
-            <div class="search-container">
-              <span class="p-input-icon-left search-wrapper">
-                <i class="pi pi-search search-icon"></i>
-                <input
-                  pInputText
-                  type="text"
-                  placeholder="Rechercher une borne..."
-                  (input)="handleGlobalFilter($event)"
-                  class="search-input" />
-              </span>
-              <div class="search-results">
-                <i class="pi pi-filter-fill"></i>
-                {{ filteredCount() }} machine(s) trouvée(s)
-              </div>
-            </div>
 
-            <div class="view-controls">
-              <div class="view-toggle">
-                <ui-button
-                  icon="pi pi-list"
-                  [variant]="viewMode() === 'table' ? 'primary' : 'secondary'"
-                  tooltip="Vue tableau"
-                  (clicked)="setViewMode('table')" />
-                <ui-button
-                  icon="pi pi-th-large"
-                  [variant]="viewMode() === 'grid' ? 'primary' : 'secondary'"
-                  tooltip="Vue grille"
-                  (clicked)="setViewMode('grid')" />
-              </div>
-            </div>
-          </div>
-
-          @if (viewMode() === 'table') {
-            <!-- Vue tableau améliorée -->
-            <div class="table-container animate-scale-in">
-              <p-table
-                #dt
-                [value]="displayedMachines()"
-                [rows]="itemsPerPage()"
-                [paginator]="true"
-                [globalFilterFields]="globalFilterFields"
-                [tableStyle]="{'min-width': '75rem'}"
-                [rowHover]="true"
-                dataKey="id"
-                [showCurrentPageReport]="true"
-                currentPageReportTemplate="Affichage de {first} à {last} sur {totalRecords} bornes"
-                [loading]="loading()"
-                styleClass="machines-table">
-
-                <ng-template pTemplate="header">
-                  <tr>
-                    <th pSortableColumn="nom" style="width: 25%">Nom <p-sortIcon field="nom"></p-sortIcon></th>
-                    <th pSortableColumn="localisation" style="width: 20%">Localisation <p-sortIcon field="localisation"></p-sortIcon></th>
-                    <th style="width: 28%">Configuration jeux</th>
-                    <th pSortableColumn="status" style="width: 15%">Statut <p-sortIcon field="status"></p-sortIcon></th>
-                    <th style="width: 12%">Actions</th>
-                  </tr>
-                </ng-template>
-
-                <ng-template pTemplate="body" let-machine let-rowIndex="rowIndex">
-                  <tr class="machine-row animate-fade-in-left"
-                      [style.animation-delay]="(rowIndex * 0.05) + 's'">
-                    <td>
-                      <div class="machine-name-cell">
-                        <div class="machine-icon" [class]="getMachineIconClass(machine.status)">
-                          <i class="pi pi-desktop"></i>
-                          @if (machine.games_count > 0) {
-                            <div class="games-indicator">{{ machine.games_count }}</div>
-                          }
-                        </div>
-                        <div class="machine-info">
-                          <span class="machine-name">{{ machine.nom }}</span>
-                          @if (machine.description) {
-                            <span class="machine-description">{{ machine.description }}</span>
-                          }
-                          <!-- <div class="machine-meta"> -->
-                            <!-- <span class="meta-item">
-                              <i class="pi pi-calendar"></i>
-                              Créée le {{ formatDate(machine.created_at) }}
-                            </span> -->
-                          <!-- </div> -->
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="location-cell">
-                        <div class="location-main">
-                          <i class="pi pi-map-marker location-icon"></i>
-                          <span class="location-name">{{ machine.localisation || 'Non défini' }}</span>
-                        </div>
-                        @if (machine.latitude && machine.longitude) {
-                          <div class="coordinates">
-                            <span class="coord-label">GPS:</span>
-                            <span class="coord-value">{{ machine.latitude | number:'1.4-4' }}, {{ machine.longitude | number:'1.4-4' }}</span>
-                          </div>
-                        }
-                      </div>
-                    </td>
-                    <td>
-                      <div class="games-slots">
-                        @for (slot of [1, 2]; track slot) {
-                          <div class="slot-row">
-                            @if (getGameForSlot(machine, slot); as game) {
-                              <span class="slot-dot slot-dot--occupied"></span>
-                              <span class="slot-num">S{{ slot }}</span>
-                              <span class="slot-game-name">{{ game.nom }}</span>
-                              <span class="slot-players">{{ game.min_players }}-{{ game.max_players }}j</span>
-                            } @else {
-                              <span class="slot-dot slot-dot--empty"></span>
-                              <span class="slot-num">S{{ slot }}</span>
-                              <span class="slot-empty-label">Libre</span>
-                            }
-                          </div>
-                        }
-                      </div>
-                    </td>
-                    <td>
-                      <div class="status-cell">
-                        <ui-tag
-                          [label]="getStatusLabel(machine.status)"
-                          [variant]="getStatusSeverity(machine.status)"
-                          [icon]="getStatusIcon(machine.status)" />
-                        @if (machine.status === 'partial') {
-                          <small class="status-detail">
-                            {{ machine.active_slots }}/2 slots actifs
-                          </small>
-                        }
-                      </div>
-                    </td>
-                    <td>
-                      <div class="action-buttons">
-                        <ui-button
-                          icon="pi pi-eye"
-                          variant="ghost"
-                          size="sm"
-                          [rounded]="true"
-                          tooltip="Voir les détails"
-                          (clicked)="router.navigate(['/arcade-machines', machine.id])" />
-                        <ui-button
-                          icon="pi pi-pencil"
-                          variant="ghost"
-                          size="sm"
-                          [rounded]="true"
-                          tooltip="Éditer"
-                          (clicked)="router.navigate(['/arcade-machines/edit', machine.id])" />
-                        <ui-button
-                          icon="pi pi-trash"
-                          variant="ghost-danger"
-                          size="sm"
-                          [rounded]="true"
-                          tooltip="Supprimer"
-                          (clicked)="confirmDelete(machine)" />
-                      </div>
-                    </td>
-                  </tr>
-                </ng-template>
-
-                <ng-template pTemplate="emptymessage">
-                  <tr>
-                    <td colspan="5" class="empty-message">
-                      <div class="empty-state">
-                        <i class="pi pi-desktop empty-icon"></i>
-                        <h3>Aucune borne trouvée</h3>
-                        <p>Aucune borne d'arcade ne correspond à vos critères.</p>
-                        <ui-button
-                          label="Créer une borne"
-                          icon="pi pi-plus"
-                          (clicked)="router.navigate(['/arcade-machines/new'])" />
-                      </div>
-                    </td>
-                  </tr>
-                </ng-template>
-              </p-table>
+          @if (filteredMachines().length === 0) {
+            <div class="empty-state">
+              <i class="pi pi-desktop empty-icon"></i>
+              <h3>Aucune borne trouvée</h3>
+              <p>Aucune borne d'arcade ne correspond à vos critères.</p>
+              <ui-button
+                label="Créer une borne"
+                icon="pi pi-plus"
+                (clicked)="router.navigate(['/arcade-machines/new'])" />
             </div>
           } @else {
-            <!-- Vue grille améliorée -->
-            <div class="machines-grid animate-scale-in">
-              @for (machine of displayedMachines(); track machine.id; let i = $index) {
-                <div class="machine-card-container stagger-fade-in"
-                     [style.animation-delay]="(i * 0.1) + 's'">
-                  <ui-card styleClass="machine-card gaming-card hover-lift ui-card--flush">
-                    <div card-header class="machine-card-header" [class]="'status-' + machine.status">
-                        <div class="machine-card-icon" [class]="getMachineIconClass(machine.status)">
-                          <i class="pi pi-desktop"></i>
-                          @if (machine.games_count > 0) {
-                            <p-badge
-                              [value]="machine.games_count.toString()"
-                              severity="info"
-                              styleClass="games-badge">
-                            </p-badge>
-                          }
-                        </div>
-                        <div class="card-title-section">
-                          <h3 class="machine-card-title">{{ machine.nom }}</h3>
-                          <ui-tag
-                            [label]="getStatusLabel(machine.status)"
-                            [variant]="getStatusSeverity(machine.status)"
-                            [icon]="getStatusIcon(machine.status)" />
-                        </div>
-                      </div>
+            <div class="machines-grid">
+              @for (machine of filteredMachines(); track machine.id) {
+                <ui-card styleClass="machine-card ui-card--divided">
 
-                    <div class="machine-card-content">
-                      @if (machine.description) {
-                        <p class="machine-card-description">{{ machine.description }}</p>
-                      }
-
-                      <div class="machine-card-info">
-                        <div class="info-item">
-                          <i class="pi pi-map-marker location-icon"></i>
-                          <span>{{ machine.localisation || 'Non défini' }}</span>
-                        </div>
-
-                        @if (machine.latitude && machine.longitude) {
-                          <div class="info-item coordinates">
-                            <i class="pi pi-compass"></i>
-                            <span>{{ machine.latitude | number:'1.2-2' }}, {{ machine.longitude | number:'1.2-2' }}</span>
-                          </div>
+                  <div card-header class="card-header">
+                    <div class="status-stripe status-stripe--{{ machine.status }}"></div>
+                    <div class="card-top">
+                      <div class="card-identity">
+                        <span class="machine-name">{{ machine.nom }}</span>
+                        @if (machine.description) {
+                          <span class="machine-desc">{{ machine.description }}</span>
                         }
+                      </div>
+                      <ui-tag
+                        [label]="getStatusLabel(machine.status)"
+                        [variant]="getStatusSeverity(machine.status)" />
+                    </div>
+                  </div>
 
-                        <!-- Configuration des slots en mode carte -->
-                        <div class="card-slots-section">
-                          <h4 class="slots-title">
-                            <i class="pi pi-gamepad"></i>
-                            Configuration des jeux
-                          </h4>
-                          @if (machine.games && machine.games.length > 0) {
-                            <div class="card-slots-grid">
-                              @for (slot of [1, 2]; track slot) {
-                                <div class="card-slot-item" [class]="getSlotClass(machine, slot)">
-                                  <div class="slot-number">{{ slot }}</div>
-                                  @if (getGameForSlot(machine, slot); as game) {
-                                    <div class="slot-game">
-                                      <span class="game-name">{{ game.nom }}</span>
-                                      <span class="game-meta">{{ game.min_players }}-{{ game.max_players }}p</span>
-                                    </div>
-                                  } @else {
-                                    <div class="slot-empty">
-                                      <i class="pi pi-plus"></i>
-                                      <span>Libre</span>
-                                    </div>
-                                  }
-                                </div>
-                              }
-                            </div>
+                  <div class="card-body">
+                    <div class="info-row">
+                      <i class="pi pi-map-marker"></i>
+                      <span>{{ machine.localisation || 'Non défini' }}</span>
+                    </div>
+
+                    <div class="slots-section">
+                      <span class="slots-label">
+                        Jeux&nbsp;<span class="slots-count">{{ machine.games_count }}/2</span>
+                      </span>
+                      @for (slot of [1, 2]; track slot) {
+                        <div class="slot-row">
+                          @if (getGameForSlot(machine, slot); as game) {
+                            <span class="slot-dot slot-dot--occupied"></span>
+                            <span class="slot-num">S{{ slot }}</span>
+                            <span class="slot-game-name">{{ game.nom }}</span>
+                            <span class="slot-players">{{ game.min_players }}-{{ game.max_players }}p</span>
                           } @else {
-                            <div class="no-games-card">
-                              <i class="pi pi-exclamation-triangle warning-icon"></i>
-                              <span>Aucun jeu configuré</span>
-                            </div>
+                            <span class="slot-dot slot-dot--empty"></span>
+                            <span class="slot-num">S{{ slot }}</span>
+                            <span class="slot-empty-label">Libre</span>
                           }
                         </div>
-                      </div>
+                      }
                     </div>
+                  </div>
 
-                    <div card-footer class="machine-card-actions">
-                      <ui-button
-                        label="Détails"
-                        icon="pi pi-eye"
-                        variant="secondary"
-                        size="sm"
-                        (clicked)="router.navigate(['/arcade-machines', machine.id])" />
+                  <div card-footer class="card-footer">
+                    <ui-button
+                      label="Détails"
+                      icon="pi pi-eye"
+                      variant="secondary"
+                      size="sm"
+                      (clicked)="router.navigate(['/arcade-machines', machine.id])" />
+                    <ui-button
+                      label="Jeux"
+                      icon="pi pi-gamepad"
+                      variant="secondary"
+                      size="sm"
+                      (clicked)="configureGames(machine)" />
+                    <ui-button
+                      icon="pi pi-pencil"
+                      variant="ghost"
+                      size="sm"
+                      tooltip="Éditer"
+                      (clicked)="router.navigate(['/arcade-machines/edit', machine.id])" />
+                    <ui-button
+                      icon="pi pi-trash"
+                      variant="ghost-danger"
+                      size="sm"
+                      tooltip="Supprimer"
+                      (clicked)="confirmDelete(machine)" />
+                  </div>
 
-                      <ui-button
-                        label="Jeux"
-                        icon="pi pi-gamepad"
-                        variant="secondary"
-                        size="sm"
-                        (clicked)="configureGames(machine)" />
-
-                      <ui-button
-                        icon="pi pi-pencil"
-                        variant="secondary"
-                        size="sm"
-                        tooltip="Éditer"
-                        (clicked)="router.navigate(['/arcade-machines/edit', machine.id])" />
-                    </div>
-                  </ui-card>
-                </div>
+                </ui-card>
               }
             </div>
           }
         }
       </div>
     </div>
+
 
     <p-confirmDialog
       header="Confirmation de suppression"
@@ -472,33 +183,20 @@ class MachineStatsCalculator {
   styleUrls: ['./machines-list.component.scss']
 })
 export class MachinesListComponent implements OnInit {
-  // Services injectés avec inject()
   protected readonly router = inject(Router);
   private readonly arcadesService = inject(ArcadesService);
   private readonly gamesService = inject(GamesService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
 
-  // ViewChild avec nouvelle API
-  private readonly table = viewChild<Table>('dt');
-
-  // Signals pour l'état réactif
   protected readonly loading = signal(false);
   protected readonly machines = signal<Arcade[]>([]);
   protected readonly games = signal<Game[]>([]);
-  protected readonly viewMode = signal<ViewMode>('table');
   protected readonly searchQuery = signal('');
-  protected readonly itemsPerPage = signal(10);
 
-  // Computed values avec logique métier améliorée
-  protected readonly enrichedMachines = computed(() => {
-    return this.machines().map(machine => this.enrichMachine(machine));
-  });
-
-  protected readonly displayedMachines = computed(() => {
-    const strategy = ViewStrategyFactory.create(this.viewMode());
-    return strategy.render(this.filteredMachines());
-  });
+  protected readonly enrichedMachines = computed(() =>
+    this.machines().map(machine => this.enrichMachine(machine))
+  );
 
   protected readonly filteredMachines = computed(() => {
     const query = this.searchQuery().toLowerCase();
@@ -516,18 +214,6 @@ export class MachinesListComponent implements OnInit {
 
   protected readonly filteredCount = computed(() => this.filteredMachines().length);
 
-  protected readonly machineStats = computed(() =>
-    MachineStatsCalculator.calculateStats(this.enrichedMachines())
-  );
-
-  // Configuration de la table
-  protected readonly globalFilterFields = ['nom', 'description', 'localisation'];
-
-  // Effect pour la recherche automatique
-  private readonly searchEffect = effect(() => {
-    const query = this.searchQuery();
-    this.table()?.filterGlobal(query, 'contains');
-  });
 
   ngOnInit(): void {
     this.loadInitialData();
@@ -577,7 +263,7 @@ export class MachinesListComponent implements OnInit {
   /**
    * Calcule le statut d'une machine selon la logique métier améliorée
    */
-  private calculateMachineStatus(machine: Arcade, activeSlots: number): MachineStatus {
+  private calculateMachineStatus(_machine: Arcade, activeSlots: number): MachineStatus {
     if (activeSlots === 0) {
       return 'inactive';
     } else if (activeSlots === 1) {
@@ -593,7 +279,7 @@ export class MachinesListComponent implements OnInit {
   /**
    * Calcule le taux d'utilisation d'une machine
    */
-  private calculateUtilizationRate(machine: Arcade): number {
+  private calculateUtilizationRate(_machine: Arcade): number {
     // Simulation - dans un vrai système, ceci viendrait des données d'usage
     return Math.random() * 100;
   }
@@ -610,13 +296,6 @@ export class MachinesListComponent implements OnInit {
     this.arcadesService.clearCache();
     this.gamesService.clearCache();
     this.loadInitialData();
-  }
-
-  /**
-   * Change le mode d'affichage
-   */
-  protected setViewMode(mode: ViewMode): void {
-    this.viewMode.set(mode);
   }
 
   /**
@@ -637,14 +316,6 @@ export class MachinesListComponent implements OnInit {
       detail: `Configuration des jeux pour la borne ${machine.nom}`
     });
     // TODO: Ouvrir un dialog de configuration avancé
-  }
-
-  /**
-   * Gère le clic sur une carte de statistique
-   */
-  protected handleStatClick(statData: StatsData): void {
-    // Logique de navigation ou filtrage selon la statistique cliquée
-    console.log('Stat clicked:', statData);
   }
 
   /**
@@ -669,15 +340,15 @@ export class MachinesListComponent implements OnInit {
   private executeDeletion(id: number): void {
     this.arcadesService.deleteArcade(id).subscribe({
       next: () => {
+        this.machines.update(list => list.filter(m => m.id !== id));
         this.messageService.add({
-            severity: 'success',
-            summary: 'Succès',
-            detail: 'Borne supprimée avec succès'
-          });
+          severity: 'success',
+          summary: 'Succès',
+          detail: 'Borne supprimée avec succès'
+        });
       },
       error: (error) => this.handleError('suppression', error)
     });
-
   }
 
   /**
@@ -693,13 +364,8 @@ export class MachinesListComponent implements OnInit {
     this.loading.set(false);
   }
 
-  // Méthodes utilitaires pour l'affichage améliorées
-  protected getMachineIconClass(status: MachineStatus): string {
-    return `machine-icon status-${status}`;
-  }
-
   protected getStatusLabel(status: MachineStatus): string {
-    const labels = {
+    const labels: Record<MachineStatus, string> = {
       active: 'Active',
       inactive: 'Inactive',
       maintenance: 'Maintenance',
@@ -709,50 +375,16 @@ export class MachinesListComponent implements OnInit {
   }
 
   protected getStatusSeverity(status: MachineStatus): 'success' | 'warning' | 'danger' | 'info' {
-    const severities = {
-      active: 'success' as const,
-      maintenance: 'warning' as const,
-      inactive: 'danger' as const,
-      partial: 'info' as const
+    const severities: Record<MachineStatus, 'success' | 'warning' | 'danger' | 'info'> = {
+      active: 'success',
+      maintenance: 'warning',
+      inactive: 'danger',
+      partial: 'info'
     };
     return severities[status];
   }
 
-  protected getStatusIcon(status: MachineStatus): string {
-    const icons = {
-      active: 'pi-check-circle',
-      maintenance: 'pi-wrench',
-      inactive: 'pi-times-circle',
-      partial: 'pi-info-circle'
-    };
-    return icons[status];
-  }
-
-  protected getSlotSeverity(slotNumber: number): 'info' | 'success' {
-    return slotNumber === 1 ? 'info' : 'success';
-  }
-
-  // Nouvelles méthodes utilitaires pour la gestion des slots
   protected getGameForSlot(machine: EnrichedArcade, slotNumber: number): GameOnArcade | undefined {
     return machine.games?.find(game => game.slot_number === slotNumber);
-  }
-
-  protected getSlotClass(machine: EnrichedArcade, slotNumber: number): string {
-    const hasGame = this.getGameForSlot(machine, slotNumber);
-    return `slot-item ${hasGame ? 'slot-occupied' : 'slot-empty'}`;
-  }
-
-  protected getSlotStatusClass(machine: EnrichedArcade, slotNumber: number): string {
-    const hasGame = this.getGameForSlot(machine, slotNumber);
-    return hasGame ? 'status-occupied' : 'status-empty';
-  }
-
-  protected getSlotStatusLabel(machine: EnrichedArcade, slotNumber: number): string {
-    const hasGame = this.getGameForSlot(machine, slotNumber);
-    return hasGame ? 'Occupé' : 'Libre';
-  }
-
-  protected formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('fr-FR');
   }
 }

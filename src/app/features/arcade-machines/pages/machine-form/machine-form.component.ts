@@ -614,14 +614,14 @@ export class MachineFormComponent implements OnInit {
 
   private createMachine(): void {
     const arcadeData = this.prepareArcadeData();
-    
+
     this.arcadesService.createArcade(arcadeData).subscribe({
       next: (response) => {
-        // Assigner les jeux si nécessaire
-        const gameAssignments = this.prepareGameAssignments(response.id);
-        
+        const arcadeId: number = response.arcade_id;
+        const gameAssignments = this.prepareGameAssignments(arcadeId);
+
         if (gameAssignments.length > 0) {
-          this.assignGamesToArcade(response.id, gameAssignments);
+          this.assignGamesToArcade(arcadeId, gameAssignments);
         } else {
           this.handleSubmitSuccess('créée');
         }
