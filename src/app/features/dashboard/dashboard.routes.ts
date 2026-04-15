@@ -7,7 +7,7 @@ export const DASHBOARD_ROUTES: Routes = [
     path: '',
     component: LayoutComponent,
     children: [
-      { path: '', component: HomeComponent }
+      { path: '', pathMatch: 'full', component: HomeComponent }
     ]
   }
 ];

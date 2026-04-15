@@ -1,12 +1,14 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { from, switchMap } from 'rxjs';
+import { from, of, switchMap, take } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const firebaseAuth = inject(AngularFireAuth);
   
-  return from(getToken(firebaseAuth)).pipe(
+  return firebaseAuth.authState.pipe(
+    take(1),
+    switchMap(user => user ? from(user.getIdToken()) : of(null)),
     switchMap(token => {
       if (token) {
         const authReq = req.clone({
@@ -18,11 +20,3 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     })
   );
 };
-
-async function getToken(firebaseAuth: AngularFireAuth): Promise<string | null> {
-  const user = await firebaseAuth.currentUser;
-  if (user) {
-    return user.getIdToken();
-  }
-  return null;
-}
