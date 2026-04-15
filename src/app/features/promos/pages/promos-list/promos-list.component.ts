@@ -7,7 +7,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { PromosService } from '../../../../core/services/promos.service';
 import { PromoCode } from '../../../../core/models/promo.model';
-import { ButtonComponent, TagComponent, CardComponent } from '../../../../shared/ui';
+import { ButtonComponent, TagComponent } from '../../../../shared/ui';
 
 interface EnrichedPromoCode extends PromoCode {
   readonly status: PromoStatus;
@@ -28,7 +28,6 @@ type PromoStatus = 'active' | 'exhausted' | 'limited' | 'single_use' | 'inactive
     ConfirmDialogModule,
     ButtonComponent,
     TagComponent,
-    CardComponent,
   ],
   providers: [ConfirmationService],
   templateUrl: './promos-list.component.html',
