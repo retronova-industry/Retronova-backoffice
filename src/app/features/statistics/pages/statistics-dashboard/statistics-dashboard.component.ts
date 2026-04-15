@@ -57,6 +57,7 @@ interface TopPlayer {
         <h1>Statistiques</h1>
         <div class="page-actions">
           <p-calendar [(ngModel)]="dateRange" selectionMode="range"
+                      dateFormat="dd/mm/yy"
                       [readonlyInput]="true" placeholder="Sélectionner une période">
           </p-calendar>
           <ui-button
