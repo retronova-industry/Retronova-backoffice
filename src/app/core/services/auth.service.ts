@@ -4,7 +4,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, from, of, BehaviorSubject, switchMap, catchError, tap } from 'rxjs';
+import { Observable, from, of, switchMap, catchError, tap } from 'rxjs';
 import { User, UserCreate } from '../models/user.model';
 import { environment } from '../../../environments/environment.development';
 
@@ -18,10 +18,7 @@ export class AuthService {
   
   private readonly baseUrl = `${environment.apiUrl}/auth`;
   
-  // Signals pour l'état d'authentification
-  private readonly currentUserSubject = new BehaviorSubject<User | null>(null);
-  readonly currentUser$ = this.currentUserSubject.asObservable();
-  
+  // Source unique de verite: signals Angular pour l'etat d'authentification
   readonly currentUser = signal<User | null>(null);
   readonly isAuthenticated = computed(() => !!this.currentUser());
   readonly isLoading = signal(false);
@@ -133,7 +130,6 @@ export class AuthService {
    */
   private setCurrentUser(user: User | null): void {
     this.currentUser.set(user);
-    this.currentUserSubject.next(user);
   }
 
   /**
