@@ -13,6 +13,7 @@ import { PromosService } from '../../../../core/services/promos.service';
 import { PromoCode, PromoHistory } from '../../../../core/models/promo.model';
 import { LoaderComponent } from '../../../../shared/components/loader/loader.component';
 import { StatsData } from '../../../../shared/components/stats-card/stats-card.component';
+import { ButtonComponent, CardComponent, TagComponent } from '../../../../shared/ui';
 
 interface PromoUsageEvent {
   readonly date: string;
@@ -95,7 +96,10 @@ class PromoDetailsStatsCalculator {
     ProgressBarModule,
     TimelineModule,
     LoaderComponent,
-    StatsCardComponent,
+
+    ButtonComponent,
+    CardComponent,
+    TagComponent,
     MenuModule
   ],
   templateUrl: './promos-details.component.html',

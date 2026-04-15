@@ -238,11 +238,12 @@
             (clicked)="copyPromoCode()">
           </ui-button>
 
+          <p-menu #shareMenu [model]="shareMenuItems" [popup]="true" appendTo="body"></p-menu>
           <ui-button
             icon="pi pi-share-alt"
             label="Partager"
             variant="ghost"
-            (clicked)="sharePromoCode()">
+            (clicked)="shareMenu.toggle($event)">
           </ui-button>
 
           @if (canActivate()) {
