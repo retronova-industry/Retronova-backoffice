@@ -3,88 +3,17 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
-import { ProgressBarModule } from 'primeng/progressbar';
-import { TimelineModule } from 'primeng/timeline';
-import { ChipModule } from 'primeng/chip';
-import { RippleModule } from 'primeng/ripple';
 import { MessageService, MenuItem } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
 import { PromosService } from '../../../../core/services/promos.service';
 import { PromoCode, PromoHistory } from '../../../../core/models/promo.model';
-import { LoaderComponent } from '../../../../shared/components/loader/loader.component';
-import { StatsData } from '../../../../shared/components/stats-card/stats-card.component';
 import { ButtonComponent, CardComponent, TagComponent } from '../../../../shared/ui';
 
-interface PromoUsageEvent {
-  readonly date: string;
-  readonly icon: string;
-  readonly color: string;
-  readonly title: string;
-  readonly subtitle?: string;
-}
-
-/**
- * Calculateur de statistiques détaillées
- */
-class PromoDetailsStatsCalculator {
-  static calculateDetailedStats(promo: PromoCode, history: PromoHistory[]): StatsData[] {
-    const status = this.getPromoStatus(promo);
-    const usageRate = promo.usage_limit 
-      ? Math.round((promo.current_uses / promo.usage_limit) * 100)
-      : 0;
-    const remainingUses = promo.usage_limit 
-      ? Math.max(0, promo.usage_limit - promo.current_uses)
-      : null;
-    const totalTicketsDistributed = promo.current_uses * promo.tickets_reward;
-    
-    const stats: StatsData[] = [
-      {
-        title: 'Utilisations',
-        value: promo.current_uses,
-        icon: 'pi-users',
-        color: 'primary',
-        subtitle: promo.usage_limit ? `sur ${promo.usage_limit}` : 'Illimité',
-        trend: usageRate > 0 ? { value: usageRate, direction: 'up', period: '% utilisé' } : undefined
-      },
-      {
-        title: 'Tickets distribués',
-        value: totalTicketsDistributed,
-        icon: 'pi-gift',
-        color: 'success',
-        format: 'number'
-      },
-      {
-        title: 'Tickets par usage',
-        value: promo.tickets_reward,
-        icon: 'pi-ticket',
-        color: 'warning'
-      }
-    ];
-    
-    if (remainingUses !== null) {
-      stats.push({
-        title: 'Utilisations restantes',
-        value: remainingUses,
-        icon: 'pi-clock',
-        color: remainingUses > 0 ? 'info' : 'danger'
-      });
-    }
-    
-    return stats;
-  }
-  
-  static getPromoStatus(promo: PromoCode): string {
-    if (promo.usage_limit && promo.current_uses >= promo.usage_limit) {
-      return 'exhausted';
-    }
-    if (promo.is_single_use_global && promo.current_uses > 0) {
-      return 'exhausted';
-    }
-    if (promo.usage_limit && promo.current_uses >= promo.usage_limit * 0.8) {
-      return 'limited';
-    }
-    return 'active';
-  }
+function getPromoStatus(promo: PromoCode): string {
+  if (promo.usage_limit && promo.current_uses >= promo.usage_limit) return 'exhausted';
+  if (promo.is_single_use_global && promo.current_uses > 0) return 'exhausted';
+  if (promo.usage_limit && promo.current_uses >= promo.usage_limit * 0.8) return 'limited';
+  return 'active';
 }
 
 @Component({
@@ -93,10 +22,6 @@ class PromoDetailsStatsCalculator {
   imports: [
     CommonModule,
     RouterModule,
-    ProgressBarModule,
-    TimelineModule,
-    LoaderComponent,
-
     ButtonComponent,
     CardComponent,
     TagComponent,
@@ -118,33 +43,19 @@ export class PromosDetailsComponent implements OnInit {
   protected readonly usageHistory = signal<PromoHistory[]>([]);
   
   // Computed values
-  protected readonly usageLimitDescription = computed(() => {
-  const p = this.promo();
-  if (!p) return '';
-  return p.usage_limit 
-    ? 'Nombre maximum d\'utilisations autorisées' 
-    : 'Aucune limite d\'utilisation définie';
-});
-
   protected readonly usagePercentage = computed(() => {
     const p = this.promo();
     if (!p || !p.usage_limit) return 0;
     return Math.min(100, Math.round((p.current_uses / p.usage_limit) * 100));
   });
   
-  protected readonly promoStats = computed(() => {
-    const p = this.promo();
-    if (!p) return [];
-    return PromoDetailsStatsCalculator.calculateDetailedStats(p, this.usageHistory());
-  });
-  
   protected readonly statusLabel = computed(() => {
     const p = this.promo();
     if (!p) return '';
-    
+
     if (!p.is_active) return 'Inactif';
-    
-    const status = PromoDetailsStatsCalculator.getPromoStatus(p);
+
+    const status = getPromoStatus(p);
     const labels: Record<string, string> = {
       active: 'Actif',
       exhausted: 'Épuisé',
@@ -159,7 +70,7 @@ export class PromosDetailsComponent implements OnInit {
 
     if (!p.is_active) return 'danger';
 
-    const status = PromoDetailsStatsCalculator.getPromoStatus(p);
+    const status = getPromoStatus(p);
     const severities: Record<string, 'success' | 'warning' | 'danger'> = {
       active: 'success',
       limited: 'warning',
@@ -168,69 +79,14 @@ export class PromosDetailsComponent implements OnInit {
     return severities[status] || 'danger';
   });
   
-  protected readonly statusIcon = computed(() => {
-    const p = this.promo();
-    if (!p) return 'pi-times-circle';
-    
-    if (!p.is_active) return 'pi-ban';
-    
-    const status = PromoDetailsStatsCalculator.getPromoStatus(p);
-    const icons: Record<string, string> = {
-      active: 'pi-check-circle',
-      limited: 'pi-exclamation-triangle',
-      exhausted: 'pi-times-circle'
-    };
-    return icons[status] || 'pi-ban';
-  });
-  
   protected readonly canDeactivate = computed(() => {
     const p = this.promo();
-    return p && p.is_active && PromoDetailsStatsCalculator.getPromoStatus(p) !== 'exhausted';
+    return p && p.is_active && getPromoStatus(p) !== 'exhausted';
   });
 
   protected readonly canActivate = computed(() => {
     const p = this.promo();
     return p && !p.is_active;
-  });
-  
-  protected readonly usageEvents = computed((): PromoUsageEvent[] => {
-    const events: PromoUsageEvent[] = [];
-    const p = this.promo();
-    
-    if (!p) return events;
-    
-    // Création du code
-    events.push({
-      date: new Date().toISOString(), // Simulé
-      icon: 'pi pi-plus-circle',
-      color: '#10b981',
-      title: 'Code créé',
-      subtitle: 'Le code promo a été créé et activé'
-    });
-    
-    // Utilisations
-    this.usageHistory().forEach((use, index) => {
-      events.push({
-        date: use.used_at,
-        icon: 'pi pi-user',
-        color: '#3b82f6',
-        title: `Utilisation #${index + 1}`,
-        subtitle: `${use.tickets_received} tickets distribués`
-      });
-    });
-    
-    // Si épuisé
-    if (PromoDetailsStatsCalculator.getPromoStatus(p) === 'exhausted') {
-      events.push({
-        date: new Date().toISOString(), // Simulé
-        icon: 'pi pi-times-circle',
-        color: '#ef4444',
-        title: 'Code épuisé',
-        subtitle: 'La limite d\'utilisation a été atteinte'
-      });
-    }
-    
-    return events;
   });
   
   ngOnInit(): void {
