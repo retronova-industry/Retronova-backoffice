@@ -46,29 +46,27 @@ type MachineStatus = 'active' | 'inactive' | 'maintenance' | 'partial';
   template: `
     <div class="page-container">
       <div class="page-header">
-        <div class="page-header__top">
-          <div class="page-title-section">
-            <h1 class="page-title">Bornes d'arcade</h1>
-            <p class="page-subtitle">Gestion et monitoring de vos bornes d'arcade</p>
-          </div>
-          <ui-button
-            icon="pi pi-plus"
-            label="Nouvelle borne"
-            (clicked)="router.navigate(['/arcade-machines/new'])" />
+        <div class="page-title-section">
+          <h1 class="page-title">Bornes d'arcade</h1>
+          <p class="page-subtitle">Gestion et monitoring de vos bornes d'arcade</p>
         </div>
 
-        <div class="page-header__search">
-          <div class="search-wrapper">
-            <i class="pi pi-search search-icon"></i>
-            <input
-              pInputText
-              type="text"
-              placeholder="Rechercher une borne..."
-              (input)="handleGlobalFilter($event)"
-              class="search-input" />
-          </div>
-          <span class="search-count">{{ filteredCount() }} borne(s)</span>
+        <div class="search-wrapper">
+          <i class="pi pi-search search-icon"></i>
+          <input
+            pInputText
+            type="text"
+            placeholder="Rechercher une borne..."
+            (input)="handleGlobalFilter($event)"
+            class="search-input" />
         </div>
+      </div>
+
+      <div class="fab-container">
+        <ui-button
+          icon="pi pi-plus"
+          label="Nouvelle borne"
+          (clicked)="router.navigate(['/arcade-machines/new'])" />
       </div>
 
       <div class="page-content">
