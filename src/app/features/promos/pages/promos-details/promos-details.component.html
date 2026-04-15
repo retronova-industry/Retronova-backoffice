@@ -1,4 +1,6 @@
 <div class="page-container">
+
+  <!-- === HEADER === -->
   <div class="page-header">
     <div class="page-title-section">
       <ui-button
@@ -9,21 +11,48 @@
         tooltip="Retour à la liste"
         (clicked)="router.navigate(['/promos'])">
       </ui-button>
-      <h1 class="page-title">
-        <i class="pi pi-ticket"></i>
-        Détails du code promo
-      </h1>
+      <div>
+        <h1 class="page-title">Détails du code promo</h1>
+        @if (promo()) {
+          <p class="page-subtitle">{{ promo()!.code }}</p>
+        }
+      </div>
     </div>
 
     @if (!loading() && promo()) {
       <div class="page-actions">
         <ui-button
           icon="pi pi-copy"
-          label="Copier"
+          label="Copier le code"
           variant="secondary"
-          tooltip="Copier le code"
           (clicked)="copyPromoCode()">
         </ui-button>
+
+        <p-menu #shareMenu [model]="shareMenuItems" [popup]="true" appendTo="body"></p-menu>
+        <ui-button
+          icon="pi pi-share-alt"
+          label="Partager"
+          variant="ghost"
+          (clicked)="shareMenu.toggle($event)">
+        </ui-button>
+
+        @if (canActivate()) {
+          <ui-button
+            icon="pi pi-check-circle"
+            label="Activer"
+            variant="primary"
+            (clicked)="togglePromoActive()">
+          </ui-button>
+        }
+
+        @if (canDeactivate()) {
+          <ui-button
+            icon="pi pi-ban"
+            label="Désactiver"
+            variant="danger"
+            (clicked)="togglePromoActive()">
+          </ui-button>
+        }
 
         <ui-button
           icon="pi pi-pencil"
@@ -35,159 +64,96 @@
     }
   </div>
 
+  <!-- === LOADING === -->
   @if (loading()) {
-    <app-loader size="large">
-      <div class="loading-content">
-        <i class="pi pi-spin pi-cog loading-icon"></i>
-        <span>Chargement des détails...</span>
-      </div>
-    </app-loader>
+    <div class="loading-state">
+      <span>Chargement...</span>
+    </div>
+
   } @else if (promo()) {
     <div class="details-content">
 
-      <!-- En-tête avec code et statut -->
+      <!-- Identité du code -->
       <ui-card>
-        <div class="promo-header-content">
-          <div class="code-section">
-            <div class="code-display-large">
-              <i class="pi pi-ticket code-icon"></i>
-              <span class="code-value">{{ promo()!.code }}</span>
-            </div>
+        <div card-header class="status-stripe"
+          [class.status-stripe--active]="promo()!.is_active"
+          [class.status-stripe--inactive]="!promo()!.is_active">
+        </div>
+        <div class="promo-identity">
+          <div class="promo-identity-top">
+            <span class="promo-code">{{ promo()!.code }}</span>
             <ui-tag
               [label]="statusLabel()"
-              [variant]="statusSeverity()"
-              [icon]="'pi ' + statusIcon()">
+              [variant]="statusSeverity()">
             </ui-tag>
           </div>
-
-          <div class="reward-section">
-            <div class="reward-display">
-              <i class="pi pi-gift"></i>
-              <span class="reward-amount">{{ promo()!.tickets_reward }}</span>
-              <span class="reward-label">tickets offerts</span>
-            </div>
-          </div>
+          <span class="promo-reward-label">{{ promo()!.tickets_reward }} tickets offerts par utilisation</span>
         </div>
-
-        @if (promo()!.usage_limit) {
-          <div class="usage-progress-section">
-            <div class="progress-header">
-              <span class="progress-label">Progression d'utilisation</span>
-              <span class="progress-value">{{ usagePercentage() }}%</span>
-            </div>
-            <p-progressBar
-              [value]="usagePercentage()"
-              [showValue]="false"
-              [style]="{'height': '10px'}">
-            </p-progressBar>
-            <div class="progress-details">
-              <span>{{ promo()!.current_uses }} utilisations</span>
-              <span>{{ (promo()?.usage_limit || 0) - (promo()?.current_uses || 0) }} restantes</span>
-            </div>
-          </div>
-        }
       </ui-card>
 
-      <!-- Statistiques -->
-      <div class="stats-section">
-        <div class="stat-card primary">
-          <div class="stat-icon-wrap"><i class="pi pi-users"></i></div>
-          <div class="stat-body">
-            <span class="stat-label">Utilisations</span>
-            <span class="stat-value">{{ promo()!.current_uses }}</span>
-            <span class="stat-sub">{{ promo()!.usage_limit ? 'sur ' + promo()!.usage_limit : 'Illimité' }}</span>
-          </div>
+      <!-- Métriques -->
+      <div class="metrics-strip">
+        <div class="metric">
+          <span class="metric-value">{{ promo()!.current_uses }}</span>
+          <span class="metric-label">
+            Utilisations{{ promo()!.usage_limit ? ' / ' + promo()!.usage_limit : '' }}
+          </span>
         </div>
-        <div class="stat-card success">
-          <div class="stat-icon-wrap"><i class="pi pi-gift"></i></div>
-          <div class="stat-body">
-            <span class="stat-label">Tickets distribués</span>
-            <span class="stat-value">{{ promo()!.current_uses * promo()!.tickets_reward }}</span>
-            <span class="stat-sub">au total</span>
-          </div>
+        <div class="metric-divider"></div>
+        <div class="metric">
+          <span class="metric-value">{{ promo()!.current_uses * promo()!.tickets_reward }}</span>
+          <span class="metric-label">Tickets distribués</span>
         </div>
-        <div class="stat-card warning">
-          <div class="stat-icon-wrap"><i class="pi pi-ticket"></i></div>
-          <div class="stat-body">
-            <span class="stat-label">Tickets par usage</span>
-            <span class="stat-value">{{ promo()!.tickets_reward }}</span>
-            <span class="stat-sub">par utilisation</span>
-          </div>
+        <div class="metric-divider"></div>
+        <div class="metric">
+          <span class="metric-value">{{ promo()!.tickets_reward }}</span>
+          <span class="metric-label">Par utilisation</span>
         </div>
         @if (promo()!.usage_limit) {
-          <div class="stat-card info">
-            <div class="stat-icon-wrap"><i class="pi pi-clock"></i></div>
-            <div class="stat-body">
-              <span class="stat-label">Utilisations restantes</span>
-              <span class="stat-value">{{ (promo()!.usage_limit || 0) - promo()!.current_uses }}</span>
-              <span class="stat-sub">disponibles</span>
-            </div>
+          <div class="metric-divider"></div>
+          <div class="metric">
+            <span class="metric-value">{{ (promo()!.usage_limit || 0) - promo()!.current_uses }}</span>
+            <span class="metric-label">Restantes</span>
           </div>
         }
       </div>
 
+      <!-- Progression (si limite définie) -->
+      @if (promo()!.usage_limit) {
+        <div class="progress-section">
+          <div class="progress-header">
+            <span class="progress-label">Progression d'utilisation</span>
+            <span class="progress-pct">{{ usagePercentage() }}%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" [style.width.%]="usagePercentage()"></div>
+          </div>
+          <div class="progress-footer">
+            <span>{{ promo()!.current_uses }} utilisées</span>
+            <span>{{ (promo()!.usage_limit || 0) - promo()!.current_uses }} restantes</span>
+          </div>
+        </div>
+      }
+
       <!-- Configuration -->
       <ui-card>
-        <div card-header class="card-header">
-          <h3 class="card-title">
-            <i class="pi pi-cog"></i>
-            Configuration
-          </h3>
-        </div>
-
-        <div class="config-grid">
-          <div class="config-item">
-            <div class="config-icon-wrapper">
-              <i class="pi pi-users config-icon"></i>
-            </div>
-            <div class="config-content">
-              <h4>Usage par utilisateur</h4>
-              @if (promo()!.is_single_use_per_user) {
-                <p>Usage unique</p>
-                <small class="config-description">Chaque utilisateur ne peut utiliser ce code qu'une seule fois</small>
-              } @else {
-                <p>Usage multiple</p>
-                <small class="config-description">Les utilisateurs peuvent utiliser ce code plusieurs fois</small>
-              }
-            </div>
+        <div class="section-label">Configuration</div>
+        <div class="config-rows">
+          <div class="config-row">
+            <span class="config-key">Par utilisateur</span>
+            <span class="config-val">{{ promo()!.is_single_use_per_user ? 'Usage unique' : 'Illimité' }}</span>
           </div>
-
-          <div class="config-item">
-            <div class="config-icon-wrapper">
-              <i class="pi pi-globe config-icon"></i>
-            </div>
-            <div class="config-content">
-              <h4>Usage global</h4>
-              @if (promo()!.is_single_use_global) {
-                <p>Usage unique</p>
-                <small class="config-description">Ce code ne peut être utilisé qu'une seule fois au total</small>
-              } @else {
-                <p>Usage multiple</p>
-                <small class="config-description">Ce code peut être utilisé plusieurs fois</small>
-              }
-            </div>
+          <div class="config-row">
+            <span class="config-key">Global</span>
+            <span class="config-val">{{ promo()!.is_single_use_global ? 'Usage unique' : 'Illimité' }}</span>
           </div>
-
-          <div class="config-item">
-            <div class="config-icon-wrapper">
-              <i class="pi pi-shield config-icon"></i>
-            </div>
-            <div class="config-content">
-              <h4>Limite d'utilisation</h4>
-              <p>{{ promo()!.usage_limit || 'Illimitée' }}</p>
-              <small class="config-description">{{ usageLimitDescription() }}</small>
-            </div>
+          <div class="config-row">
+            <span class="config-key">Limite globale</span>
+            <span class="config-val">{{ promo()!.usage_limit || 'Aucune' }}</span>
           </div>
-
-          <div class="config-item">
-            <div class="config-icon-wrapper">
-              <i class="pi pi-ticket config-icon"></i>
-            </div>
-            <div class="config-content">
-              <h4>Récompense</h4>
-              <p>{{ promo()!.tickets_reward }} tickets</p>
-              <small class="config-description">Nombre de tickets crédités à chaque utilisation</small>
-            </div>
+          <div class="config-row config-row--last">
+            <span class="config-key">Récompense</span>
+            <span class="config-val">{{ promo()!.tickets_reward }} tickets</span>
           </div>
         </div>
       </ui-card>
@@ -195,77 +161,23 @@
       <!-- Historique d'utilisation -->
       @if (usageHistory().length > 0) {
         <ui-card>
-          <div card-header class="card-header">
-            <h3 class="card-title">
-              <i class="pi pi-history"></i>
-              Historique d'utilisation
-            </h3>
-            <span class="history-count-badge">{{ usageHistory().length }} événements</span>
+          <div class="section-label">
+            Historique d'utilisation
+            <span class="section-count">{{ usageHistory().length }}</span>
           </div>
-
-          <p-timeline
-            [value]="usageEvents()"
-            align="alternate">
-            <ng-template pTemplate="marker" let-event>
-              <span class="timeline-marker" [style.backgroundColor]="event.color">
-                <i [class]="event.icon"></i>
-              </span>
-            </ng-template>
-            <ng-template pTemplate="content" let-event>
-              <div class="timeline-content">
-                <h4 class="timeline-title">{{ event.title }}</h4>
-                @if (event.subtitle) {
-                  <p class="timeline-subtitle">{{ event.subtitle }}</p>
-                }
-                <span class="timeline-date">
-                  <i class="pi pi-calendar"></i>
-                  {{ formatDate(event.date) }}
-                </span>
+          <div class="history-rows">
+            @for (use of usageHistory(); track use.id) {
+              <div class="history-row">
+                <span class="slot-dot slot-dot--active"></span>
+                <span class="history-date">{{ formatDate(use.used_at) }}</span>
+                <span class="history-tickets">{{ use.tickets_received }} tickets</span>
               </div>
-            </ng-template>
-          </p-timeline>
+            }
+          </div>
         </ui-card>
       }
 
-      <!-- Actions rapides -->
-      <ui-card>
-        <h4 class="action-title">Actions rapides</h4>
-        <div class="action-buttons">
-          <ui-button
-            icon="pi pi-copy"
-            label="Copier le code"
-            variant="secondary"
-            (clicked)="copyPromoCode()">
-          </ui-button>
-
-          <p-menu #shareMenu [model]="shareMenuItems" [popup]="true" appendTo="body"></p-menu>
-          <ui-button
-            icon="pi pi-share-alt"
-            label="Partager"
-            variant="ghost"
-            (clicked)="shareMenu.toggle($event)">
-          </ui-button>
-
-          @if (canActivate()) {
-            <ui-button
-              icon="pi pi-check-circle"
-              label="Activer"
-              variant="primary"
-              (clicked)="togglePromoActive()">
-            </ui-button>
-          }
-
-          @if (canDeactivate()) {
-            <ui-button
-              icon="pi pi-ban"
-              label="Désactiver"
-              variant="danger"
-              (clicked)="togglePromoActive()">
-            </ui-button>
-          }
-        </div>
-      </ui-card>
-
     </div>
   }
+
 </div>
