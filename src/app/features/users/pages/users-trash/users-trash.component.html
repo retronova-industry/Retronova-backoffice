@@ -1,0 +1,59 @@
+<div class="page-container">
+
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Corbeille — Utilisateurs</h1>
+      <p class="page-subtitle">Comptes utilisateurs soft-deleted. Restauration possible.</p>
+    </div>
+    <a routerLink="/users" class="back-link">
+      <i class="pi pi-arrow-left"></i> Retour à la liste
+    </a>
+  </div>
+
+  <div class="page-content">
+    @if (loading()) {
+      <div class="loading-state">Chargement...</div>
+    } @else if (users().length === 0) {
+      <div class="empty-state">
+        <i class="pi pi-trash empty-icon"></i>
+        <h3>Corbeille vide</h3>
+        <p>Aucun utilisateur supprimé.</p>
+      </div>
+    } @else {
+      <table class="trash-table">
+        <thead>
+          <tr>
+            <th>Pseudo</th>
+            <th>Nom complet</th>
+            <th>Email</th>
+            <th>Tickets restants</th>
+            <th>Supprimé le</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users(); track user.id) {
+            <tr>
+              <td><span class="user-pseudo">{{ user.pseudo }}</span></td>
+              <td>{{ user.prenom }} {{ user.nom }}</td>
+              <td><span class="user-email">{{ user.email }}</span></td>
+              <td><span class="user-tickets">{{ user.tickets_balance }}</span></td>
+              <td><span class="date-cell">{{ formatDate(user.deleted_at) }}</span></td>
+              <td>
+                <ui-button
+                  label="Restaurer"
+                  icon="pi pi-undo"
+                  variant="secondary"
+                  size="sm"
+                  (clicked)="confirmRestore(user)" />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+
+</div>
+
+<p-confirmDialog [blockScroll]="true" />

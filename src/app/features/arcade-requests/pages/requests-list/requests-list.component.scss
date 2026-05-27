@@ -1,0 +1,187 @@
+.page-container {
+  padding: var(--space-6);
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  background: var(--surface-page);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  margin-bottom: var(--space-6);
+  padding: var(--space-4) 0;
+
+  .page-title { margin: 0 0 var(--space-1) 0; font-size: var(--text-2xl); font-weight: var(--weight-bold); color: var(--text-primary); }
+  .page-subtitle { margin: 0; color: var(--text-secondary); font-size: var(--text-sm); }
+}
+
+.section {
+  margin-bottom: var(--space-8);
+}
+
+.section-title {
+  margin: 0 0 var(--space-4) 0;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.requests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: var(--space-4);
+}
+
+.request-card {
+  background: var(--white);
+  border: 1px solid var(--border-default);
+  border-left: 3px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+
+  &--pending { border-left-color: var(--yellow-50, #F1C21B); }
+  &--approved { border-left-color: var(--green-50, #24A148); opacity: 0.85; }
+  &--rejected { border-left-color: var(--red-50, #DA1E28); opacity: 0.7; }
+}
+
+.request-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.request-title {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+.request-loc {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+
+  i { color: var(--text-muted); }
+}
+
+.request-desc {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-body);
+}
+
+.request-coords {
+  margin: 0;
+
+  .mono {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+  }
+}
+
+.rejection-reason {
+  background: var(--red-10, #FFF1F1);
+  border: 1px solid var(--red-30, #FFB3B8);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--red-60, #DA1E28);
+
+  .rejection-label { font-weight: var(--weight-semibold); }
+}
+
+.request-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+
+  .request-meta {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+  }
+}
+
+.request-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.dialog-sub {
+  margin: 0 0 var(--space-4) 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.reject-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.field-label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text-body);
+}
+
+.field-input {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  background: var(--white);
+  color: var(--text-body);
+
+  &:focus { border-color: var(--blue-60); box-shadow: 0 0 0 2px var(--blue-20); outline: none; }
+}
+
+.field-textarea {
+  resize: vertical;
+  min-height: 72px;
+  font-family: inherit;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.loading-state {
+  padding: var(--space-16);
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.empty-state {
+  text-align: center;
+  padding: var(--space-16) var(--space-4);
+  background: var(--white);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+
+  .empty-icon { font-size: 3rem; color: var(--text-muted); margin-bottom: var(--space-6); display: block; }
+  h3 { margin: 0 0 var(--space-3) 0; color: var(--text-body); font-size: var(--text-xl); }
+  p { margin: 0; color: var(--text-secondary); }
+}

@@ -2,18 +2,23 @@
 
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DialogModule } from 'primeng/dialog';
+import { DropdownModule } from 'primeng/dropdown';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ArcadesService } from '../../../../core/services/arcades.service';
 import { GamesService } from '../../../../core/services/games.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { RoleService } from '../../../../core/services/role.service';
 import { Arcade, GameOnArcade } from '../../../../core/models/arcade.model';
 import { Game } from '../../../../core/models/game.model';
 import { LoaderComponent } from '../../../../shared/components/loader/loader.component';
 import { ButtonComponent, TagComponent, CardComponent } from '../../../../shared/ui';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
 
 interface EnrichedArcade extends Arcade {
   readonly games_count: number;
@@ -33,9 +38,12 @@ type MachineStatus = 'active' | 'inactive' | 'maintenance' | 'partial';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterModule,
     InputTextModule,
     ConfirmDialogModule,
+    DialogModule,
+    DropdownModule,
     TooltipModule,
     LoaderComponent,
     ButtonComponent,
@@ -172,6 +180,59 @@ type MachineStatus = 'active' | 'inactive' | 'maintenance' | 'partial';
     </div>
 
 
+    <p-dialog
+      [(visible)]="gamesDialogVisible"
+      [header]="'Jeux — ' + (gamesDialogMachine()?.nom ?? '')"
+      [modal]="true"
+      [draggable]="false"
+      [resizable]="false"
+      styleClass="games-dialog"
+      [style]="{ width: '420px' }">
+
+      @if (gamesDialogMachine(); as machine) {
+        <div class="games-dialog-body">
+          <div class="dialog-slot-row">
+            <span class="dialog-slot-label">Slot 1</span>
+            <p-dropdown
+              [options]="gameDropdownOptions()"
+              [ngModel]="dialogSlot1()"
+              (ngModelChange)="dialogSlot1.set($event)"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Libre"
+              [showClear]="dialogSlot1() !== 0"
+              styleClass="w-full">
+            </p-dropdown>
+          </div>
+          <div class="dialog-slot-row">
+            <span class="dialog-slot-label">Slot 2</span>
+            <p-dropdown
+              [options]="gameDropdownOptions()"
+              [ngModel]="dialogSlot2()"
+              (ngModelChange)="dialogSlot2.set($event)"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Libre"
+              [showClear]="dialogSlot2() !== 0"
+              styleClass="w-full">
+            </p-dropdown>
+          </div>
+          @if (dialogSlotConflict()) {
+            <p class="dialog-conflict">Un même jeu ne peut pas occuper les deux slots.</p>
+          }
+        </div>
+        <div class="games-dialog-footer">
+          <ui-button label="Annuler" variant="secondary" (clicked)="closeGamesDialog()" />
+          <ui-button
+            label="Enregistrer"
+            variant="primary"
+            [loading]="savingGames()"
+            [disabled]="dialogSlotConflict()"
+            (clicked)="saveGameSlots(machine)" />
+        </div>
+      }
+    </p-dialog>
+
     <p-confirmDialog
       header="Confirmation de suppression"
       icon="pi pi-exclamation-triangle"
@@ -186,11 +247,33 @@ export class MachinesListComponent implements OnInit {
   private readonly gamesService = inject(GamesService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
+  private readonly authService = inject(AuthService);
+  private readonly roleService = inject(RoleService);
 
   protected readonly loading = signal(false);
   protected readonly machines = signal<Arcade[]>([]);
   protected readonly games = signal<Game[]>([]);
   protected readonly searchQuery = signal('');
+
+  protected readonly gamesDialogVisible = signal(false);
+  protected readonly gamesDialogMachine = signal<EnrichedArcade | null>(null);
+  protected readonly savingGames = signal(false);
+  protected readonly dialogSlot1 = signal<number>(0);
+  protected readonly dialogSlot2 = signal<number>(0);
+
+  protected readonly gameDropdownOptions = computed(() => [
+    { label: 'Libre', value: 0 },
+    ...this.games().map(g => ({
+      label: `${g.nom} — ${g.min_players}-${g.max_players}p · ${g.ticket_cost} tickets`,
+      value: g.id
+    }))
+  ]);
+
+  protected readonly dialogSlotConflict = computed(() => {
+    const s1 = this.dialogSlot1();
+    const s2 = this.dialogSlot2();
+    return s1 !== 0 && s1 === s2;
+  });
 
   protected readonly enrichedMachines = computed(() =>
     this.machines().map(machine => this.enrichMachine(machine))
@@ -228,7 +311,12 @@ export class MachinesListComponent implements OnInit {
       games: this.gamesService.getAllGames()
     }).subscribe({
       next: ({ machines, games }) => {
-        this.machines.set(machines);
+        const isOwner = this.roleService.isArcadeOwner();
+        const ownedIds = this.authService.getCurrentUser()?.arcade_ids ?? [];
+        const visible = isOwner
+          ? machines.filter(m => ownedIds.includes(m.id))
+          : machines;
+        this.machines.set(visible);
         this.games.set(games);
         this.loading.set(false);
       },
@@ -304,16 +392,57 @@ export class MachinesListComponent implements OnInit {
     this.searchQuery.set(target.value);
   }
 
-  /**
-   * Configure les jeux d'une machine
-   */
   protected configureGames(machine: EnrichedArcade): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Configuration',
-      detail: `Configuration des jeux pour la borne ${machine.nom}`
+    this.gamesDialogMachine.set(machine);
+    this.dialogSlot1.set(machine.games?.find(g => g.slot_number === 1)?.id ?? 0);
+    this.dialogSlot2.set(machine.games?.find(g => g.slot_number === 2)?.id ?? 0);
+    this.gamesDialogVisible.set(true);
+  }
+
+  protected closeGamesDialog(): void {
+    this.gamesDialogVisible.set(false);
+    this.gamesDialogMachine.set(null);
+  }
+
+  protected saveGameSlots(machine: EnrichedArcade): void {
+    if (this.dialogSlotConflict()) return;
+    this.savingGames.set(true);
+
+    const slotValues = [this.dialogSlot1(), this.dialogSlot2()];
+    const ops = [1, 2].map(slot => {
+      const newGameId = slotValues[slot - 1];
+      const currentGameId = machine.games?.find(g => g.slot_number === slot)?.id ?? 0;
+
+      if (newGameId === currentGameId) return of(null);
+
+      if (newGameId === 0) {
+        return this.arcadesService.removeGameFromSlot(machine.id, slot);
+      }
+      return this.arcadesService.assignGameToArcade({
+        arcade_id: machine.id,
+        game_id: newGameId,
+        slot_number: slot
+      });
     });
-    // TODO: Ouvrir un dialog de configuration avancé
+
+    forkJoin(ops).subscribe({
+      next: () => {
+        this.savingGames.set(false);
+        this.closeGamesDialog();
+        this.arcadesService.clearCache();
+        this.gamesService.clearCache();
+        this.loadInitialData();
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Jeux mis à jour',
+          detail: `Configuration de "${machine.nom}" sauvegardée`
+        });
+      },
+      error: (err) => {
+        this.savingGames.set(false);
+        this.handleError('configuration des jeux', err);
+      }
+    });
   }
 
   /**

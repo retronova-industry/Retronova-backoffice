@@ -11,7 +11,7 @@
 
   <!-- Zone 2 : Navigation groupée -->
   <nav class="sidebar-nav">
-    @for (group of navGroups; track group.label) {
+    @for (group of navGroups(); track group.label) {
       <div class="nav-group">
         <span class="nav-group-label">{{ group.label }}</span>
         <ul class="nav-list">
@@ -20,6 +20,9 @@
               <a [routerLink]="item.routerLink">
                 <i [class]="item.icon" class="nav-icon"></i>
                 <span class="nav-label">{{ item.label }}</span>
+                @if (item.routerLink === '/arcade-requests' && pendingRequestsCount() > 0) {
+                  <span class="nav-badge">{{ pendingRequestsCount() }}</span>
+                }
               </a>
             </li>
           }

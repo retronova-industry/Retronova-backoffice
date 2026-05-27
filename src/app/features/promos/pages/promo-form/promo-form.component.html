@@ -57,6 +57,27 @@
             </div>
 
             <div class="form-group">
+              <label for="arcade_id" class="required">Borne associée</label>
+              <select
+                id="arcade_id"
+                formControlName="arcade_id"
+                class="form-input"
+                [class.is-invalid]="isFieldInvalid('arcade_id')"
+                [attr.disabled]="mode() === 'edit' ? true : null">
+                <option [ngValue]="null" disabled>Sélectionner une borne...</option>
+                @for (arcade of availableArcades(); track arcade.id) {
+                  <option [ngValue]="arcade.id">{{ arcade.nom }}</option>
+                }
+              </select>
+              @if (isFieldInvalid('arcade_id')) {
+                <small class="field-error">Sélectionnez la borne sur laquelle ce code s'applique</small>
+              }
+              @if (availableArcades().length === 0) {
+                <small class="field-hint">Aucune borne assignée à votre compte.</small>
+              }
+            </div>
+
+            <div class="form-group">
               <label for="tickets_reward" class="required">Tickets offerts par utilisation</label>
               <p-inputNumber
                 id="tickets_reward"

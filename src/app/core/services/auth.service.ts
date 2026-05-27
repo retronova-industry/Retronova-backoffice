@@ -1,11 +1,9 @@
-// src/app/core/auth/auth.service.ts
-
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, from, of, BehaviorSubject, switchMap, catchError, tap } from 'rxjs';
-import { User, UserCreate } from '../models/user.model';
+import { AdminMe } from '../models/admin.model';
 import { environment } from '../../../environments/environment.development';
 
 @Injectable({
@@ -15,14 +13,13 @@ export class AuthService {
   private readonly firebaseAuth = inject(AngularFireAuth);
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
-  
-  private readonly baseUrl = `${environment.apiUrl}/auth`;
-  
-  // Signals pour l'état d'authentification
-  private readonly currentUserSubject = new BehaviorSubject<User | null>(null);
-  readonly currentUser$ = this.currentUserSubject.asObservable();
-  
-  readonly currentUser = signal<User | null>(null);
+
+  private readonly adminMeUrl = `${environment.apiUrl}/admin/me`;
+
+  private readonly currentAdminSubject = new BehaviorSubject<AdminMe | null>(null);
+  readonly currentUser$ = this.currentAdminSubject.asObservable();
+
+  readonly currentUser = signal<AdminMe | null>(null);
   readonly isAuthenticated = computed(() => !!this.currentUser());
   readonly isLoading = signal(false);
 
@@ -30,60 +27,35 @@ export class AuthService {
     this.initializeAuth();
   }
 
-  /**
-   * Initialise l'authentification au démarrage
-   */
   private initializeAuth(): void {
     this.firebaseAuth.authState.pipe(
       switchMap(firebaseUser => {
         if (firebaseUser) {
-          // Récupérer les infos utilisateur depuis notre API
-          return this.http.get<User>(`${this.baseUrl}/me`).pipe(
+          return this.http.get<AdminMe>(this.adminMeUrl).pipe(
             catchError(() => of(null))
           );
         }
         return of(null);
       })
-    ).subscribe(user => {
-      this.setCurrentUser(user);
+    ).subscribe(admin => {
+      this.setCurrentUser(admin);
     });
   }
 
-  /**
-   * Connexion avec email/password Firebase
-   */
-  login(email: string, password: string): Observable<User | null> {
+  login(email: string, password: string): Observable<AdminMe | null> {
     this.isLoading.set(true);
-    
+
     return from(this.firebaseAuth.signInWithEmailAndPassword(email, password)).pipe(
       switchMap(credential => {
         if (!credential.user) {
           throw new Error('Échec de la connexion');
         }
-        
-        // Récupérer les infos utilisateur depuis notre API
-        return this.http.get<User>(`${this.baseUrl}/me`);
+        return this.http.get<AdminMe>(this.adminMeUrl).pipe(
+          catchError(() => of(null))
+        );
       }),
-      tap(user => {
-        this.setCurrentUser(user);
-        this.isLoading.set(false);
-      }),
-      catchError(error => {
-        this.isLoading.set(false);
-        throw error;
-      })
-    );
-  }
-
-  /**
-   * Inscription d'un nouvel utilisateur
-   */
-  register(userData: UserCreate): Observable<User> {
-    this.isLoading.set(true);
-    
-    return this.http.post<User>(`${this.baseUrl}/register`, userData).pipe(
-      tap(user => {
-        this.setCurrentUser(user);
+      tap(admin => {
+        this.setCurrentUser(admin);
         this.isLoading.set(false);
       }),
       catchError(error => {
@@ -93,9 +65,6 @@ export class AuthService {
     );
   }
 
-  /**
-   * Déconnexion
-   */
   logout(): Observable<void> {
     return from(this.firebaseAuth.signOut()).pipe(
       tap(() => {
@@ -105,43 +74,28 @@ export class AuthService {
     );
   }
 
-  /**
-   * Récupère le token Firebase pour les requêtes API
-   */
   getFirebaseToken(): Observable<string | null> {
     return this.firebaseAuth.idToken;
   }
 
-  /**
-   * Vérifie si l'utilisateur est authentifié
-   */
   isAuthenticated$(): Observable<boolean> {
     return this.firebaseAuth.authState.pipe(
       switchMap(user => of(!!user))
     );
   }
 
-  /**
-   * Récupère l'utilisateur actuel
-   */
-  getCurrentUser(): User | null {
+  getCurrentUser(): AdminMe | null {
     return this.currentUser();
   }
 
-  /**
-   * Met à jour l'utilisateur actuel
-   */
-  private setCurrentUser(user: User | null): void {
-    this.currentUser.set(user);
-    this.currentUserSubject.next(user);
+  private setCurrentUser(admin: AdminMe | null): void {
+    this.currentUser.set(admin);
+    this.currentAdminSubject.next(admin);
   }
 
-  /**
-   * Récupère les informations de l'utilisateur connecté
-   */
-  getMe(): Observable<User> {
-    return this.http.get<User>(`${this.baseUrl}/me`).pipe(
-      tap(user => this.setCurrentUser(user))
+  getMe(): Observable<AdminMe> {
+    return this.http.get<AdminMe>(this.adminMeUrl).pipe(
+      tap(admin => this.setCurrentUser(admin))
     );
   }
 }

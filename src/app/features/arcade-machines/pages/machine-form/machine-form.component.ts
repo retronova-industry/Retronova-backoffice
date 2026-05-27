@@ -11,6 +11,8 @@ import { ButtonComponent, CardComponent } from '../../../../shared/ui';
 import { forkJoin } from 'rxjs';
 import { ArcadesService } from '../../../../core/services/arcades.service';
 import { GamesService } from '../../../../core/services/games.service';
+import { ArcadeRequestsService } from '../../../../core/services/arcade-requests.service';
+import { RoleService } from '../../../../core/services/role.service';
 import { Arcade, ArcadeCreate, ArcadeUpdate, ArcadeGameAssignment } from '../../../../core/models/arcade.model';
 import { Game } from '../../../../core/models/game.model';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -209,6 +211,7 @@ class GameOptionsFactory {
                 </div>
               </div>
 
+              @if (!isArcadeOwner() || isEditMode()) {
               <div class="section-sep"></div>
 
               <!-- Configuration des jeux -->
@@ -272,6 +275,16 @@ class GameOptionsFactory {
                   }
                 </div>
               </div>
+              }
+
+              @if (isArcadeOwner() && !isEditMode()) {
+                <div class="section-sep"></div>
+                <div class="form-section">
+                  <p class="section-title" style="color: var(--text-muted); font-style: italic;">
+                    Les jeux seront configurés par le super-admin une fois la borne créée. Vous pourrez les modifier ensuite.
+                  </p>
+                </div>
+              }
 
             </ui-card>
 
@@ -304,7 +317,7 @@ class GameOptionsFactory {
               }
               <ui-button
                 type="submit"
-                [label]="isEditMode() ? 'Mettre à jour' : 'Créer la borne'"
+                [label]="isEditMode() ? 'Mettre à jour' : (isArcadeOwner() ? 'Soumettre la demande' : 'Créer la borne')"
                 variant="primary"
                 [loading]="submitting()"
                 [disabled]="!canSubmit()">
@@ -323,10 +336,14 @@ export class MachineFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly arcadesService = inject(ArcadesService);
   private readonly gamesService = inject(GamesService);
+  private readonly arcadeRequestsService = inject(ArcadeRequestsService);
+  private readonly roleService = inject(RoleService);
   private readonly route = inject(ActivatedRoute);
   protected readonly router = inject(Router);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
+
+  protected readonly isArcadeOwner = computed(() => this.roleService.isArcadeOwner());
   private readonly validationStrategy = new MachineFormValidationStrategy();
 
   readonly loading = signal(false);
@@ -340,13 +357,17 @@ export class MachineFormComponent implements OnInit {
   readonly canSubmit!: Signal<boolean>;
 
   readonly isEditMode = computed(() => !!this.machineId());
-  readonly pageTitle = computed(() =>
-    this.isEditMode() ? 'Modifier la borne' : 'Nouvelle borne d\'arcade'
-  );
+  readonly pageTitle = computed(() => {
+    if (this.isEditMode()) return 'Modifier la borne';
+    return this.isArcadeOwner() ? 'Demande de création de borne' : 'Nouvelle borne d\'arcade';
+  });
 
-  readonly pageSubtitle = computed(() =>
-    this.isEditMode() ? 'Modifiez les informations et la configuration' : 'Créez une nouvelle borne d\'arcade'
-  );
+  readonly pageSubtitle = computed(() => {
+    if (this.isEditMode()) return 'Modifiez les informations et la configuration';
+    return this.isArcadeOwner()
+      ? 'Soumettez une demande au super-admin pour valider la création.'
+      : 'Créez une nouvelle borne d\'arcade';
+  });
   
   readonly gameOptions = computed(() =>
     GameOptionsFactory.createOptions(this.games())
@@ -620,6 +641,23 @@ export class MachineFormComponent implements OnInit {
 
   private createMachine(): void {
     const arcadeData = this.prepareArcadeData();
+
+    if (this.isArcadeOwner()) {
+      this.arcadeRequestsService.submit(arcadeData).subscribe({
+        next: () => {
+          this.submitting.set(false);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Demande envoyée',
+            detail: "Votre demande de création de borne a été transmise au super-admin pour validation.",
+            life: 5000,
+          });
+          this.router.navigate(['/arcade-requests']);
+        },
+        error: (error) => this.handleSubmitError(error)
+      });
+      return;
+    }
 
     this.arcadesService.createArcade(arcadeData).subscribe({
       next: (response) => {

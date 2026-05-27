@@ -145,6 +145,22 @@
       text-overflow: ellipsis;
     }
 
+    .nav-badge {
+      flex-shrink: 0;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 6px;
+      border-radius: 9px;
+      background: var(--red-50, #DA1E28);
+      color: var(--white);
+      font-size: 11px;
+      font-weight: var(--weight-semibold);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
     &.active a {
       background-color: var(--blue-10);
       color: var(--blue-70);

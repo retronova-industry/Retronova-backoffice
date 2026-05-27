@@ -1,0 +1,128 @@
+<div class="page-container">
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Équipe</h1>
+      <p class="page-subtitle">Liste des super administrateurs et invitations.</p>
+    </div>
+    <ui-button
+      label="Inviter un super admin"
+      icon="pi pi-send"
+      variant="primary"
+      (clicked)="toggleInviteForm()" />
+  </div>
+
+  <!-- FORMULAIRE INVITATION -->
+  @if (showInviteForm()) {
+    <div class="invite-panel">
+      <div class="invite-panel-header">
+        <h2 class="invite-panel-title">Nouvelle invitation</h2>
+        <p class="invite-panel-sub">Un email d'activation sera envoyé automatiquement au prospect.</p>
+      </div>
+
+      <form [formGroup]="inviteForm" (ngSubmit)="submitInvite()" class="invite-form">
+
+        <div class="form-row">
+          <div class="form-field">
+            <label class="field-label" for="invite-email">Adresse email</label>
+            <input
+              id="invite-email"
+              type="email"
+              class="field-input"
+              formControlName="email"
+              placeholder="prospect@example.com"
+              [class.field-input--error]="inviteForm.get('email')?.invalid && inviteForm.get('email')?.touched" />
+            @if (inviteForm.get('email')?.invalid && inviteForm.get('email')?.touched) {
+              <span class="field-error">Email invalide</span>
+            }
+          </div>
+        </div>
+
+        @if (inviteSuccess()) {
+          <div class="feedback feedback--success">
+            <i class="pi pi-check-circle"></i>
+            {{ inviteSuccess() }}
+          </div>
+        }
+
+        @if (inviteError()) {
+          <div class="feedback feedback--error">
+            <i class="pi pi-exclamation-circle"></i>
+            {{ inviteError() }}
+          </div>
+        }
+
+        <div class="form-actions">
+          <ui-button
+            label="Annuler"
+            variant="ghost"
+            type="button"
+            (clicked)="toggleInviteForm()" />
+          <ui-button
+            label="Envoyer l'invitation"
+            icon="pi pi-send"
+            variant="primary"
+            type="submit"
+            [disabled]="inviteForm.invalid || inviting()"
+            [loading]="inviting()" />
+        </div>
+
+      </form>
+    </div>
+  }
+
+  <!-- LISTE -->
+  <div class="page-content">
+    @if (loading()) {
+      <div class="loading-state">Chargement...</div>
+    } @else if (admins().length === 0) {
+      <div class="empty-state">
+        <i class="pi pi-shield empty-icon"></i>
+        <h3>Aucun super administrateur</h3>
+        <p>Invitez un membre pour étoffer l'équipe.</p>
+      </div>
+    } @else {
+      <table class="admins-table">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Rôle</th>
+            <th>Créé le</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (admin of admins(); track admin.id) {
+            <tr>
+              <td>
+                <div class="email-cell">
+                  <div class="admin-avatar">{{ admin.email[0].toUpperCase() }}</div>
+                  <span>{{ admin.email }}</span>
+                </div>
+              </td>
+              <td>
+                <ui-tag label="Super Admin" variant="warning" />
+              </td>
+              <td>
+                <span class="date-cell">{{ formatDate(admin.created_at) }}</span>
+              </td>
+              <td>
+                <ui-button
+                  icon="pi pi-trash"
+                  variant="ghost"
+                  size="sm"
+                  [rounded]="true"
+                  tooltip="Supprimer"
+                  (clicked)="confirmDelete(admin)" />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+
+</div>
+
+<p-confirmDialog [blockScroll]="true" />
