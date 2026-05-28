@@ -2,6 +2,7 @@ export interface PromoCode {
   id: number;
   code: string;
   tickets_reward: number;
+  arcade_id?: number | null;
   is_single_use_global: boolean;
   is_single_use_per_user: boolean;
   usage_limit?: number;
@@ -31,6 +32,7 @@ export interface PromoHistory {
 export interface CreatePromoCodeRequest {
   code: string;
   tickets_reward: number;
+  arcade_id: number;
   is_single_use_global?: boolean;
   is_single_use_per_user?: boolean;
   usage_limit?: number;

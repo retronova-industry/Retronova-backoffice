@@ -21,3 +21,6 @@ export * from './promo.model';
 
 // Ticket models
 export * from './ticket.model';
+
+// Admin models
+export * from './admin.model';

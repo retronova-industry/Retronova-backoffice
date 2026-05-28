@@ -64,6 +64,13 @@ export class ArcadesService {
   }
 
   /**
+   * Retire le jeu d'un slot (admin)
+   */
+  removeGameFromSlot(arcadeId: number, slotNumber: number): Observable<void> {
+    return this.apiService.delete<void>(`/admin/arcades/${arcadeId}/games/${slotNumber}`);
+  }
+
+  /**
    * Met à jour une borne (admin)
    */
   updateArcade(id: number, arcadeData: ArcadeUpdate): Observable<Arcade> {

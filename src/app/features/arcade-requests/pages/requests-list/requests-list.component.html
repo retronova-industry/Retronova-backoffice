@@ -1,0 +1,134 @@
+<div class="page-container">
+
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">{{ isSuperAdmin() ? 'Demandes de création' : 'Mes demandes' }}</h1>
+      <p class="page-subtitle">
+        {{ isSuperAdmin()
+          ? 'Demandes de création de bornes soumises par les propriétaires.'
+          : 'Statut de vos demandes de création de bornes.' }}
+      </p>
+    </div>
+    @if (!isSuperAdmin()) {
+      <ui-button
+        label="Nouvelle demande"
+        icon="pi pi-plus"
+        variant="primary"
+        (clicked)="goToNewRequest()" />
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">Chargement...</div>
+  } @else if (requests().length === 0) {
+    <div class="empty-state">
+      <i class="pi pi-inbox empty-icon"></i>
+      <h3>Aucune demande</h3>
+      <p>{{ isSuperAdmin()
+        ? "Aucune demande de création de borne n'est en attente."
+        : "Vous n'avez encore soumis aucune demande." }}</p>
+    </div>
+  } @else {
+
+    @if (pending().length > 0) {
+      <section class="section">
+        <h2 class="section-title">En attente ({{ pending().length }})</h2>
+        <div class="requests-grid">
+          @for (req of pending(); track req.id) {
+            <div class="request-card request-card--pending">
+              <div class="request-header">
+                <h3 class="request-title">{{ req.nom }}</h3>
+                <ui-tag [label]="statusLabel(req.status)" [variant]="statusVariant(req.status)" />
+              </div>
+              <p class="request-loc"><i class="pi pi-map-marker"></i> {{ req.localisation }}</p>
+              @if (req.description) { <p class="request-desc">{{ req.description }}</p> }
+              <p class="request-coords">
+                <span class="mono">{{ req.latitude }}, {{ req.longitude }}</span>
+              </p>
+              <div class="request-footer">
+                <span class="request-meta">
+                  @if (isSuperAdmin()) {
+                    <strong>{{ req.requester?.email }}</strong> ·
+                  }
+                  Soumise le {{ formatDate(req.created_at) }}
+                </span>
+                @if (isSuperAdmin()) {
+                  <div class="request-actions">
+                    <ui-button label="Rejeter" icon="pi pi-times" variant="ghost-danger" size="sm" (clicked)="openReject(req)" />
+                    <ui-button label="Approuver" icon="pi pi-check" variant="primary" size="sm" (clicked)="approve(req)" />
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    @if (archived().length > 0) {
+      <section class="section">
+        <h2 class="section-title">Historique</h2>
+        <div class="requests-grid">
+          @for (req of archived(); track req.id) {
+            <div class="request-card" [class.request-card--approved]="req.status === 'approved'" [class.request-card--rejected]="req.status === 'rejected'">
+              <div class="request-header">
+                <h3 class="request-title">{{ req.nom }}</h3>
+                <ui-tag [label]="statusLabel(req.status)" [variant]="statusVariant(req.status)" />
+              </div>
+              <p class="request-loc"><i class="pi pi-map-marker"></i> {{ req.localisation }}</p>
+              @if (req.rejection_reason) {
+                <div class="rejection-reason">
+                  <span class="rejection-label">Motif de rejet :</span> {{ req.rejection_reason }}
+                </div>
+              }
+              <div class="request-footer">
+                <span class="request-meta">
+                  @if (isSuperAdmin()) {
+                    <strong>{{ req.requester?.email }}</strong> ·
+                  }
+                  {{ req.status === 'approved' ? 'Approuvée' : 'Rejetée' }} le {{ formatDate(req.reviewed_at) }}
+                  @if (req.reviewer) { · par {{ req.reviewer.email }} }
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+  }
+
+</div>
+
+<p-dialog
+  header="Rejeter la demande"
+  [visible]="rejectDialogOpen()"
+  (visibleChange)="$event ? null : closeReject()"
+  [modal]="true"
+  [style]="{ width: '460px' }"
+  [draggable]="false"
+  [resizable]="false">
+
+  @if (rejectTarget(); as target) {
+    <p class="dialog-sub">Demande de <strong>{{ target.requester?.email }}</strong> pour la borne <strong>{{ target.nom }}</strong>.</p>
+
+    <form [formGroup]="rejectForm" (ngSubmit)="submitReject()" class="reject-form">
+      <div class="form-field">
+        <label class="field-label" for="reject-reason">Motif (optionnel)</label>
+        <textarea
+          id="reject-reason"
+          class="field-input field-textarea"
+          formControlName="reason"
+          rows="3"
+          placeholder="Expliquez pourquoi cette demande est rejetée..."></textarea>
+      </div>
+
+      <div class="form-actions">
+        <ui-button label="Annuler" variant="ghost" type="button" (clicked)="closeReject()" />
+        <ui-button label="Rejeter la demande" variant="danger" type="submit" [loading]="rejecting()" />
+      </div>
+    </form>
+  }
+</p-dialog>
+
+<p-confirmDialog [blockScroll]="true" />

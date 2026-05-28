@@ -9,6 +9,9 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { MessageService } from 'primeng/api';
 import { PromosService } from '../../../../core/services/promos.service';
 import { PromoCode, CreatePromoCodeRequest } from '../../../../core/models/promo.model';
+import { AuthService } from '../../../../core/services/auth.service';
+import { ArcadesService } from '../../../../core/services/arcades.service';
+import { Arcade } from '../../../../core/models/arcade.model';
 import { ButtonComponent, TagComponent, CardComponent } from '../../../../shared/ui';
 
 type FormMode = 'create' | 'edit';
@@ -54,7 +57,9 @@ export class PromoFormComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly promosService = inject(PromosService);
   private readonly messageService = inject(MessageService);
-  
+  private readonly authService = inject(AuthService);
+  private readonly arcadesService = inject(ArcadesService);
+
   // Signaux
   protected readonly loading = signal(false);
   protected readonly submitting = signal(false);
@@ -63,6 +68,7 @@ export class PromoFormComponent implements OnInit {
   protected readonly currentPromo = signal<PromoCode | null>(null);
   protected readonly codePreview = signal('');
   protected readonly errorMessages = signal<{ severity: string; detail: string }[]>([]);
+  protected readonly availableArcades = signal<{ id: number; nom: string }[]>([]);
   
   // Computed values
   protected readonly pageTitle = computed(() => 
@@ -115,6 +121,7 @@ export class PromoFormComponent implements OnInit {
     this.promoForm = this.fb.group({
       code: ['', [Validators.required, Validators.minLength(3), PromoCodeValidators.promoCodePattern]],
       tickets_reward: [10, [Validators.required, PromoCodeValidators.minTickets]],
+      arcade_id: [null as number | null, Validators.required],
       is_single_use_global: [false],
       is_single_use_per_user: [true],
       usage_limit: [null]
@@ -139,13 +146,40 @@ export class PromoFormComponent implements OnInit {
   }
   
   ngOnInit(): void {
-    // Vérifier si on est en mode édition
+    this.loadAvailableArcades();
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.mode.set('edit');
       this.promoId.set(+id);
       this.loadPromo(+id);
     }
+  }
+
+  private loadAvailableArcades(): void {
+    const me = this.authService.getCurrentUser();
+    if (!me) return;
+    if (me.role === 'super_admin') {
+      this.arcadesService.getAllArcades().subscribe((all: Arcade[]) => {
+        const list = all.map(a => ({ id: a.id, nom: a.nom }));
+        this.availableArcades.set(list);
+        if (list.length === 1) {
+          this.promoForm.patchValue({ arcade_id: list[0].id });
+        }
+      });
+      return;
+    }
+    if (!me.arcade_ids || me.arcade_ids.length === 0) {
+      this.availableArcades.set([]);
+      return;
+    }
+    this.arcadesService.getAllArcades().subscribe((all: Arcade[]) => {
+      const owned = all.filter(a => me.arcade_ids.includes(a.id));
+      const list = owned.map(a => ({ id: a.id, nom: a.nom }));
+      this.availableArcades.set(list);
+      if (list.length === 1) {
+        this.promoForm.patchValue({ arcade_id: list[0].id });
+      }
+    });
   }
   
   /**
@@ -160,6 +194,7 @@ export class PromoFormComponent implements OnInit {
         this.promoForm.patchValue({
           code: promo.code,
           tickets_reward: promo.tickets_reward,
+          arcade_id: promo.arcade_id ?? null,
           is_single_use_global: promo.is_single_use_global,
           is_single_use_per_user: promo.is_single_use_per_user,
           usage_limit: promo.usage_limit

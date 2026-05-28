@@ -79,9 +79,9 @@ export class HeaderComponent implements OnInit {
   readonly isLoggingOut = signal(false);
 
   ngOnInit(): void {
-    const user = this.authService.getCurrentUser();
-    if (user) {
-      this.userName.set(user.nom || user.prenom)
+    const admin = this.authService.getCurrentUser();
+    if (admin) {
+      this.userName.set(admin.email);
     }
   }
 

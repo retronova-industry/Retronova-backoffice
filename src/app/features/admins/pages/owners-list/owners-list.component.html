@@ -1,0 +1,197 @@
+<div class="page-container">
+
+  <div class="page-header">
+    <div class="page-title-section">
+      <h1 class="page-title">Propriétaires</h1>
+      <p class="page-subtitle">Propriétaires de bornes et bornes qui leur sont assignées.</p>
+    </div>
+    <ui-button
+      label="Inviter un propriétaire"
+      icon="pi pi-send"
+      variant="primary"
+      (clicked)="toggleInviteForm()" />
+  </div>
+
+  @if (showInviteForm()) {
+    <div class="invite-panel">
+      <div class="invite-panel-header">
+        <h2 class="invite-panel-title">Nouvelle invitation</h2>
+        <p class="invite-panel-sub">L'assignation d'une borne est optionnelle — elle peut se faire après depuis cette page.</p>
+      </div>
+
+      <form [formGroup]="inviteForm" (ngSubmit)="submitInvite()" class="invite-form">
+
+        <div class="form-row">
+          <div class="form-field">
+            <label class="field-label" for="invite-email">Adresse email</label>
+            <input
+              id="invite-email"
+              type="email"
+              class="field-input"
+              formControlName="email"
+              placeholder="prospect@example.com"
+              [class.field-input--error]="inviteForm.get('email')?.invalid && inviteForm.get('email')?.touched" />
+            @if (inviteForm.get('email')?.invalid && inviteForm.get('email')?.touched) {
+              <span class="field-error">Email invalide</span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label class="field-label" for="invite-arcade">Borne (optionnel)</label>
+            <select
+              id="invite-arcade"
+              class="field-input field-select"
+              formControlName="arcade_id">
+              <option [ngValue]="null">— Aucune (à assigner plus tard) —</option>
+              @for (arcade of unassigned(); track arcade.id) {
+                <option [ngValue]="arcade.id">{{ arcade.nom }} — {{ arcade.localisation }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        @if (inviteSuccess()) {
+          <div class="feedback feedback--success">
+            <i class="pi pi-check-circle"></i>
+            {{ inviteSuccess() }}
+          </div>
+        }
+
+        @if (inviteError()) {
+          <div class="feedback feedback--error">
+            <i class="pi pi-exclamation-circle"></i>
+            {{ inviteError() }}
+          </div>
+        }
+
+        <div class="form-actions">
+          <ui-button label="Annuler" variant="ghost" type="button" (clicked)="toggleInviteForm()" />
+          <ui-button
+            label="Envoyer l'invitation"
+            icon="pi pi-send"
+            variant="primary"
+            type="submit"
+            [disabled]="inviteForm.invalid || inviting()"
+            [loading]="inviting()" />
+        </div>
+
+      </form>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading-state">Chargement...</div>
+  } @else if (owners().length === 0) {
+    <div class="empty-state">
+      <i class="pi pi-users empty-icon"></i>
+      <h3>Aucun propriétaire</h3>
+      <p>Invitez un premier propriétaire pour commencer.</p>
+    </div>
+  } @else {
+    <div class="owners-grid">
+      @for (owner of owners(); track owner.id) {
+        <div class="owner-card">
+          <div class="owner-card-header">
+            <div class="owner-identity">
+              <div class="owner-avatar">{{ owner.email[0].toUpperCase() }}</div>
+              <div class="owner-meta">
+                <span class="owner-email">{{ owner.email }}</span>
+                <span class="owner-since">Créé le {{ formatDate(owner.created_at) }}</span>
+              </div>
+            </div>
+            <ui-button
+              icon="pi pi-trash"
+              variant="ghost"
+              size="sm"
+              [rounded]="true"
+              tooltip="Supprimer ce propriétaire"
+              (clicked)="confirmDeleteOwner(owner)" />
+          </div>
+
+          <div class="owner-arcades">
+            @if (owner.arcades.length === 0) {
+              <div class="no-arcades">Aucune borne assignée.</div>
+            } @else {
+              @for (arcade of owner.arcades; track arcade.id) {
+                <div class="arcade-row">
+                  <div class="arcade-info">
+                    <i class="pi pi-desktop"></i>
+                    <div class="arcade-text">
+                      <span class="arcade-name">{{ arcade.nom }}</span>
+                      <span class="arcade-loc">{{ arcade.localisation }}</span>
+                    </div>
+                  </div>
+                  <ui-button
+                    label="Désassigner"
+                    icon="pi pi-times"
+                    variant="ghost"
+                    size="sm"
+                    (clicked)="confirmUnassign(owner, arcade.id, arcade.nom)" />
+                </div>
+              }
+            }
+          </div>
+
+          <div class="owner-card-footer">
+            <ui-button
+              label="Assigner une borne"
+              icon="pi pi-plus"
+              variant="secondary"
+              size="sm"
+              [disabled]="unassigned().length === 0"
+              (clicked)="openAssignDialog(owner)" />
+            @if (unassigned().length === 0) {
+              <span class="footer-hint">Aucune borne disponible.</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+<p-dialog
+  header="Assigner une borne"
+  [visible]="assignDialogOpen()"
+  (visibleChange)="$event ? null : closeAssignDialog()"
+  [modal]="true"
+  [style]="{ width: '420px' }"
+  [draggable]="false"
+  [resizable]="false">
+
+  @if (assignTargetOwner(); as owner) {
+    <p class="dialog-sub">Pour <strong>{{ owner.email }}</strong></p>
+
+    <form [formGroup]="assignForm" (ngSubmit)="submitAssign()" class="assign-form">
+      <div class="form-field">
+        <label class="field-label" for="assign-arcade">Borne à assigner</label>
+        <select id="assign-arcade" class="field-input field-select" formControlName="arcade_id">
+          <option [ngValue]="null" disabled>Sélectionner une borne...</option>
+          @for (arcade of unassigned(); track arcade.id) {
+            <option [ngValue]="arcade.id">{{ arcade.nom }} — {{ arcade.localisation }}</option>
+          }
+        </select>
+      </div>
+
+      @if (assignError()) {
+        <div class="feedback feedback--error">
+          <i class="pi pi-exclamation-circle"></i>
+          {{ assignError() }}
+        </div>
+      }
+
+      <div class="form-actions">
+        <ui-button label="Annuler" variant="ghost" type="button" (clicked)="closeAssignDialog()" />
+        <ui-button
+          label="Assigner"
+          variant="primary"
+          type="submit"
+          [disabled]="assignForm.invalid || assigning()"
+          [loading]="assigning()" />
+      </div>
+    </form>
+  }
+</p-dialog>
+
+<p-confirmDialog [blockScroll]="true" />
