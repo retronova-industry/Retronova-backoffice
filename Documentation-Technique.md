@@ -142,7 +142,8 @@ src/
     │   ├── parties/            # Gestion des parties
     │   ├── reservations/       # Gestion des réservations
     │   ├── promos/             # Gestion des codes promotionnels
-    │   └── statistics/         # Statistiques et analytics
+    │   ├── statistics/         # Statistiques et analytics
+    │   └── admins/             # Administration (super_admin uniquement)
     └── shared/                 # Code partagé entre features
         ├── shared.module.ts    # NgModule legacy (imports PrimeNG, CommonModule…)
         ├── components/         # Composants communs (sidebar, header, loader…)
@@ -295,10 +296,16 @@ graph LR
     PROMOS["/promos"]:::guarded --> PROMO_LAYOUT[LayoutComponent]
     RESERVATIONS["/reservations"]:::guarded --> RESA_LAYOUT[LayoutComponent]
 
+    TEAM["/team"]:::superadmin --> TEAM_LAYOUT[LayoutComponent]
+    TEAM_LAYOUT --> TEAM_LIST[TeamListComponent]
+    OWNERS["/owners"]:::superadmin --> OWNERS_LAYOUT[LayoutComponent]
+    OWNERS_LAYOUT --> OWNERS_LIST[OwnersListComponent]
+
     classDef guarded fill:#f0ad4e,color:#000
+    classDef superadmin fill:#d9534f,color:#fff
 ```
 
-> Les routes en **orange** sont protégées par `authGuard`.
+> Les routes en **orange** sont protégées par `authGuard`. Les routes en **rouge** requièrent en plus `superAdminGuard` (rôle `super_admin`).
 
 ### Fichier de routes principal
 
@@ -314,13 +321,24 @@ graph LR
 }
 ```
 
-> **⚠️ Important :** Le fichier `app-routing.module.ts` est un vestige de la migration. Il ne contient pas toutes les routes (`promos` et `reservations` sont absentes). **Toute modification de routage doit être faite dans `app.routes.ts` uniquement.**
+> **⚠️ Important :** Le fichier `app-routing.module.ts` est un vestige de la migration. Il ne contient pas toutes les routes (`promos`, `reservations`, `team` et `owners` sont absentes). **Toute modification de routage doit être faite dans `app.routes.ts` uniquement.**
 
 ### `authGuard`
 
 Défini dans `src/app/core/auth/auth.guard.ts`. C'est un **guard fonctionnel** (`CanActivateFn`) qui :
 1. Vérifie l'état d'authentification Firebase
 2. En cas d'échec, redirige vers `/auth/login?returnUrl=<url-actuelle>`
+
+### Guards de rôle — `superAdminGuard` et `arcadeOwnerGuard`
+
+Définis dans `src/app/core/auth/role.guard.ts`. Deux guards fonctionnels basés sur les **custom claims Firebase** :
+
+| Guard | Rôles autorisés | Redirection si refus |
+|-------|----------------|---------------------|
+| `superAdminGuard` | `super_admin` uniquement | `/dashboard` |
+| `arcadeOwnerGuard` | `super_admin` ou `arcade_owner` | `/auth/login` |
+
+Ces guards lisent la valeur du claim `role` dans le token Firebase ID. Les routes `/team` et `/owners` sont protégées par `authGuard` **et** `superAdminGuard`.
 
 ---
 
@@ -566,6 +584,43 @@ interface Friendship {
 }
 ```
 
+### Administration (`admin.model.ts`) ⭐ *Nouveau*
+
+```typescript
+type AdminRole = 'super_admin' | 'arcade_owner';
+
+interface AdminMe {
+  id: number;
+  firebase_uid: string;
+  email: string;
+  role: AdminRole;
+  arcade_ids: number[];
+}
+
+interface AdminListItem {
+  id: number;
+  email: string;
+  role: AdminRole;
+  arcades: { id: number; nom: string }[];
+  created_at: string;
+}
+
+interface OwnerListItem {
+  id: number;
+  email: string;
+  created_at: string;
+  arcades: { id: number; nom: string; localisation: string }[];
+}
+
+interface UnassignedArcade {
+  id: number;
+  nom: string;
+  localisation: string;
+}
+```
+
+Ces interfaces sont réexportées depuis `src/app/core/models/index.ts`.
+
 ---
 
 ## 8. Services principaux
@@ -683,6 +738,14 @@ Mappe les réponses de l'API `/games` vers le modèle `Party` via un adaptateur 
 | `getStats()` | `GET /admin/stats` | Retourne `AdminStats` |
 | `getDeletedUsers()` | `GET /admin/users/deleted` | |
 | `restoreUser(userId)` | `PUT /admin/users/:id/restore` | |
+| `listAdmins(role?)` | `GET /admin/admins/?role=…` | Liste les admins, filtrable par rôle |
+| `deleteAdmin(adminId)` | `DELETE /admin/admins/:id` | Supprime un compte admin |
+| `inviteArcadeOwner(email, arcadeId?)` | `POST /admin/invitations/` | Invite un propriétaire de borne |
+| `inviteSuperAdmin(email)` | `POST /admin/invitations/super-admin` | Invite un super-admin |
+| `listOwners()` | `GET /admin/owners` | Liste les propriétaires de bornes |
+| `listUnassignedArcades()` | `GET /admin/arcades/unassigned` | Bornes sans propriétaire assigné |
+| `assignArcadeToOwner(adminId, arcadeId)` | `PUT /admin/owners/:adminId/arcades/:arcadeId` | Assigne une borne à un propriétaire |
+| `unassignArcadeFromOwner(adminId, arcadeId)` | `DELETE /admin/owners/:adminId/arcades/:arcadeId` | Désassigne une borne |
 
 **Interface `AdminStats` :**
 ```typescript
@@ -695,6 +758,18 @@ interface AdminStats {
   timestamp: string;
 }
 ```
+
+#### `RoleService` ⭐ *Nouveau*
+
+**Fichier :** `src/app/core/services/role.service.ts`  
+Service global (`providedIn: 'root'`) entièrement basé sur les Signals. Lit le claim `role` du token Firebase ID.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `role` | `computed<AdminRole>` | Rôle de l'utilisateur courant (`'super_admin'` ou `'arcade_owner'`) |
+| `isSuperAdmin` | `computed<boolean>` | `true` si `role() === 'super_admin'` |
+| `isArcadeOwner` | `computed<boolean>` | `true` si `role() === 'arcade_owner'` |
+| `hasAnyRole` | `computed<boolean>` | `true` si un rôle est défini |
 
 ### Services utilitaires
 
@@ -912,6 +987,55 @@ Charge toutes les données en parallèle (`forkJoin`). Affiche des graphiques `C
 
 ---
 
+### Feature : Admins ⭐ *Nouveau*
+
+**Chemin :** `src/app/features/admins/`  
+**Routes d'accès :** `/team`, `/owners`  
+**Guards :** `authGuard` + `superAdminGuard` (réservé aux `super_admin`)
+
+#### Routes (`admins.routes.ts`)
+
+| Export | Path | Composant |
+|--------|------|-----------|
+| `TEAM_ROUTES` | `/team` | `LayoutComponent` → `TeamListComponent` |
+| `OWNERS_ROUTES` | `/owners` | `LayoutComponent` → `OwnersListComponent` |
+
+#### `TeamListComponent` (`app-team-list`)
+
+Gestion de l'équipe super-admin : liste, invitation et suppression.
+
+**Signals :** `admins`, `loading`, `showInviteForm`, `inviting`, `inviteSuccess`, `inviteError`
+
+| Méthode | Description |
+|---------|-------------|
+| `loadAdmins()` | Charge via `adminService.listAdmins('super_admin')` |
+| `toggleInviteForm()` | Ouvre/ferme le panneau d'invitation, réinitialise l'état |
+| `submitInvite()` | Envoie une invitation via `adminService.inviteSuperAdmin(email)` |
+| `confirmDelete(admin)` | `ConfirmationService` PrimeNG → `adminService.deleteAdmin(id)` |
+| `formatDate(date)` | Formatage de date locale `fr-FR` |
+
+**Formulaire d'invitation :** champ `email` (required, validateur format email).
+
+#### `OwnersListComponent` (`app-owners-list`)
+
+Gestion des propriétaires de bornes : invitation, assignation/désassignation de bornes, suppression.
+
+**Signals :** `owners`, `unassigned`, `loading`, `showInviteForm`, `inviting`, `assignDialogOpen`, `assignTargetOwner`, `assigning`
+
+| Méthode | Description |
+|---------|-------------|
+| `refresh()` | `forkJoin` de `listOwners()` + `listUnassignedArcades()` |
+| `submitInvite()` | Invite via `adminService.inviteArcadeOwner(email, arcade_id?)` |
+| `openAssignDialog(owner)` | Ouvre la modale PrimeNG d'assignation |
+| `submitAssign()` | Assigne via `adminService.assignArcadeToOwner(owner.id, arcadeId)` |
+| `confirmUnassign(owner, arcadeId, arcadeName)` | Désassigne avec confirmation PrimeNG |
+| `confirmDeleteOwner(owner)` | Supprime le compte avec confirmation PrimeNG |
+| `formatDate(date)` | Formatage de date locale `fr-FR` |
+
+**Formulaires :** `inviteForm` (email + `arcade_id` optionnel), `assignForm` (`arcade_id` requis).
+
+---
+
 ## 10. Composants partagés (shared/)
 
 ### Composants UI atomiques (`shared/ui/`)
@@ -963,12 +1087,15 @@ Wrappers de formulaire (`app-input`) et de contenu (`app-card`).
 | `GamingNotificationComponent` | — | Notification au style arcade |
 | `StatsCardComponent` | — | Carte de statistique |
 
-**`SidebarComponent`** contient la navigation principale :
+**`SidebarComponent`** contient la navigation principale avec **filtrage par rôle** via un `computed()` utilisant `RoleService.role()`.
 
-| Groupe | Entrées |
-|--------|---------|
-| Gestion | Bornes (`/arcade-machines`), Jeux (`/games`), Utilisateurs (`/users`) |
-| Opérations | Parties (`/parties`), Réservations (`/reservations`), Promos (`/promos`), Statistiques (`/statistics`) |
+| Groupe | Entrées | Visible par |
+|--------|---------|-------------|
+| Gestion | Bornes (`/arcade-machines`), Jeux (`/games`), Utilisateurs (`/users`) | Tous |
+| Opérations | Parties (`/parties`), Réservations (`/reservations`), Promos (`/promos`), Statistiques (`/statistics`) | Tous |
+| Administration | Demandes (`/arcade-requests`), Propriétaires (`/owners`), Équipe (`/team`) | `super_admin` uniquement |
+
+L'entrée **Demandes** affiche un badge numérique alimenté par `arcadeRequestsService.pendingCount()`, rafraîchi toutes les 60 s.
 
 **`LoaderComponent`** — Inputs : `size`, `message()` (signal), `fullScreen()` (signal). Utilise une icône FontAwesome en rotation.
 
@@ -1245,7 +1372,7 @@ ngOnDestroy() {
 
 #### 1. `app-routing.module.ts` est vestigial
 
-Le fichier `src/app/app-routing.module.ts` est un vestige de la migration vers le mode standalone. Il ne contient **pas** les routes `promos` et `reservations`.
+Le fichier `src/app/app-routing.module.ts` est un vestige de la migration vers le mode standalone. Il ne contient **pas** les routes `promos`, `reservations`, `team` ni `owners`.
 
 **Action :** N'éditer que `src/app/app.routes.ts` pour toute modification de routage.
 
@@ -1288,4 +1415,4 @@ L'ancien fichier `documentation.md` à la racine décrit un projet **React** ant
 
 ---
 
-*Documentation générée pour la codebase RetroNova Backoffice — Angular 19 — Mai 2026*
+*Documentation générée pour la codebase RetroNova Backoffice — Angular 19 — Mai 2026 | Mise à jour : vue Admin — Mai 2026*
