@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { HttpClient } from '@angular/common/http';
 import { Observable, from, of } from 'rxjs';
@@ -66,5 +66,9 @@ export class AuthService {
 
   getFirebaseToken(): Observable<string | null> {
     return this.firebaseAuth.idToken;
+  }
+
+  private setCurrentUser(user: User | null): void {
+    this.currentUser.set(user);
   }
 }
